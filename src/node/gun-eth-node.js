@@ -1,17 +1,64 @@
-const Gun = require("gun/gun");
-const SEA = require("gun/sea");
-const ethers = require("ethers");
-const SHINE = require("../abis/SHINE.json");
-
-const SHINE_ABI = SHINE.abi;
-const SHINE_OPTIMISM_SEPOLIA = SHINE.address;
+import Gun from "gun";
+import SEA from "gun/sea.js";
+import { ethers } from "ethers";
+import { SHINE_ABI, SHINE_OPTIMISM_SEPOLIA } from "../abis/abis.js";
+import { STEALTH_ANNOUNCER_ABI, STEALTH_ANNOUNCER_ADDRESS } from "../abis/abis.js";
+import { LOCAL_CONFIG } from "../config/local.js";
 
 let SHINE_CONTRACT_ADDRESS;
-
 let rpcUrl = "";
 let privateKey = "";
 
 const MESSAGE_TO_SIGN = "Accesso a GunDB con Ethereum";
+
+/**
+ * Generates a password from a signature.
+ * @param {string} signature - The signature to derive the password from.
+ * @returns {string|null} The generated password or null if generation fails.
+ */
+export function generatePassword(signature) {
+  try {
+    const hexSignature = ethers.hexlify(signature);
+    const hash = ethers.keccak256(hexSignature);
+    console.log("Generated password:", hash);
+    return hash;
+  } catch (error) {
+    console.error("Error generating password:", error);
+    return null;
+  }
+}
+
+/**
+ * Converts a Gun private key to an Ethereum account.
+ * @param {string} gunPrivateKey - The Gun private key in base64url format.
+ * @returns {Object} An object containing the Ethereum account and public key.
+ */
+export function gunToEthAccount(gunPrivateKey) {
+  // Function to convert base64url to hex
+  const base64UrlToHex = (base64url) => {
+    const padding = "=".repeat((4 - (base64url.length % 4)) % 4);
+    const base64 = base64url.replace(/-/g, "+").replace(/_/g, "/") + padding;
+    const binary = atob(base64);
+    return Array.from(binary, (char) =>
+      char.charCodeAt(0).toString(16).padStart(2, "0")
+    ).join("");
+  };
+
+  // Convert Gun private key to hex format
+  const hexPrivateKey = "0x" + base64UrlToHex(gunPrivateKey);
+
+  // Create an Ethereum wallet from the private key
+  const wallet = new ethers.Wallet(hexPrivateKey);
+
+  // Get the public address (public key)
+  const publicKey = wallet.address;
+
+  return {
+    account: wallet,
+    publicKey: publicKey,
+    privateKey: hexPrivateKey,
+  };
+}
 
 /**
  * Funzione per ottenere il signer
@@ -19,8 +66,11 @@ const MESSAGE_TO_SIGN = "Accesso a GunDB con Ethereum";
  */
 const getSigner = async () => {
   if (rpcUrl && privateKey) {
-    // Modalità standalone
-    const provider = new ethers.JsonRpcProvider(rpcUrl);
+    // Modalità standalone con provider locale
+    const provider = new ethers.JsonRpcProvider(rpcUrl, {
+      chainId: 31337,
+      name: "localhost"
+    });
     return new ethers.Wallet(privateKey, provider);
   } else if (
     typeof window !== "undefined" &&
@@ -41,7 +91,7 @@ const getSigner = async () => {
  * @param {string} newPrivateKey - The new private key.
  * @returns {Gun} The Gun instance for chaining.
  */
-Gun.chain.setStandaloneConfig = function (newRpcUrl, newPrivateKey) {
+Gun.chain.setSigner = function (newRpcUrl, newPrivateKey) {
   rpcUrl = newRpcUrl;
   privateKey = newPrivateKey;
   console.log("Standalone configuration set");
@@ -70,15 +120,7 @@ Gun.chain.verifySignature = async function (message, signature) {
  * @returns {string|null} The generated password or null if generation fails.
  */
 Gun.chain.generatePassword = function (signature) {
-  try {
-    const hexSignature = ethers.hexlify(signature);
-    const hash = ethers.keccak256(hexSignature);
-    console.log("Generated password:", hash);
-    return hash;
-  } catch (error) {
-    console.error("Error generating password:", error);
-    return null;
-  }
+  return generatePassword(signature);
 };
 
 /**
@@ -112,11 +154,34 @@ Gun.chain.createAndStoreEncryptedPair = async function (address, signature) {
   try {
     const gun = this;
     const pair = await SEA.pair();
-    const encryptedPair = await SEA.encrypt(JSON.stringify(pair), signature);
-    await gun.get("gun-eth").get("users").get(address).put({ encryptedPair });
-    console.log("Encrypted pair stored for:", address);
+    const v_pair = await SEA.pair();
+    const s_pair = await SEA.pair();
+    const password = generatePassword(signature);
+
+    // Salva le coppie originali SEA
+    const encryptedPair = await SEA.encrypt(JSON.stringify(pair), password);
+    const encryptedV_pair = await SEA.encrypt(JSON.stringify(v_pair), password);
+    const encryptedS_pair = await SEA.encrypt(JSON.stringify(s_pair), password);
+
+    // Converti solo per ottenere gli indirizzi Ethereum
+    const viewingAccount = gunToEthAccount(v_pair.priv);
+    const spendingAccount = gunToEthAccount(s_pair.priv);
+
+    await gun.get("gun-eth").get("users").get(address).put({
+      pair: encryptedPair,
+      v_pair: encryptedV_pair,
+      s_pair: encryptedS_pair,
+      publicKeys: {
+        viewingPublicKey: v_pair.epub, // Usa la chiave pubblica di crittografia SEA
+        spendingPublicKey: spendingAccount.publicKey, // Usa l'indirizzo Ethereum
+        ethViewingAddress: viewingAccount.publicKey // Salva anche l'indirizzo Ethereum
+      }
+    });
+
+    console.log("Encrypted pairs and public keys stored for:", address);
   } catch (error) {
     console.error("Error creating and storing encrypted pair:", error);
+    throw error;
   }
 };
 
@@ -133,7 +198,7 @@ Gun.chain.getAndDecryptPair = async function (address, signature) {
       .get("gun-eth")
       .get("users")
       .get(address)
-      .get("encryptedPair")
+      .get("pair")
       .then();
     if (!encryptedData) {
       throw new Error("No encrypted data found for this address");
@@ -148,15 +213,15 @@ Gun.chain.getAndDecryptPair = async function (address, signature) {
 };
 
 /**
- * SHINE (Secure Hybrid Information and Network Environment) functionality.
+ * Proof of Integrity
  * @param {string} chain - The blockchain to use (e.g., "optimismSepolia").
  * @param {string} nodeId - The ID of the node to verify or write.
  * @param {Object} data - The data to write (if writing).
  * @param {Function} callback - Callback function to handle the result.
  * @returns {Gun} The Gun instance for chaining.
  */
-Gun.chain.shine = function (chain, nodeId, data, callback) {
-  console.log("SHINE plugin called with:", { chain, nodeId, data });
+Gun.chain.proof = function (chain, nodeId, data, callback) {
+  console.log("Proof plugin called with:", { chain, nodeId, data });
 
   if (typeof callback !== "function") {
     console.error("Callback must be a function");
@@ -319,29 +384,456 @@ Gun.chain.shine = function (chain, nodeId, data, callback) {
  * @returns {Object} An object containing the Ethereum account and public key.
  */
 Gun.chain.gunToEthAccount = function (gunPrivateKey) {
-  // Function to convert base64url to hex
-  const base64UrlToHex = (base64url) => {
-    const padding = "=".repeat((4 - (base64url.length % 4)) % 4);
-    const base64 = base64url.replace(/-/g, "+").replace(/_/g, "/") + padding;
-    const binary = atob(base64);
-    return Array.from(binary, (char) =>
-      char.charCodeAt(0).toString(16).padStart(2, "0")
-    ).join("");
-  };
-
-  // Convert Gun private key to hex format
-  const hexPrivateKey = "0x" + base64UrlToHex(gunPrivateKey);
-
-  // Create an Ethereum wallet from the private key
-  const wallet = new ethers.Wallet(hexPrivateKey);
-
-  // Get the public address (public key)
-  const publicKey = wallet.address;
-
-  return {
-    account: wallet,
-    publicKey: publicKey,
-  };
+  return gunToEthAccount(gunPrivateKey);
 };
 
-module.exports = Gun;
+/**
+ * Funzione di utilità per generare l'indirizzo stealth
+ * @param {string} sharedSecret - Il segreto condiviso
+ * @param {string} spendingPublicKey - La chiave pubblica di spesa
+ * @returns {Object} L'indirizzo stealth e la chiave privata
+ */
+function deriveStealthAddress(sharedSecret, spendingPublicKey) {
+  try {
+    // Converti il segreto condiviso in bytes
+    const sharedSecretBytes = Buffer.from(sharedSecret, 'base64');
+    
+    // Genera la chiave privata stealth usando il segreto condiviso e la spending public key
+    const stealthPrivateKey = ethers.keccak256(
+      ethers.concat([
+        sharedSecretBytes,
+        ethers.getBytes(spendingPublicKey)
+      ])
+    );
+    
+    // Crea il wallet stealth
+    const stealthWallet = new ethers.Wallet(stealthPrivateKey);
+
+    console.log("Debug deriveStealthAddress:", {
+      sharedSecretHex: ethers.hexlify(sharedSecretBytes),
+      spendingPublicKey,
+      stealthPrivateKey,
+      stealthAddress: stealthWallet.address
+    });
+
+    return {
+      stealthPrivateKey,
+      stealthAddress: stealthWallet.address,
+      wallet: stealthWallet
+    };
+  } catch (error) {
+    console.error("Error in deriveStealthAddress:", error);
+    throw error;
+  }
+}
+
+/**
+ * Genera una chiave stealth e le relative coppie di chiavi
+ * @param {string} recipientAddress - L'indirizzo Ethereum del destinatario
+ * @param {string} signature - La firma del sender per accedere alle proprie chiavi
+ * @returns {Promise<Object>} Oggetto contenente gli indirizzi stealth e le chiavi
+ */
+Gun.chain.generateStealthAddress = async function (recipientAddress, signature) {
+  try {
+    const gun = this;
+    
+    // Recupera le chiavi pubbliche del destinatario
+    const recipientData = await gun
+      .get("gun-eth")
+      .get("users")
+      .get(recipientAddress)
+      .get("publicKeys")
+      .then();
+
+    if (!recipientData || !recipientData.viewingPublicKey || !recipientData.spendingPublicKey) {
+      throw new Error("Chiavi pubbliche del destinatario non trovate");
+    }
+
+    // Recupera le proprie chiavi (sender)
+    const senderAddress = await this.verifySignature(MESSAGE_TO_SIGN, signature);
+    const password = generatePassword(signature);
+    
+    const senderData = await gun
+      .get("gun-eth")
+      .get("users")
+      .get(senderAddress)
+      .then();
+
+    if (!senderData || !senderData.s_pair) {
+      throw new Error("Chiavi del sender non trovate");
+    }
+
+    // Decripta la spending pair del sender
+    let spendingKeyPair;
+    try {
+      const decryptedData = await SEA.decrypt(senderData.s_pair, password);
+      spendingKeyPair = typeof decryptedData === 'string' ? 
+        JSON.parse(decryptedData) : 
+        decryptedData;
+    } catch (error) {
+      console.error("Errore nella decrittazione della spending pair:", error);
+      throw new Error("Impossibile decrittare la spending pair");
+    }
+
+    // Genera il segreto condiviso usando SEA ECDH con la chiave pubblica di crittografia
+    const sharedSecret = await SEA.secret(recipientData.viewingPublicKey, spendingKeyPair);
+
+    if (!sharedSecret) {
+      throw new Error("Impossibile generare il segreto condiviso");
+    }
+
+    console.log("Generate shared secret:", sharedSecret);
+
+    const { stealthAddress } = deriveStealthAddress(
+      sharedSecret,
+      recipientData.spendingPublicKey
+    );
+
+    return {
+      stealthAddress,
+      senderPublicKey: spendingKeyPair.epub, // Usa la chiave pubblica di crittografia
+      spendingPublicKey: recipientData.spendingPublicKey
+    };
+
+  } catch (error) {
+    console.error("Errore nella generazione dell'indirizzo stealth:", error);
+    throw error;
+  }
+};
+
+/**
+ * Pubblica le chiavi pubbliche necessarie per ricevere pagamenti stealth
+ * @param {string} signature - La firma per autenticare l'utente
+ * @returns {Promise<void>}
+ */
+Gun.chain.publishStealthKeys = async function (signature) {
+  try {
+    const gun = this;
+    const address = await this.verifySignature(MESSAGE_TO_SIGN, signature);
+    const password = generatePassword(signature);
+
+    // Recupera le proprie coppie di chiavi criptate
+    const encryptedData = await gun
+      .get("gun-eth")
+      .get("users")
+      .get(address)
+      .then();
+
+    if (!encryptedData || !encryptedData.v_pair || !encryptedData.s_pair) {
+      throw new Error("Chiavi non trovate");
+    }
+
+    // Decripta le coppie viewing e spending
+    const viewingKeyPair = JSON.parse(
+      await SEA.decrypt(encryptedData.v_pair, password)
+    );
+    const spendingKeyPair = JSON.parse(
+      await SEA.decrypt(encryptedData.s_pair, password)
+    );
+
+    const viewingAccount = gunToEthAccount(viewingKeyPair.priv);
+    const spendingAccount = gunToEthAccount(spendingKeyPair.priv);
+
+    // Pubblica solo le chiavi pubbliche
+    await gun.get("gun-eth").get("users").get(address).get("publicKeys").put({
+      viewingPublicKey: viewingAccount.publicKey,
+      spendingPublicKey: spendingAccount.publicKey,
+    });
+
+    console.log("Chiavi pubbliche stealth pubblicate con successo");
+  } catch (error) {
+    console.error("Errore nella pubblicazione delle chiavi stealth:", error);
+    throw error;
+  }
+};
+
+/**
+ * Recupera i fondi da un indirizzo stealth
+ * @param {string} stealthAddress - L'indirizzo stealth da cui recuperare i fondi
+ * @param {string} senderPublicKey - La chiave pubblica del sender usata per generare l'indirizzo
+ * @param {string} signature - La firma per decifrare le chiavi private
+ * @returns {Promise<Object>} Oggetto contenente il wallet per accedere ai fondi
+ */
+Gun.chain.recoverStealthFunds = async function (
+  stealthAddress,
+  senderPublicKey,
+  signature,
+  spendingPublicKey
+) {
+  try {
+    const gun = this;
+    const password = generatePassword(signature);
+
+    // Recupera le proprie coppie di chiavi
+    const myAddress = await this.verifySignature(MESSAGE_TO_SIGN, signature);
+    const encryptedData = await gun
+      .get("gun-eth")
+      .get("users")
+      .get(myAddress)
+      .then();
+
+    if (!encryptedData || !encryptedData.v_pair || !encryptedData.s_pair) {
+      throw new Error("Chiavi non trovate");
+    }
+
+    // Decripta le coppie viewing e spending
+    let viewingKeyPair;
+    try {
+      const decryptedViewingData = await SEA.decrypt(encryptedData.v_pair, password);
+      viewingKeyPair = typeof decryptedViewingData === 'string' ? 
+        JSON.parse(decryptedViewingData) : 
+        decryptedViewingData;
+    } catch (error) {
+      console.error("Errore nella decrittazione delle chiavi:", error);
+      throw new Error("Impossibile decrittare le chiavi");
+    }
+
+    // Genera il segreto condiviso usando SEA ECDH
+    const sharedSecret = await SEA.secret(senderPublicKey, viewingKeyPair);
+
+    if (!sharedSecret) {
+      throw new Error("Impossibile generare il segreto condiviso");
+    }
+
+    console.log("Recover shared secret:", sharedSecret);
+
+    const { wallet, stealthAddress: recoveredAddress } = deriveStealthAddress(
+      sharedSecret,
+      spendingPublicKey
+    );
+
+    // Verifica che l'indirizzo corrisponda
+    if (recoveredAddress.toLowerCase() !== stealthAddress.toLowerCase()) {
+      console.error("Mismatch:", {
+        recovered: recoveredAddress,
+        expected: stealthAddress,
+        sharedSecret
+      });
+      throw new Error("L'indirizzo stealth recuperato non corrisponde");
+    }
+
+    return {
+      wallet,
+      address: recoveredAddress,
+    };
+  } catch (error) {
+    console.error("Errore nel recupero dei fondi stealth:", error);
+    throw error;
+  }
+};
+
+/**
+ * Annuncia un pagamento stealth
+ * @param {string} stealthAddress - L'indirizzo stealth generato
+ * @param {string} senderPublicKey - La chiave pubblica del mittente
+ * @param {string} spendingPublicKey - La chiave pubblica di spesa
+ * @param {string} signature - La firma del mittente
+ * @returns {Promise<void>}
+ */
+Gun.chain.announceStealthPayment = async function (
+  stealthAddress,
+  senderPublicKey,
+  spendingPublicKey,
+  signature,
+  options = { onChain: false }
+) {
+  try {
+    const gun = this;
+    const senderAddress = await this.verifySignature(MESSAGE_TO_SIGN, signature);
+
+    if (options.onChain) {
+      // Annuncio on-chain
+      const signer = await getSigner();
+      const contractAddress = process.env.NODE_ENV === 'development' 
+        ? LOCAL_CONFIG.STEALTH_ANNOUNCER_ADDRESS 
+        : STEALTH_ANNOUNCER_ADDRESS;
+
+      console.log("Using contract address:", contractAddress);
+
+      const contract = new ethers.Contract(
+        contractAddress,
+        STEALTH_ANNOUNCER_ABI,
+        signer
+      );
+
+      // Ottieni la dev fee dal contratto
+      const devFee = await contract.devFee();
+      console.log("Dev fee:", devFee.toString());
+
+      // Chiama il contratto
+      const tx = await contract.announcePayment(
+        senderPublicKey,
+        spendingPublicKey,
+        stealthAddress,
+        { value: devFee }
+      );
+      
+      console.log("Transaction sent:", tx.hash);
+      const receipt = await tx.wait();
+      console.log("Transaction confirmed:", receipt.hash);
+      
+      console.log("Pagamento stealth annunciato on-chain (dev fee pagata)");
+    } else {
+      // Annuncio off-chain (GunDB)
+      await gun
+        .get("gun-eth")
+        .get("stealth-payments")
+        .set({
+          stealthAddress,
+          senderAddress,
+          senderPublicKey,
+          spendingPublicKey,
+          timestamp: Date.now(),
+        });
+      console.log("Pagamento stealth annunciato off-chain");
+    }
+  } catch (error) {
+    console.error("Errore nell'annuncio del pagamento stealth:", error);
+    console.error("Error details:", error.stack);
+    throw error;
+  }
+};
+
+/**
+ * Recupera tutti i pagamenti stealth per un indirizzo
+ * @param {string} signature - La firma per autenticare l'utente
+ * @returns {Promise<Array>} Lista dei pagamenti stealth
+ */
+Gun.chain.getStealthPayments = async function (signature, options = { source: 'both' }) {
+  try {
+    const payments = [];
+
+    if (options.source === 'onChain' || options.source === 'both') {
+      // Recupera pagamenti on-chain
+      const signer = await getSigner();
+      const contractAddress = process.env.NODE_ENV === 'development' 
+        ? LOCAL_CONFIG.STEALTH_ANNOUNCER_ADDRESS 
+        : STEALTH_ANNOUNCER_ADDRESS;
+
+      const contract = new ethers.Contract(
+        contractAddress,
+        STEALTH_ANNOUNCER_ABI,
+        signer
+      );
+      
+      try {
+        // Ottieni il numero totale di annunci
+        const totalAnnouncements = await contract.getAnnouncementsCount();
+        const total = Number(totalAnnouncements);
+        console.log("Totale annunci on-chain:", total);
+        
+        if (total > 0) {
+          // Recupera gli annunci in batch di 100
+          const batchSize = 100;
+          const lastIndex = total - 1;
+          
+          for(let i = 0; i <= lastIndex; i += batchSize) {
+            const toIndex = Math.min(i + batchSize - 1, lastIndex);
+            const batch = await contract.getAnnouncementsInRange(i, toIndex);
+            
+            // Per ogni annuncio, prova a decrittare
+            for(const announcement of batch) {
+              try {
+                // Verifica che l'annuncio sia valido
+                if (!announcement || !announcement.stealthAddress || 
+                    !announcement.senderPublicKey || !announcement.spendingPublicKey) {
+                  console.log("Annuncio invalido:", announcement);
+                  continue;
+                }
+
+                // Prova a recuperare i fondi per verificare se l'annuncio è per noi
+                const recoveredWallet = await this.recoverStealthFunds(
+                  announcement.stealthAddress,
+                  announcement.senderPublicKey,
+                  signature,
+                  announcement.spendingPublicKey
+                );
+                
+                // Se non lancia errori, l'annuncio è per noi
+                payments.push({
+                  stealthAddress: announcement.stealthAddress,
+                  senderPublicKey: announcement.senderPublicKey,
+                  spendingPublicKey: announcement.spendingPublicKey,
+                  timestamp: Number(announcement.timestamp),
+                  source: 'onChain',
+                  wallet: recoveredWallet
+                });
+
+              } catch (e) {
+                // Non è per noi, continua
+                console.log(`Annuncio non per noi: ${announcement.stealthAddress}`);
+                continue;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Errore nel recupero degli annunci on-chain:", error);
+      }
+    }
+
+    if (options.source === 'offChain' || options.source === 'both') {
+      // Recupera pagamenti off-chain
+      const gun = this;
+      const offChainPayments = await new Promise((resolve) => {
+        const p = [];
+        gun
+          .get("gun-eth")
+          .get("stealth-payments")
+          .get(recipientAddress)
+          .map()
+          .once((payment, id) => {
+            if (payment?.stealthAddress) {
+              p.push({ ...payment, id, source: 'offChain' });
+            }
+          });
+        setTimeout(() => resolve(p), 2000);
+      });
+      
+      payments.push(...offChainPayments);
+    }
+
+    console.log(`Trovati ${payments.length} pagamenti stealth`);
+    return payments;
+  } catch (error) {
+    console.error("Errore nel recupero dei pagamenti stealth:", error);
+    throw error;
+  }
+};
+
+/**
+ * Pulisce i vecchi pagamenti stealth
+ * @param {string} recipientAddress - L'indirizzo del destinatario
+ * @returns {Promise<void>}
+ */
+Gun.chain.cleanStealthPayments = async function(recipientAddress) {
+  try {
+    const gun = this;
+    const payments = await gun
+      .get("gun-eth")
+      .get("stealth-payments")
+      .get(recipientAddress)
+      .map()
+      .once()
+      .then();
+
+    // Rimuovi i nodi vuoti o invalidi
+    if (payments) {
+      Object.keys(payments).forEach(async (key) => {
+        const payment = payments[key];
+        if (!payment || !payment.stealthAddress || !payment.senderPublicKey || !payment.spendingPublicKey) {
+          await gun
+            .get("gun-eth")
+            .get("stealth-payments")
+            .get(recipientAddress)
+            .get(key)
+            .put(null);
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Errore nella pulizia dei pagamenti stealth:", error);
+  }
+};
+
+export default Gun;
