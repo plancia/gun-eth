@@ -2,7 +2,9 @@
   "name": "gun-eth",
   "version": "1.3.4",
   "description": "A GunDB plugin for Ethereum, and Web3",
-  "main": "./src/index.js",
+  "main": "dist/gun-eth.cjs.js",
+  "module": "dist/gun-eth.esm.js",
+  "browser": "dist/gun-eth.min.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,7 +13,9 @@
     "start-node": "hardhat node",
     "deploy-local": "hardhat run scripts/start-local-node.cjs --network localhost",
     "test-stealth": "cross-env NODE_ENV=development node --experimental-json-modules src/examples/stealth-example.js",
-    "test-proof": "cross-env NODE_ENV=development node --experimental-json-modules src/examples/proof-example.js"
+    "test-proof": "cross-env NODE_ENV=development node --experimental-json-modules src/examples/proof-example.js",
+    "build": "rollup -c",
+    "build:watch": "rollup -c -w"
   },
   "dependencies": {
     "ethers": "^6.0.0",
@@ -35,7 +39,12 @@
     "solidity-coverage": "^0.8.1",
     "ts-node": "^10.9.1",
     "typechain": "^8.2.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-json": "^6.0.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "rollup": "^3.0.0"
   },
   "author": "scobru",
   "repository": {
@@ -56,5 +65,8 @@
   "bugs": {
     "url": "https://github.com/scobru/gun-eth/issues"
   },
-  "homepage": "https://github.com/scobru/gun-eth#readme"
+  "homepage": "https://github.com/scobru/gun-eth#readme",
+  "files": [
+    "dist"
+  ]
 }
