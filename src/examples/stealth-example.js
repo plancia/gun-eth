@@ -1,56 +1,56 @@
 import Gun from 'gun';
 import GunEth from "../node/gun-eth-node.js";
 
-// Estendi Gun con le funzionalità di GunEth
+// Extend Gun with GunEth functionality
 Object.assign(Gun.chain, GunEth.chain);
 
-// Usa l'URL del nodo locale Hardhat
+// Use local Hardhat node URL
 const LOCAL_RPC = "http://127.0.0.1:8545";
 
-// Usa gli account di test di Hardhat
+// Use Hardhat test accounts
 const MOCK_KEYS = {
-  alice: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80", // Primo account Hardhat
-  bob: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"    // Secondo account Hardhat
+  alice: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80", // First Hardhat account
+  bob: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"    // Second Hardhat account
 };
 
 async function stealthExample() {
   try {
-    // Inizializza Gun con un peer locale
+    // Initialize Gun with local peer
     const gun = Gun({
       peers: ['http://localhost:8765/gun']
     });
 
-    console.log("🚀 Inizializzazione del protocollo stealth...");
+    console.log("🚀 Initializing stealth protocol...");
 
-    // Setup di Alice (recipient)
-    console.log("\n👩 Setup di Alice...");
+    // Setup Alice (recipient)
+    console.log("\n👩 Setting up Alice...");
     gun.setSigner(LOCAL_RPC, MOCK_KEYS.alice);
-    const aliceSignature = await gun.createSignature("Accesso a GunDB con Ethereum");
-    const aliceAddress = await gun.verifySignature("Accesso a GunDB con Ethereum", aliceSignature);
+    const aliceSignature = await gun.createSignature("Access GunDB with Ethereum");
+    const aliceAddress = await gun.verifySignature("Access GunDB with Ethereum", aliceSignature);
     console.log("Alice address:", aliceAddress);
 
-    // Alice crea e memorizza le sue coppie di chiavi
+    // Alice creates and stores her key pairs
     await gun.createAndStoreEncryptedPair(aliceAddress, aliceSignature);
-    console.log("✅ Alice ha generato e salvato le sue chiavi");
+    console.log("✅ Alice has generated and saved her keys");
 
-    // Setup di Bob (sender)
-    console.log("\n👨 Setup di Bob...");
+    // Setup Bob (sender)
+    console.log("\n👨 Setting up Bob...");
     gun.setSigner(LOCAL_RPC, MOCK_KEYS.bob);
-    const bobSignature = await gun.createSignature("Accesso a GunDB con Ethereum");
-    const bobAddress = await gun.verifySignature("Accesso a GunDB con Ethereum", bobSignature);
+    const bobSignature = await gun.createSignature("Access GunDB with Ethereum");
+    const bobAddress = await gun.verifySignature("Access GunDB with Ethereum", bobSignature);
     console.log("Bob address:", bobAddress);
 
-    // Bob crea e memorizza le sue coppie di chiavi
+    // Bob creates and stores his key pairs
     await gun.createAndStoreEncryptedPair(bobAddress, bobSignature);
-    console.log("✅ Bob ha generato e salvato le sue chiavi");
+    console.log("✅ Bob has generated and saved his keys");
 
-    // Bob genera un indirizzo stealth per Alice
-    console.log("\n💫 Generazione indirizzo stealth...");
+    // Bob generates a stealth address for Alice
+    console.log("\n💫 Generating stealth address...");
     const stealthInfo = await gun.generateStealthAddress(aliceAddress, bobSignature);
-    console.log("Indirizzo stealth generato:", stealthInfo.stealthAddress);
+    console.log("Generated stealth address:", stealthInfo.stealthAddress);
 
-    // Bob annuncia il pagamento stealth on-chain
-    console.log("\n📢 Annuncio del pagamento stealth on-chain...");
+    // Bob announces the stealth payment on-chain
+    console.log("\n📢 Announcing stealth payment on-chain...");
     await gun.announceStealthPayment(
       stealthInfo.stealthAddress,
       stealthInfo.senderPublicKey,
@@ -59,32 +59,32 @@ async function stealthExample() {
       { onChain: true }
     );
 
-    // Simula l'invio di ETH
-    console.log("\n💸 Simulazione invio di ETH all'indirizzo stealth...");
-    console.log(`Bob invia 1 ETH a ${stealthInfo.stealthAddress}`);
+    // Simulate ETH transfer
+    console.log("\n💸 Simulating ETH transfer to stealth address...");
+    console.log(`Bob sends 1 ETH to ${stealthInfo.stealthAddress}`);
 
-    // Attendi la sincronizzazione
-    console.log("\n⏳ Attendi sincronizzazione...");
+    // Wait for synchronization
+    console.log("\n⏳ Waiting for synchronization...");
     await new Promise(resolve => setTimeout(resolve, 3000));
 
-    // Alice scansiona tutti gli annunci on-chain
-    console.log("\n🔍 Alice scansiona gli annunci stealth...");
+    // Alice scans all on-chain announcements
+    console.log("\n🔍 Alice scanning stealth announcements...");
     gun.setSigner(LOCAL_RPC, MOCK_KEYS.alice);
     
-    // Recupera tutti gli annunci e prova a decrittarli
+    // Retrieve all announcements and try to decrypt them
     const allAnnouncements = await gun.getStealthPayments(aliceSignature, { source: 'onChain' });
-    console.log(`Trovati ${allAnnouncements.length} annunci per Alice`);
+    console.log(`Found ${allAnnouncements.length} announcements for Alice`);
 
     if (allAnnouncements.length === 0) {
-      console.log("Nessun annuncio trovato per Alice");
+      console.log("No announcements found for Alice");
       return;
     }
 
-    // Alice prova a recuperare i fondi da ogni annuncio
-    console.log("\n🔐 Alice recupera i fondi...");
+    // Alice tries to recover funds from each announcement
+    console.log("\n🔐 Alice recovering funds...");
     for (const announcement of allAnnouncements) {
       try {
-        console.log("\nProcessando annuncio:", {
+        console.log("\nProcessing announcement:", {
           stealthAddress: announcement.stealthAddress,
           senderPublicKey: announcement.senderPublicKey,
           spendingPublicKey: announcement.spendingPublicKey,
@@ -98,29 +98,29 @@ async function stealthExample() {
           announcement.spendingPublicKey
         );
 
-        console.log("\n✅ Wallet recuperato con successo!");
+        console.log("\n✅ Wallet successfully recovered!");
         console.log({
           stealthAddress: announcement.stealthAddress,
           recoveredAddress: recoveredWallet.address,
           timestamp: new Date(announcement.timestamp * 1000).toLocaleString()
         });
 
-        // Qui Alice potrebbe spostare i fondi
-        console.log("\n💡 Alice può ora spostare i fondi dal wallet recuperato");
+        // Here Alice could move the funds
+        console.log("\n💡 Alice can now move funds from the recovered wallet");
         
       } catch (error) {
-        // Se non riesce a recuperare i fondi, l'annuncio non era per lei
-        console.log(`Annuncio non destinato ad Alice: ${announcement.stealthAddress}`);
+        // If recovery fails, the announcement wasn't for her
+        console.log(`Announcement not intended for Alice: ${announcement.stealthAddress}`);
       }
     }
 
   } catch (error) {
-    console.error("❌ Errore nell'esecuzione dell'esempio:", error);
+    console.error("❌ Error executing example:", error);
   }
 }
 
-// Esegui l'esempio
-console.log("🎭 DEMO PROTOCOLLO STEALTH\n");
+// Run the example
+console.log("🎭 STEALTH PROTOCOL DEMO\n");
 stealthExample()
-  .then(() => console.log("\n✨ Demo completata!"))
+  .then(() => console.log("\n✨ Demo completed!"))
   .catch(console.error); 

@@ -1,41 +1,6 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "D:\\gun-eth\\contracts\\SHINE.sol": {
-      "lastModificationDate": 1731698711716,
-      "contentHash": "41b7de95db84184b6eb845f0ba582f80",
-      "sourceName": "contracts/SHINE.sol",
-      "solcConfig": {
-        "version": "0.8.19",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.0"
-      ],
-      "artifacts": [
-        "SHINE"
-      ]
-    },
     "D:\\gun-eth\\contracts\\StealthAnnouncer.sol": {
       "lastModificationDate": 1731712374533,
       "contentHash": "2c57b8270ff0ce676f05b3bf8945a067",
@@ -69,6 +34,41 @@
       ],
       "artifacts": [
         "StealthAnnouncer"
+      ]
+    },
+    "D:\\gun-eth\\contracts\\ProofOfIntegrity.sol": {
+      "lastModificationDate": 1731716832661,
+      "contentHash": "93aef9e762c345f859d5db524b8175e2",
+      "sourceName": "contracts/ProofOfIntegrity.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "ProofOfIntegrity"
       ]
     }
   }

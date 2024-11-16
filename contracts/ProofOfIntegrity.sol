@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract SHINE {
+contract ProofOfIntegrity {
     struct DataRecord {
         bytes32 contentHash;
         uint256 timestamp;

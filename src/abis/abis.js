@@ -4,6 +4,10 @@ export const STEALTH_ANNOUNCER_ADDRESS = process.env.NODE_ENV === 'development'
   ? LOCAL_CONFIG.STEALTH_ANNOUNCER_ADDRESS 
   : "0x..."; // Indirizzo su Optimism Sepolia
 
+export const PROOF_OF_INTEGRITY_ADDRESS = process.env.NODE_ENV === 'development'
+  ? LOCAL_CONFIG.PROOF_OF_INTEGRITY_ADDRESS
+  : "0x..."; // Indirizzo su Optimism Sepolia
+
 export const RPC_URL = process.env.NODE_ENV === 'development'
   ? LOCAL_CONFIG.RPC_URL
   : "https://sepolia.optimism.io";
@@ -210,6 +214,133 @@ export const STEALTH_ANNOUNCER_ABI = [
     "name": "withdrawStuckETH",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  }
+];
+
+export const PROOF_OF_INTEGRITY_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "bytes[]",
+        "name": "nodeIds",
+        "type": "bytes[]"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "contentHashes",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "batchUpdateData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "bytes",
+        "name": "nodeId",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "contentHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "updater",
+        "type": "address"
+      }
+    ],
+    "name": "DataUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "nodeId",
+        "type": "bytes"
+      }
+    ],
+    "name": "getLatestRecord",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "nodeId",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "contentHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "updateData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "nodeId",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "contentHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "verifyData",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ];

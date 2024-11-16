@@ -2,28 +2,30 @@ const hardhat = require("hardhat");
 
 async function main() {
   try {
-    // Deploy del contratto StealthAnnouncer
-    console.log("Deploying StealthAnnouncer contract...");
-    
     const [deployer] = await hardhat.ethers.getSigners();
-    console.log("Deploying with account:", deployer.address);
+    console.log("Deploying contracts with account:", deployer.address);
 
+    // Deploy StealthAnnouncer
+    console.log("\nDeploying StealthAnnouncer contract...");
     const StealthAnnouncer = await hardhat.ethers.getContractFactory("StealthAnnouncer");
-    console.log("Contract factory created...");
-
     const stealthAnnouncer = await StealthAnnouncer.deploy(deployer.address);
-    console.log("Deployment transaction sent...");
-    
-    console.log("Waiting for deployment transaction...");
     await stealthAnnouncer.waitForDeployment();
-    
-    const deployedAddress = await stealthAnnouncer.getAddress();
-    console.log("StealthAnnouncer deployed to:", deployedAddress);
+    const stealthAddress = await stealthAnnouncer.getAddress();
+    console.log("StealthAnnouncer deployed to:", stealthAddress);
 
-    // Salva l'indirizzo del contratto in un file di configurazione
+    // Deploy ProofOfIntegrity
+    console.log("\nDeploying ProofOfIntegrity contract...");
+    const ProofOfIntegrity = await hardhat.ethers.getContractFactory("ProofOfIntegrity");
+    const proofOfIntegrity = await ProofOfIntegrity.deploy();
+    await proofOfIntegrity.waitForDeployment();
+    const proofAddress = await proofOfIntegrity.getAddress();
+    console.log("ProofOfIntegrity deployed to:", proofAddress);
+
+    // Save contract addresses
     const fs = require('fs');
     const config = {
-      STEALTH_ANNOUNCER_ADDRESS: deployedAddress
+      STEALTH_ANNOUNCER_ADDRESS: stealthAddress,
+      PROOF_OF_INTEGRITY_ADDRESS: proofAddress
     };
 
     fs.writeFileSync(
@@ -31,11 +33,10 @@ async function main() {
       JSON.stringify(config, null, 2)
     );
 
-    console.log("Contract address saved to config file");
+    console.log("\nContract addresses saved to config file");
 
   } catch (error) {
     console.error("Error during deployment:", error);
-    console.error(error.stack);
     process.exit(1);
   }
 }
