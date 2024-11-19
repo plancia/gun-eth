@@ -4,14 +4,38 @@
 import Gun from "gun";
 import SEA from "gun/sea.js";
 import { ethers } from "ethers";
-import { PROOF_OF_INTEGRITY_ABI, PROOF_OF_INTEGRITY_ADDRESS } from "../abis/abis.js";
-import { LOCAL_CONFIG } from "../config/local.js";
+import { PROOF_OF_INTEGRITY_ABI, PROOF_OF_INTEGRITY_ADDRESS } from "./abis/abis.js";
+import { LOCAL_CONFIG } from "./config/local.js";
 
 let PROOF_CONTRACT_ADDRESS;
 let rpcUrl = "";
 let privateKey = "";
 
 export const MESSAGE_TO_SIGN = "Access GunDB with Ethereum";
+
+let contractAddresses = {
+  PROOF_OF_INTEGRITY_ADDRESS: null,
+  STEALTH_ANNOUNCER_ADDRESS: null
+};
+
+// Solo per Node.js
+if (typeof window === 'undefined') {
+  const { fileURLToPath } = require('url');
+  const { dirname } = require('path');
+  const { readFileSync } = require('fs');
+  const path = require('path');
+  
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+
+  try {
+    const rawdata = readFileSync(path.join(__dirname, 'contract-address.json'), 'utf8');
+    contractAddresses = JSON.parse(rawdata);
+    console.log('Loaded contract addresses:', contractAddresses);
+  } catch (err) {
+    console.warn('Warning: contract-address.json not found or invalid');
+  }
+}
 
 // =============================================
 // UTILITY FUNCTIONS
@@ -20,7 +44,7 @@ export const MESSAGE_TO_SIGN = "Access GunDB with Ethereum";
  * Generates a random node ID for GunDB
  * @returns {string} A random hexadecimal string
  */
-function generateRandomId() {
+export function generateRandomId() {
   return ethers.hexlify(ethers.randomBytes(32)).slice(2);
 }
 
@@ -78,7 +102,7 @@ export function gunToEthAccount(gunPrivateKey) {
  * @returns {Promise<ethers.Signer>} The configured signer
  * @throws {Error} If no valid provider is found
  */
-const getSigner = async () => {
+export const getSigner = async () => {
   if (rpcUrl && privateKey) {
     // Standalone mode with local provider
     const provider = new ethers.JsonRpcProvider(rpcUrl, {
@@ -99,6 +123,46 @@ const getSigner = async () => {
   }
 };
 
+/**
+ * Utility function to generate stealth address
+ * @param {string} sharedSecret - The shared secret
+ * @param {string} spendingPublicKey - The spending public key
+ * @returns {Object} The stealth address and private key
+ */
+export function deriveStealthAddress(sharedSecret, spendingPublicKey) {
+  try {
+    // Convert shared secret to bytes
+    const sharedSecretBytes = Buffer.from(sharedSecret, 'base64');
+    
+    // Generate stealth private key using shared secret and spending public key
+    const stealthPrivateKey = ethers.keccak256(
+      ethers.concat([
+        sharedSecretBytes,
+        ethers.getBytes(spendingPublicKey)
+      ])
+    );
+    
+    // Create stealth wallet
+    const stealthWallet = new ethers.Wallet(stealthPrivateKey);
+
+    console.log("Debug deriveStealthAddress:", {
+      sharedSecretHex: ethers.hexlify(sharedSecretBytes),
+      spendingPublicKey,
+      stealthPrivateKey,
+      stealthAddress: stealthWallet.address
+    });
+
+    return {
+      stealthPrivateKey,
+      stealthAddress: stealthWallet.address,
+      wallet: stealthWallet
+    };
+  } catch (error) {
+    console.error("Error in deriveStealthAddress:", error);
+    throw error;
+  }
+}
+
 // =============================================
 // BASIC GUN-ETH CHAIN METHODS
 // =============================================
@@ -118,6 +182,8 @@ Gun.chain.setSigner = function (newRpcUrl, newPrivateKey) {
   console.log("Standalone configuration set");
   return this;
 };
+
+Gun.chain.getSigner = getSigner();
 
 /**
  * Verifies an Ethereum signature.
@@ -428,46 +494,6 @@ Gun.chain.proof = function (chain, nodeId, data, callback) {
 Gun.chain.gunToEthAccount = function (gunPrivateKey) {
   return gunToEthAccount(gunPrivateKey);
 };
-
-/**
- * Utility function to generate stealth address
- * @param {string} sharedSecret - The shared secret
- * @param {string} spendingPublicKey - The spending public key
- * @returns {Object} The stealth address and private key
- */
-function deriveStealthAddress(sharedSecret, spendingPublicKey) {
-  try {
-    // Convert shared secret to bytes
-    const sharedSecretBytes = Buffer.from(sharedSecret, 'base64');
-    
-    // Generate stealth private key using shared secret and spending public key
-    const stealthPrivateKey = ethers.keccak256(
-      ethers.concat([
-        sharedSecretBytes,
-        ethers.getBytes(spendingPublicKey)
-      ])
-    );
-    
-    // Create stealth wallet
-    const stealthWallet = new ethers.Wallet(stealthPrivateKey);
-
-    console.log("Debug deriveStealthAddress:", {
-      sharedSecretHex: ethers.hexlify(sharedSecretBytes),
-      spendingPublicKey,
-      stealthPrivateKey,
-      stealthAddress: stealthWallet.address
-    });
-
-    return {
-      stealthPrivateKey,
-      stealthAddress: stealthWallet.address,
-      wallet: stealthWallet
-    };
-  } catch (error) {
-    console.error("Error in deriveStealthAddress:", error);
-    throw error;
-  }
-}
 
 /**
  * Generate a stealth key and related key pairs
@@ -884,4 +910,40 @@ Gun.chain.cleanStealthPayments = async function(recipientAddress) {
 // =============================================
 // EXPORTS
 // =============================================
+
+// Crea una classe GunEth che contiene tutti i metodi e le utility
+export class GunEth {
+  // Static utility methods
+  static generateRandomId = generateRandomId;
+  static generatePassword = generatePassword;
+  static gunToEthAccount = gunToEthAccount;
+  static getSigner = getSigner;
+  static deriveStealthAddress = deriveStealthAddress;
+  
+  // Chain methods
+  static chainMethods = {
+    setSigner: Gun.chain.setSigner,
+    getSigner: Gun.chain.getSigner,
+    verifySignature: Gun.chain.verifySignature,
+    generatePassword: Gun.chain.generatePassword,
+    createSignature: Gun.chain.createSignature,
+    createAndStoreEncryptedPair: Gun.chain.createAndStoreEncryptedPair,
+    getAndDecryptPair: Gun.chain.getAndDecryptPair,
+    proof: Gun.chain.proof,
+    gunToEthAccount: Gun.chain.gunToEthAccount,
+    generateStealthAddress: Gun.chain.generateStealthAddress,
+    publishStealthKeys: Gun.chain.publishStealthKeys,
+    recoverStealthFunds: Gun.chain.recoverStealthFunds,
+    announceStealthPayment: Gun.chain.announceStealthPayment,
+    getStealthPayments: Gun.chain.getStealthPayments,
+    cleanStealthPayments: Gun.chain.cleanStealthPayments
+  };
+
+  // Constants
+  static MESSAGE_TO_SIGN = MESSAGE_TO_SIGN;
+  static PROOF_CONTRACT_ADDRESS = PROOF_CONTRACT_ADDRESS;
+  static LOCAL_CONFIG = LOCAL_CONFIG;
+}
+
+// Esporta Gun come default
 export default Gun;
