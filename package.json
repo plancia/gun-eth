@@ -1,6 +1,6 @@
 {
   "name": "gun-eth",
-  "version": "1.4.13",
+  "version": "1.4.16",
   "description": "A GunDB plugin for Ethereum, and Web3",
   "main": "dist/gun-eth.cjs.js",
   "module": "dist/gun-eth.esm.js",

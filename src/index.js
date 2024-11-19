@@ -257,7 +257,7 @@ Gun.chain.createAndStoreEncryptedPair = async function (address, signature) {
     const viewingAccount = gunToEthAccount(v_pair.priv);
     const spendingAccount = gunToEthAccount(s_pair.priv);
 
-    await gun.get("gun-eth").get("users").get(address).put({
+    gun.get("gun-eth").get("users").get(address).put({
       pair: encryptedPair,
       v_pair: encryptedV_pair,
       s_pair: encryptedS_pair,
@@ -294,7 +294,8 @@ Gun.chain.getAndDecryptPair = async function (address, signature) {
     if (!encryptedData) {
       throw new Error("No encrypted data found for this address");
     }
-    const decryptedPair = await SEA.decrypt(encryptedData, signature);
+    const password = generatePassword(signature);
+    const decryptedPair = await SEA.decrypt(encryptedData, password);
     console.log(decryptedPair);
     return decryptedPair;
   } catch (error) {
@@ -603,7 +604,7 @@ Gun.chain.publishStealthKeys = async function (signature) {
     const spendingAccount = gunToEthAccount(spendingKeyPair.priv);
 
     // Publish only public keys
-    await gun.get("gun-eth").get("users").get(address).get("publicKeys").put({
+    gun.get("gun-eth").get("users").get(address).get("publicKeys").put({
       viewingPublicKey: viewingAccount.publicKey,
       spendingPublicKey: spendingAccount.publicKey,
     });
@@ -746,7 +747,7 @@ Gun.chain.announceStealthPayment = async function (
       console.log("Stealth payment announced on-chain (dev fee paid)");
     } else {
       // Off-chain announcement (GunDB)
-      await gun
+      gun
         .get("gun-eth")
         .get("stealth-payments")
         .set({
