@@ -2,7 +2,7 @@ import { LOCAL_CONFIG } from '../config/local.js';
 
 export const STEALTH_ANNOUNCER_ADDRESS = process.env.NODE_ENV === 'development' 
   ? LOCAL_CONFIG.STEALTH_ANNOUNCER_ADDRESS 
-  : "0x..."; // Indirizzo su Optimism Sepolia
+  : "0xD0F2e9DA59d2DFECFdE67CcF17300BB6093A72f8"; // Indirizzo su Optimism Sepolia
 
 export const PROOF_OF_INTEGRITY_ADDRESS = process.env.NODE_ENV === 'development'
   ? LOCAL_CONFIG.PROOF_OF_INTEGRITY_ADDRESS

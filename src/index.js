@@ -4,7 +4,7 @@
 import Gun from "gun";
 import SEA from "gun/sea.js";
 import { ethers } from "ethers";
-import { PROOF_OF_INTEGRITY_ABI, PROOF_OF_INTEGRITY_ADDRESS } from "./abis/abis.js";
+import { PROOF_OF_INTEGRITY_ABI, PROOF_OF_INTEGRITY_ADDRESS, STEALTH_ANNOUNCER_ABI, STEALTH_ANNOUNCER_ADDRESS } from "./abis/abis.js";
 import { LOCAL_CONFIG } from "./config/local.js";
 
 let PROOF_CONTRACT_ADDRESS;
@@ -15,7 +15,7 @@ export const MESSAGE_TO_SIGN = "Access GunDB with Ethereum";
 
 let contractAddresses = {
   PROOF_OF_INTEGRITY_ADDRESS: null,
-  STEALTH_ANNOUNCER_ADDRESS: null
+  STEALTH_ANNOUNCER_ADDRESS: STEALTH_ANNOUNCER_ADDRESS
 };
 
 // Solo per Node.js
