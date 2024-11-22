@@ -1,16 +1,61 @@
 import { LOCAL_CONFIG } from '../config/local.js';
 
-export const STEALTH_ANNOUNCER_ADDRESS = process.env.NODE_ENV === 'development' 
-  ? LOCAL_CONFIG.STEALTH_ANNOUNCER_ADDRESS 
-  : "0xD0F2e9DA59d2DFECFdE67CcF17300BB6093A72f8"; // Indirizzo su Optimism Sepolia
+// Indirizzi di produzione per diverse chain
+export const CHAIN_CONFIG = {
+  optimismSepolia: {
+    STEALTH_ANNOUNCER_ADDRESS: "0xD0F2e9DA59d2DFECFdE67CcF17300BB6093A72f8",
+    PROOF_OF_INTEGRITY_ADDRESS: "0x...",
+    RPC_URL: "https://sepolia.optimism.io",
+    CHAIN_ID: 11155420
+  },
+  arbitrumSepolia: {
+    STEALTH_ANNOUNCER_ADDRESS: "0x...",
+    PROOF_OF_INTEGRITY_ADDRESS: "0x...",
+    RPC_URL: "https://sepolia-rollup.arbitrum.io/rpc",
+    CHAIN_ID: 421614
+  },
+  localhost: {
+    RPC_URL: "http://127.0.0.1:8545",
+    CHAIN_ID: 1337
+  }
+};
 
-export const PROOF_OF_INTEGRITY_ADDRESS = process.env.NODE_ENV === 'development'
-  ? LOCAL_CONFIG.PROOF_OF_INTEGRITY_ADDRESS
-  : "0x..."; // Indirizzo su Optimism Sepolia
+// Funzione per ottenere gli indirizzi corretti
+export function getAddressesForChain(chainName) {
+  let config;
 
-export const RPC_URL = process.env.NODE_ENV === 'development'
-  ? LOCAL_CONFIG.RPC_URL
-  : "https://sepolia.optimism.io";
+  // Se è localhost, prova a caricare gli indirizzi locali
+  if (chainName === 'localhost') {
+    try {
+      // Carica gli indirizzi dal file generato dal deploy locale
+      const localAddresses = require('../config/contract-address.json');
+      config = {
+        ...CHAIN_CONFIG.localhost,
+        ...localAddresses
+      };
+      console.log("Using local addresses:", config);
+      return config;
+    } catch (err) {
+      console.warn('No local addresses found');
+      throw new Error('No local addresses found. Did you run local deployment?');
+    }
+  }
+
+  // Altrimenti usa gli indirizzi di produzione
+  config = CHAIN_CONFIG[chainName];
+  if (!config) {
+    throw new Error(`Chain ${chainName} not supported. Supported chains: ${Object.keys(CHAIN_CONFIG).join(', ')}`);
+  }
+
+  return config;
+}
+
+// Funzione helper per verificare se siamo in ambiente locale
+export function isLocalEnvironment() {
+  return process.env.NODE_ENV === 'development' && 
+         typeof window !== 'undefined' && 
+         window.location.hostname === 'localhost';
+}
 
 export const STEALTH_ANNOUNCER_ABI = [
   {

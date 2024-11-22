@@ -323,165 +323,164 @@ Gun.chain.proof = function (chain, nodeId, data, callback) {
     return this;
   }
 
-  const gun = this;
-
-  // Seleziona l'indirizzo basato sulla catena
-  if (chain === "optimismSepolia" || chain === "localhost") {
-    PROOF_CONTRACT_ADDRESS = process.env.NODE_ENV === 'development'
-      ? LOCAL_CONFIG.PROOF_OF_INTEGRITY_ADDRESS
-      : PROOF_OF_INTEGRITY_ADDRESS;
-      
-    console.log("Using contract address:", PROOF_CONTRACT_ADDRESS);
+  try {
+    // Se siamo in localhost e in development, usa automaticamente la chain locale
+    const targetChain = isLocalEnvironment() ? 'localhost' : chain;
+    const chainConfig = getAddressesForChain(targetChain);
     
-    if (!PROOF_CONTRACT_ADDRESS) {
-      callback({ err: "Contract address not found. Did you deploy the contract?" });
-      return this;
-    }
-  } else {
-    callback({ err: "Chain not supported" });
-    return this;
-  }
+    console.log(`Using ${targetChain} configuration:`, chainConfig);
 
-  // Funzione per verificare on-chain
-  const verifyOnChain = async (nodeId, contentHash) => {
-    console.log("Verifying on chain:", { nodeId, contentHash });
-    const signer = await getSigner();
+    // Usa gli indirizzi dalla configurazione
     const contract = new ethers.Contract(
-      PROOF_CONTRACT_ADDRESS,
+      chainConfig.PROOF_OF_INTEGRITY_ADDRESS,
       PROOF_OF_INTEGRITY_ABI,
       signer
     );
-    const [isValid, timestamp, updater] = await contract.verifyData(
-      ethers.toUtf8Bytes(nodeId),
-      contentHash
-    );
-    console.log("Verification result:", { isValid, timestamp, updater });
-    return { isValid, timestamp, updater };
-  };
 
-  // Funzione per scrivere on-chain
-  const writeOnChain = async (nodeId, contentHash) => {
-    console.log("Writing on chain:", { nodeId, contentHash });
-    const signer = await getSigner();
-    const contract = new ethers.Contract(
-      PROOF_CONTRACT_ADDRESS,
-      PROOF_OF_INTEGRITY_ABI,
-      signer
-    );
-    const tx = await contract.updateData(
-      ethers.toUtf8Bytes(nodeId),
-      contentHash
-    );
-    console.log("Transaction sent:", tx.hash);
-    const receipt = await tx.wait();
-    console.log("Transaction confirmed:", receipt);
-    return tx;
-  };
+    // Funzione per verificare on-chain
+    const verifyOnChain = async (nodeId, contentHash) => {
+      console.log("Verifying on chain:", { nodeId, contentHash });
+      const signer = await getSigner();
+      const contract = new ethers.Contract(
+        PROOF_CONTRACT_ADDRESS,
+        PROOF_OF_INTEGRITY_ABI,
+        signer
+      );
+      const [isValid, timestamp, updater] = await contract.verifyData(
+        ethers.toUtf8Bytes(nodeId),
+        contentHash
+      );
+      console.log("Verification result:", { isValid, timestamp, updater });
+      return { isValid, timestamp, updater };
+    };
 
-  // Funzione per ottenere l'ultimo record
-  const getLatestRecord = async (nodeId) => {
-    const signer = await getSigner();
-    const contract = new ethers.Contract(
-      PROOF_CONTRACT_ADDRESS,
-      PROOF_OF_INTEGRITY_ABI,
-      signer
-    );
-    const [contentHash, timestamp, updater] = await contract.getLatestRecord(
-      ethers.toUtf8Bytes(nodeId)
-    );
-    console.log("Latest record from blockchain:", {
-      nodeId,
-      contentHash,
-      timestamp,
-      updater,
-    });
-    return { contentHash, timestamp, updater };
-  };
+    // Funzione per scrivere on-chain
+    const writeOnChain = async (nodeId, contentHash) => {
+      console.log("Writing on chain:", { nodeId, contentHash });
+      const signer = await getSigner();
+      const contract = new ethers.Contract(
+        PROOF_CONTRACT_ADDRESS,
+        PROOF_OF_INTEGRITY_ABI,
+        signer
+      );
+      const tx = await contract.updateData(
+        ethers.toUtf8Bytes(nodeId),
+        contentHash
+      );
+      console.log("Transaction sent:", tx.hash);
+      const receipt = await tx.wait();
+      console.log("Transaction confirmed:", receipt);
+      return tx;
+    };
 
-  
-  if (nodeId && !data) {
-    // Case 1: User passes only node
-    gun.get(nodeId).once(async (existingData) => {
-      if (!existingData) {
-        if (callback) callback({ err: "Node not found in GunDB" });
-        return;
-      }
+    // Funzione per ottenere l'ultimo record
+    const getLatestRecord = async (nodeId) => {
+      const signer = await getSigner();
+      const contract = new ethers.Contract(
+        PROOF_CONTRACT_ADDRESS,
+        PROOF_OF_INTEGRITY_ABI,
+        signer
+      );
+      const [contentHash, timestamp, updater] = await contract.getLatestRecord(
+        ethers.toUtf8Bytes(nodeId)
+      );
+      console.log("Latest record from blockchain:", {
+        nodeId,
+        contentHash,
+        timestamp,
+        updater,
+      });
+      return { contentHash, timestamp, updater };
+    };
 
-      console.log("existingData", existingData);
-
-      // Use stored contentHash instead of recalculating
-      const contentHash = existingData._contentHash;
-      console.log("contentHash", contentHash);
-
-      if (!contentHash) {
-        if (callback) callback({ err: "No content hash found for this node" });
-        return;
-      }
-
-      try {
-        const { isValid, timestamp, updater } = await verifyOnChain(
-          nodeId,
-          contentHash
-        );
-        const latestRecord = await getLatestRecord(nodeId);
-
-        if (isValid) {
-          if (callback)
-            callback({
-              ok: true,
-              message: "Data verified on blockchain",
-              timestamp,
-              updater,
-              latestRecord,
-            });
-        } else {
-          if (callback)
-            callback({
-              ok: false,
-              message: "Data not verified on blockchain",
-              latestRecord,
-            });
+    
+    if (nodeId && !data) {
+      // Case 1: User passes only node
+      gun.get(nodeId).once(async (existingData) => {
+        if (!existingData) {
+          if (callback) callback({ err: "Node not found in GunDB" });
+          return;
         }
-      } catch (error) {
-        if (callback) callback({ err: error.message });
-      }
-    });
-  } else if (data && !nodeId) {
-    // Case 2: User passes only text (data)
-    const newNodeId = generateRandomId();
-    const dataString = JSON.stringify(data);
-    const contentHash = ethers.keccak256(ethers.toUtf8Bytes(dataString));
 
-    gun
-      .get(newNodeId)
-      .put({ ...data, _contentHash: contentHash }, async (ack) => {
-        console.log("ack", ack);
-        if (ack.err) {
-          if (callback) callback({ err: "Error saving data to GunDB" });
+        console.log("existingData", existingData);
+
+        // Use stored contentHash instead of recalculating
+        const contentHash = existingData._contentHash;
+        console.log("contentHash", contentHash);
+
+        if (!contentHash) {
+          if (callback) callback({ err: "No content hash found for this node" });
           return;
         }
 
         try {
-          const tx = await writeOnChain(newNodeId, contentHash);
-          if (callback)
-            callback({
-              ok: true,
-              message: "Data written to GunDB and blockchain",
-              nodeId: newNodeId,
-              txHash: tx.hash,
-            });
+          const { isValid, timestamp, updater } = await verifyOnChain(
+            nodeId,
+            contentHash
+          );
+          const latestRecord = await getLatestRecord(nodeId);
+
+          if (isValid) {
+            if (callback)
+              callback({
+                ok: true,
+                message: "Data verified on blockchain",
+                timestamp,
+                updater,
+                latestRecord,
+              });
+          } else {
+            if (callback)
+              callback({
+                ok: false,
+                message: "Data not verified on blockchain",
+                latestRecord,
+              });
+          }
         } catch (error) {
           if (callback) callback({ err: error.message });
         }
       });
-  } else {
-    if (callback)
-      callback({
-        err: "Invalid input. Provide either nodeId or data, not both.",
-      });
-  }
+    } else if (data && !nodeId) {
+      // Case 2: User passes only text (data)
+      const newNodeId = generateRandomId();
+      const dataString = JSON.stringify(data);
+      const contentHash = ethers.keccak256(ethers.toUtf8Bytes(dataString));
 
-  return gun;
+      gun
+        .get(newNodeId)
+        .put({ ...data, _contentHash: contentHash }, async (ack) => {
+          console.log("ack", ack);
+          if (ack.err) {
+            if (callback) callback({ err: "Error saving data to GunDB" });
+            return;
+          }
+
+          try {
+            const tx = await writeOnChain(newNodeId, contentHash);
+            if (callback)
+              callback({
+                ok: true,
+                message: "Data written to GunDB and blockchain",
+                nodeId: newNodeId,
+                txHash: tx.hash,
+              });
+          } catch (error) {
+            if (callback) callback({ err: error.message });
+          }
+        });
+    } else {
+      if (callback)
+        callback({
+          err: "Invalid input. Provide either nodeId or data, not both.",
+        });
+    }
+
+    return gun;
+  } catch (error) {
+    callback({ err: error.message });
+    return this;
+  }
 };
 
 // =============================================
@@ -707,7 +706,7 @@ Gun.chain.announceStealthPayment = async function (
   senderPublicKey,
   spendingPublicKey,
   signature,
-  options = { onChain: false }
+  options = { onChain: false, chain: 'optimismSepolia' }
 ) {
   try {
     const gun = this;
@@ -716,9 +715,8 @@ Gun.chain.announceStealthPayment = async function (
     if (options.onChain) {
       // On-chain announcement
       const signer = await getSigner();
-      const contractAddress = process.env.NODE_ENV === 'development' 
-        ? LOCAL_CONFIG.STEALTH_ANNOUNCER_ADDRESS 
-        : STEALTH_ANNOUNCER_ADDRESS;
+      const chainAddresses = getAddressesForChain(options.chain);
+      const contractAddress = chainAddresses.STEALTH_ANNOUNCER_ADDRESS;
 
       console.log("Using contract address:", contractAddress);
 
