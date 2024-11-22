@@ -1,5 +1,6 @@
 import Gun from 'gun';
 import GunEth from "../node/gun-eth-node.js";
+import { isLocalEnvironment } from '../src/abis/abis.js';
 
 // Extend Gun with GunEth functionality
 Object.assign(Gun.chain, GunEth.chain);
@@ -19,6 +20,10 @@ async function stealthExample() {
     const gun = Gun({
       peers: ['http://localhost:8765/gun']
     });
+
+    // Determina la chain da usare
+    const chain = isLocalEnvironment() ? 'localhost' : 'optimismSepolia';
+    console.log(`Using chain: ${chain}`);
 
     console.log("🚀 Initializing stealth protocol...");
 
@@ -56,7 +61,10 @@ async function stealthExample() {
       stealthInfo.senderPublicKey,
       stealthInfo.spendingPublicKey,
       bobSignature,
-      { onChain: true }
+      { 
+        onChain: true,
+        chain: chain 
+      }
     );
 
     // Simulate ETH transfer

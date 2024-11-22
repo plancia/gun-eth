@@ -1,6 +1,7 @@
 import Gun from 'gun';
 import GunEth from "../node/gun-eth-node.js";
 import { ethers } from 'ethers';
+import { isLocalEnvironment } from '../src/abis/abis.js';
 
 // Extend Gun with GunEth functionality
 Object.assign(Gun.chain, GunEth.chain);
@@ -34,11 +35,15 @@ async function proofExample() {
       author: "Alice"
     };
 
+    // Determina la chain da usare
+    const chain = isLocalEnvironment() ? 'localhost' : 'optimismSepolia';
+    console.log(`Using chain: ${chain}`);
+
     // Write data to GunDB and blockchain
     console.log("\n📝 Writing data to GunDB and blockchain...");
     
     return new Promise((resolve, reject) => {
-      gun.proof("localhost", null, data, async (ack) => {
+      gun.proof(chain, null, data, async (ack) => {
         if (ack.err) {
           console.error("❌ Error:", ack.err);
           reject(new Error(ack.err));

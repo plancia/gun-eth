@@ -83,6 +83,13 @@
         <label for="privateKey">Private Key:</label>
         <input type="password" id="privateKey" name="privateKey" required />
         <br />
+        <label for="chain">Chain:</label>
+        <select id="chain" name="chain">
+          <option value="optimismSepolia">Optimism Sepolia</option>
+          <option value="arbitrumSepolia">Arbitrum Sepolia</option>
+          <option value="localhost">Localhost</option>
+        </select>
+        <br />
         <button type="submit">Configure</button>
       </form>
       <div id="configStatus">Status: Not Configured</div>
@@ -143,6 +150,7 @@
           event.preventDefault();
           const rpcUrl = document.getElementById("rpcUrl").value;
           const privateKey = document.getElementById("privateKey").value;
+          const chain = document.getElementById("chain").value;
 
           // Configure Gun with the provided details
           gun = Gun();
@@ -163,13 +171,12 @@
             return;
           }
           const data = document.getElementById("data").value;
+          const chain = document.getElementById("chain").value;
           const resultElement = document.getElementById("writeResult");
           resultElement.textContent = "Writing data...";
 
-          // Assicurati che `data` sia un oggetto JSON valido
-
-          gun.shine("optimismSepolia", null, data, function (result) {
-            console.log("Shine result:", result);
+          gun.proof(chain, null, data, function (result) {
+            console.log("Proof result:", result);
             if (result.ok) {
               resultElement.textContent =
                 "Data successfully written: " + result.nodeId;
