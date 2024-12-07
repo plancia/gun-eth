@@ -1,0 +1,598 @@
+/* Variables */
+:root {
+    --bg-dark: #0a1525;
+    --bg-darker: #061020;
+    --bg-code: #0d1b2d;
+    --bg-hover: #1a2638;
+    --text: #e6f1ff;
+    --text-dim: #636e7b;
+    --primary: #00c2ff;
+    --secondary: #50fa7b;
+    --accent: #ff79c6;
+    --warning: #f1fa8c;
+    --error: #ff5555;
+    --comment: #636e7b;
+    --punctuation: #6272a4;
+    --property: #8be9fd;
+}
+
+/* Base Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-darker);
+    color: var(--text);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navigation */
+.nav {
+    background: var(--bg-dark);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.nav-logo {
+    color: #00c2ff;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-link {
+    color: #e6f1ff;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.2s;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #00c2ff;
+}
+
+/* Hero Section */
+.hero {
+    padding: 6rem 0;
+    text-align: center;
+    background: linear-gradient(to bottom, var(--bg-darker), var(--bg-dark));
+    padding-top: 120px;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Code Blocks - New Style */
+.code-block, .code-window {
+    background: #0d1b2d;
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: 'Fira Code', monospace;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.code-content {
+    padding: 20px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #e6f1ff;
+}
+
+.code-line {
+    display: flex;
+    min-height: 24px;
+    padding: 0 8px;
+}
+
+.code-line:hover {
+    background: #1a2638;
+}
+
+/* Syntax Highlighting - New Style */
+.comment {
+    color: #636e7b;
+    font-style: italic;
+}
+
+.command {
+    color: #00c2ff;
+    font-weight: 500;
+}
+
+.package {
+    color: #50fa7b;
+    font-weight: 500;
+}
+
+.keyword {
+    color: #ff79c6;
+    font-weight: 500;
+}
+
+.string {
+    color: #f1fa8c;
+    font-weight: 500;
+}
+
+.operator {
+    color: #ff79c6;
+    font-weight: 500;
+}
+
+.punctuation {
+    color: #6272a4;
+}
+
+.property {
+    color: #50fa7b;
+    font-weight: 500;
+}
+
+.value {
+    color: #bd93f9;
+    font-weight: 500;
+}
+
+.function {
+    color: #00c2ff;
+    font-weight: 500;
+}
+
+/* Code Header and Tabs */
+.code-header {
+    background: #1a2638;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.code-header h4 {
+    color: #e6f1ff;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.code-tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.code-tabs button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.code-tabs button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.code-tabs button.active {
+    background: var(--primary);
+    color: var(--bg-darker);
+    border-color: var(--primary);
+}
+
+/* Features Section */
+.feature-section {
+    padding: 4rem 0;
+    background: var(--bg-dark);
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.feature-card {
+    background: var(--bg-darker);
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.feature-title {
+    color: var(--primary);
+    margin: 0.5rem 0;
+}
+
+/* Documentation Section */
+.dark-section {
+    background: var(--bg-darker);
+    padding: 4rem 0;
+}
+
+.doc-section {
+    margin-bottom: 4rem;
+}
+
+.section-title {
+    text-align: center;
+    color: var(--primary);
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.section-subtitle {
+    color: var(--primary);
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Steps */
+.steps-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin: 3rem 0;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.step-number {
+    background: var(--primary);
+    color: var(--bg-darker);
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.step-content h4 {
+    color: var(--text);
+    margin: 0 0 0.5rem;
+}
+
+.step-content p {
+    color: var(--text-dim);
+    margin: 0;
+}
+
+/* Footer */
+.footer {
+    background: var(--bg-darker);
+    padding: 2rem 0;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-text {
+    color: var(--text-dim);
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: var(--bg-darker);
+}
+
+.btn-primary:hover {
+    background: var(--secondary);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--text);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .nav-links {
+        display: none;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .steps-container {
+        grid-template-columns: 1fr;
+    }
+
+    .code-content {
+        font-size: 13px;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.5rem;
+    }
+}
+
+/* Glow Effect */
+.glow-text {
+    text-shadow: 0 0 10px rgba(0, 194, 255, 0.5);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-hover);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Code Window Enhancements */
+.code-window {
+    background: #0d1b2d;
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: 'Fira Code', monospace;
+}
+
+.code-window pre {
+    margin: 0;
+    padding: 1.5rem;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #e6f1ff;
+    background: transparent;
+}
+
+.code-window code {
+    font-family: 'Fira Code', monospace;
+}
+
+/* Syntax Colors - Enhanced */
+.comment {
+    color: #636e7b;
+    font-style: italic;
+}
+
+.keyword, .const, .import, .from, .async, .await {
+    color: #ff79c6;
+    font-weight: 500;
+}
+
+.string, .boolean {
+    color: #f1fa8c;
+    font-weight: 500;
+}
+
+.function, .method {
+    color: #50fa7b;
+    font-weight: 500;
+}
+
+.variable, .parameter {
+    color: #bd93f9;
+    font-weight: 500;
+}
+
+.operator, .punctuation {
+    color: #ff79c6;
+    font-weight: 500;
+}
+
+.property, .object {
+    color: #8be9fd;
+    font-weight: 500;
+}
+
+.number {
+    color: #bd93f9;
+    font-weight: 500;
+}
+
+/* Tab Navigation */
+.code-header {
+    background: #1a2638;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.code-header h4 {
+    color: #e6f1ff;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.code-tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.code-tabs button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e6f1ff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.code-tabs button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.code-tabs button.active {
+    background: #00c2ff;
+    color: #0d1b2d;
+    border-color: #00c2ff;
+}
+
+/* Tab Content */
+.tab-content {
+    display: none;
+    background: #0d1b2d;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Line Highlighting */
+.code-line {
+    display: block;
+    padding: 0 8px;
+    min-height: 24px;
+    line-height: 24px;
+}
+
+.code-line:hover {
+    background: #1a2638;
+}
+
+/* Section Icons */
+.section-icon {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+/* Documentation Section */
+.doc-section {
+    margin-bottom: 3rem;
+}
+
+.doc-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.doc-title {
+    color: #00c2ff;
+    font-size: 1.5rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Why Section Styles */
+.why-section {
+    padding: 6rem 0;
+    background: var(--background);
+}
+
+.why-description {
+    color: var(--text);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin: 1.5rem 0;
+    opacity: 0.9;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.why-description:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}

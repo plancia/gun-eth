@@ -1,0 +1,429 @@
+/**
+ * @typedef {Object} ExtendedSigner
+ * @property {string} address - Ethereum address
+ * @property {string} privateKey - Private key
+ * @property {function(string): Promise<string>} signMessage - Signs a message
+ * @property {function(): Promise<string>} getAddress - Gets the signer address
+ * @property {Object} provider - Provider instance
+ */
+
+/**
+ * @typedef {Object} GunEthAccount
+ * @property {Object} account - Ethereum wallet instance
+ * @property {string} publicKey - Public key
+ * @property {string} privateKey - Private key
+ */
+
+/**
+ * @typedef {Object} EncryptedKeyPairs
+ * @property {Object} pair - Main keypair
+ * @property {Object} v_pair - Viewing keypair
+ * @property {Object} s_pair - Spending keypair
+ * @property {string} ethAddress - Ethereum address
+ * @property {string} ethPrivateKey - Ethereum private key
+ * @property {Object} env_pair - Encrypted main pair
+ * @property {Object} env_v_pair - Encrypted viewing pair
+ * @property {Object} env_s_pair - Encrypted spending pair
+ * @property {Object} publicKeys - Public keys
+ * @property {string} publicKeys.viewingPublicKey - Viewing public key
+ * @property {string} publicKeys.spendingPublicKey - Spending public key
+ * @property {string} publicKeys.ethViewingAddress - Ethereum viewing address
+ */
+
+/**
+ * @typedef {Object} ExtendedGunChain
+ * @property {string} MESSAGE_TO_SIGN - Message to sign
+ * @property {function} setSigner - Set signer function
+ * @property {function} getSigner - Get signer function
+ * @property {function} verifySignature - Verify signature function
+ * @property {function} generatePassword - Generate password function
+ * @property {function} createSignature - Create signature function
+ * @property {function} createAndStoreEncryptedPair - Create and store encrypted pair function
+ * @property {function} getAndDecryptPair - Get and decrypt pair function
+ * @property {function} ethToGunAccount - Convert ETH to Gun account function
+ * @property {function} gunToEthAccount - Convert Gun to ETH account function
+ * @property {function} getAddressesForChain - Get addresses for chain function
+ */
+
+/**
+ * @typedef {Object} ContractAddresses
+ * @property {string} PROOF_OF_INTEGRITY_ADDRESS - Address of ProofOfIntegrity contract
+ * @property {string} STEALTH_ANNOUNCER_ADDRESS - Address of StealthAnnouncer contract
+ */
+
+/**
+ * @typedef {Object} GunEthStatic
+ * @property {Object|null} keypair - Main keypair
+ * @property {Object|null} v_keypair - Viewing keypair
+ * @property {Object|null} s_keypair - Spending keypair
+ * @property {function(): string} generateRandomId - Generates random ID
+ * @property {function(string): string} generatePassword - Generates password from signature
+ * @property {function(string): Promise<GunEthAccount>} gunToEthAccount - Converts Gun to ETH account
+ * @property {function(Object, string): Promise<Object|null>} decryptPair - Decrypts keypair
+ * @property {function(Object, string): Promise<Object>} decryptPairFromPassword - Decrypts keypair with password
+ * @property {function(): Promise<EncryptedKeyPairs>} ethToGunAccount - Converts ETH to Gun account
+ * @property {function(string): Promise<ExtendedSigner>} getSigner - Gets Ethereum signer
+ * @property {function(string, string): Promise<string|null>} verifySignature - Verifies signature
+ * @property {string} MESSAGE_TO_SIGN - Message to sign constant
+ * @property {Object} LOCAL_CONFIG - Local configuration
+ * @property {ContractAddresses} contractAddresses - Contract addresses
+ * @property {function(string): Object} getContractAddresses - Gets contract addresses
+ * @property {function(Object): void} extendGun - Extends Gun with additional functionality
+ */
+
+import { ethers } from "ethers";
+import Gun from "gun";
+import SEA from "gun/sea.js";
+
+import {
+  PROOF_OF_INTEGRITY_ADDRESS,
+  STEALTH_ANNOUNCER_ADDRESS,
+  getAddressesForChain,
+  isLocalEnvironment,
+} from "../constants/abis.js";
+
+import { LOCAL_CONFIG } from "../config/local.js";
+import { encrypt, decrypt } from '../utils/encryption.js';
+import { 
+  generateRandomId, 
+  getContractAddresses,
+  getSigner as getCommonSigner 
+} from '../utils/common.js';
+
+export const MESSAGE_TO_SIGN = "Access GunDB with Ethereum";
+
+let contractAddresses = {
+  PROOF_OF_INTEGRITY_ADDRESS,
+  STEALTH_ANNOUNCER_ADDRESS,
+};
+
+let rpcUrl = "";
+let privateKey = "";
+
+// =============================================
+// INITIALIZATION
+// =============================================
+
+async function initializeTextEncoder() {
+  if (typeof window === "undefined") {
+    const util = await import("util");
+    global.TextEncoder = util.TextEncoder;
+    global.TextDecoder = util.TextDecoder;
+  }
+}
+
+async function initialize(chain = 'localhost') {
+  await initializeTextEncoder();
+  
+  if (isLocalEnvironment) {
+    contractAddresses = getContractAddresses(chain);
+  } else {
+    contractAddresses = getContractAddresses(chain);
+  }
+  
+  return contractAddresses;
+}
+
+// =============================================
+// UTILITY FUNCTIONS
+// =============================================
+
+/**
+ * @param {string} newRpcUrl - RPC URL for the provider
+ * @param {string} newPrivateKey - Private key for the signer
+ * @returns {void}
+ */
+export function setSigner(newRpcUrl, newPrivateKey) {
+  rpcUrl = newRpcUrl;
+  privateKey = newPrivateKey;
+  console.log("Standalone configuration set");
+}
+
+/**
+ * @param {string} [chain='localhost'] - Chain identifier
+ * @returns {Promise<ExtendedSigner>} Ethereum signer instance
+ */
+export async function getSigner(chain = 'localhost') {
+  // Se c'è un test signer, usalo
+  if (testSigner) {
+    return testSigner;
+  }
+
+  // Usa il signer da common.js
+  return getCommonSigner(chain);
+}
+
+/**
+ * @param {string} signature - Ethereum signature
+ * @returns {string|null} Generated password hash or null if error
+ */
+export function generatePassword(signature) {
+  try {
+    const hexSignature = ethers.hexlify(signature);
+    const hash = ethers.keccak256(hexSignature);
+    console.log("Generated password:", hash);
+    return hash;
+  } catch (error) {
+    console.error("Error generating password:", error);
+    return null;
+  }
+}
+
+/**
+ * @param {string} gunPrivateKey - Gun private key in base64url format
+ * @returns {GunEthAccount} Ethereum account details
+ */
+export function gunToEthAccount(gunPrivateKey) {
+  const base64UrlToHex = (base64url) => {
+    const padding = "=".repeat((4 - (base64url.length % 4)) % 4);
+    const base64 = base64url.replace(/-/g, "+").replace(/_/g, "/") + padding;
+    const binary = atob(base64);
+    return Array.from(binary, (char) =>
+      char.charCodeAt(0).toString(16).padStart(2, "0")
+    ).join("");
+  };
+
+  const hexPrivateKey = "0x" + base64UrlToHex(gunPrivateKey);
+  const wallet = new ethers.Wallet(hexPrivateKey);
+
+  return {
+    account: wallet,
+    publicKey: wallet.address,
+    privateKey: hexPrivateKey
+  };
+}
+
+/**
+ * @param {Object} encryptedPair - Encrypted key pair
+ * @param {string} password - Decryption password
+ * @returns {Promise<Object|null>} Decrypted key pair or null if error
+ */
+export async function decryptPair(encryptedPair, password) {
+  try {
+    const keypair = {
+      epriv: password,
+      epub: password
+    };
+    return await decrypt(encryptedPair, keypair);
+  } catch (error) {
+    console.error("Error decrypting key pair:", error);
+    return null;
+  }
+}
+
+export function decryptPairFromPassword(encryptedPair, password) {
+  const encryptionKeypair = {
+    epriv: password,
+    epub: password
+  };
+  return decrypt(encryptedPair, encryptionKeypair);
+}
+
+/**
+ * @returns {Promise<EncryptedKeyPairs>} Generated and encrypted key pairs
+ */
+export async function ethToGunAccount() {
+  const signer = /** @type {ExtendedSigner} */ (await getSigner());
+  const signature = await signer.signMessage(MESSAGE_TO_SIGN);
+  const password = generatePassword(signature);
+  
+  const pair = await SEA.pair();
+  const v_pair = await SEA.pair();
+  const s_pair = await SEA.pair();
+
+  const encryptedPair = await encrypt(pair, password);
+  const encryptedV_pair = await encrypt(v_pair, password);
+  const encryptedS_pair = await encrypt(s_pair, password);
+
+  const viewingAccount = await gunToEthAccount(v_pair.priv);
+  const spendingAccount = await gunToEthAccount(s_pair.priv);
+
+  return {
+    pair: pair,
+    v_pair: v_pair,
+    s_pair: s_pair,
+    ethAddress: signer.address,
+    ethPrivateKey: signer.privateKey,
+    env_pair: encryptedPair,
+    env_v_pair: encryptedV_pair,
+    env_s_pair: encryptedS_pair,
+    publicKeys: {
+      viewingPublicKey: v_pair.epub,
+      spendingPublicKey: spendingAccount.publicKey,
+      ethViewingAddress: viewingAccount.publicKey,
+    },
+  };
+}
+
+// Test utilities
+let testSigner = null;
+
+export function setTestSigner(signer) {
+  testSigner = signer;
+}
+
+export function resetTestSigner() {
+  testSigner = null;
+}
+
+/**
+ * @param {string} message - Message to sign
+ * @returns {Promise<string|null>} Signature or null if error
+ */
+export async function createSignature(message) {
+  try {
+    if (message !== MESSAGE_TO_SIGN) {
+      throw new Error("Invalid message, valid message is: " + MESSAGE_TO_SIGN);
+    }
+    const signer = await getCommonSigner();
+    if (!signer) {
+      throw new Error("No signer available");
+    }
+    const signature = await signer.signMessage(message);
+    console.log("Signature created:", signature);
+    return signature;
+  } catch (error) {
+    console.error("Error creating signature:", error);
+    return null;
+  }
+}
+
+/**
+ * @param {string} message - Message that was signed
+ * @param {string} signature - Ethereum signature
+ * @returns {Promise<string|null>} Recovered address or null if error
+ */
+export async function verifySignature(message, signature) {
+  try {
+    const recoveredAddress = ethers.verifyMessage(message, signature);
+    return recoveredAddress;
+  } catch (error) {
+    console.error("Error verifying signature:", error);
+    return null;
+  }
+}
+
+/**
+ * @param {string} address - Ethereum address
+ * @returns {Promise<void>}
+ */
+export async function createAndStoreEncryptedPair(address) {
+  const gun = this;
+  try {
+    const { pair, v_pair, s_pair, publicKeys } = await ethToGunAccount();
+    gun.get("gun-eth")
+      .get("users")
+      .get(address)
+      .put({
+        pair,
+        v_pair,
+        s_pair,
+        publicKeys
+      });
+
+    console.log("Encrypted pairs and public keys stored for:", address);
+  } catch (error) {
+    console.error("Error creating and storing encrypted pair:", error);
+    throw error;
+  }
+};
+
+/**
+ * @param {string} address - Ethereum address
+ * @param {string} signature - Ethereum signature
+ * @returns {Promise<Object|null>} Decrypted key pair or null if error
+ */
+export async function getAndDecryptPair(address, signature) {
+  try {
+    const gun = this;
+    const encryptedData = await gun
+      .get("gun-eth")
+      .get("users")
+      .get(address)
+      .get("pair")
+      .then();
+      
+    if (!encryptedData) {
+      throw new Error("No encrypted data found for this address");
+    }
+
+    const password = generatePassword(signature);
+    const decryptedPair = await decrypt(encryptedData, {
+      epriv: password,
+      epub: password
+    });
+
+    console.log(decryptedPair);
+    return decryptedPair;
+  } catch (error) {
+    console.error("Error retrieving and decrypting pair:", error);
+    return null;
+  }
+};
+
+// =============================================
+// GUN CHAIN METHODS
+// =============================================
+
+/** @type {ExtendedGunChain} */
+const gunChain = /** @type {ExtendedGunChain} */ (/** @type {any} */ (Gun.chain));
+
+gunChain.MESSAGE_TO_SIGN = MESSAGE_TO_SIGN;
+gunChain.setSigner = setSigner;
+gunChain.getSigner = getSigner;
+gunChain.verifySignature = verifySignature;
+gunChain.generatePassword = generatePassword;
+gunChain.createSignature = createSignature;
+gunChain.createAndStoreEncryptedPair = createAndStoreEncryptedPair;
+gunChain.getAndDecryptPair = getAndDecryptPair;
+gunChain.ethToGunAccount = ethToGunAccount;
+gunChain.gunToEthAccount = gunToEthAccount;
+gunChain.getAddressesForChain = getAddressesForChain;
+
+// =============================================
+// INITIALIZE FEATURES
+// =============================================
+
+ProofChain.extendGun(Gun);
+
+// =============================================
+// EXPORTS
+// =============================================
+
+/** @type {GunEthStatic} */
+export class GunEth {
+  static async init(chain = 'localhost') {
+    const addresses = await initialize(chain);
+    console.log('Initialized with addresses:', addresses);
+    return this;
+  }
+
+  static keypair = null;
+  static v_keypair = null; 
+  static s_keypair = null;
+
+  // Static utility methods
+  static generateRandomId = generateRandomId;
+  static generatePassword = generatePassword;
+  static gunToEthAccount = gunToEthAccount;
+  static decryptPair = decryptPair;
+  static decryptPairFromPassword = decryptPairFromPassword;
+  static ethToGunAccount = ethToGunAccount;
+  static getSigner = getSigner;
+  static verifySignature = verifySignature;
+
+  // Constants
+  static MESSAGE_TO_SIGN = MESSAGE_TO_SIGN;
+  static LOCAL_CONFIG = LOCAL_CONFIG;
+  static contractAddresses = contractAddresses;
+
+  // Methods
+  static getContractAddresses = getContractAddresses;
+
+  static extendGun(Gun) {
+    ProofChain.extendGun(Gun);
+  }
+}
+
+// Re-export le funzioni da common.js
+export { generateRandomId, getContractAddresses };

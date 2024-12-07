@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gun-ETH - Advanced Blockchain Storage System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.code-demo').forEach(demo => {
+                const tabs = demo.querySelectorAll('.code-tabs button');
+                const contents = demo.querySelectorAll('.tab-content');
+
+                // Mostra il primo contenuto e attiva il primo tab
+                if (contents.length > 0) {
+                    contents[0].style.display = 'block';
+                }
+                if (tabs.length > 0) {
+                    tabs[0].classList.add('active');
+                }
+
+                tabs.forEach((tab, index) => {
+                    tab.addEventListener('click', () => {
+                        // Disattiva tutti i tab e nascondi tutti i contenuti
+                        tabs.forEach(t => t.classList.remove('active'));
+                        contents.forEach(c => c.style.display = 'none');
+
+                        // Attiva il tab corrente e mostra il contenuto corrispondente
+                        tab.classList.add('active');
+                        contents[index].style.display = 'block';
+                    });
+                });
+            });
+        });
+    </script>
+    <style>
+        /* Code Demo Tabs */
+        .code-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
+
+        .code-tabs button {
+            background: none;
+            border: 1px solid rgba(0, 194, 255, 0.1);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .code-tabs button:hover {
+            border-color: var(--primary);
+            background: rgba(0, 194, 255, 0.1);
+            opacity: 1;
+        }
+
+        .code-tabs button.active {
+            background: var(--primary);
+            color: var(--background);
+            border-color: var(--primary);
+            opacity: 1;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        /* Code Window */
+        .code-window {
+            background: rgba(10, 25, 47, 0.7);
+            border: 1px solid rgba(0, 194, 255, 0.1);
+            border-radius: 0 0 0.5rem 0.5rem;
+            overflow: hidden;
+        }
+
+        .code-window pre {
+            margin: 0;
+            padding: 1.5rem;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(0, 194, 255, 0.1);
+        }
+
+        .code-header h4 {
+            margin: 0;
+            color: var(--text);
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container nav-content">
+            <a href="#" class="nav-logo">Gun-ETH</a>
+            <div class="nav-links">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#quick-start" class="nav-link">Quick Start</a>
+                <a href="#docs" class="nav-link">Documentation</a>
+                <a href="https://github.com/scobru/gun-eth" target="_blank" class="nav-link">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-content">
+            <h1 class="hero-title">Gun.js Blockchain Extension</h1>
+            <p class="hero-subtitle">
+                A powerful plugin that extends Gun.js with blockchain capabilities, stealth transactions, and encrypted storage
+            </p>
+            <div class="hero-buttons">
+                <a href="#quick-start" class="btn btn-primary">Get Started</a>
+                <a href="https://github.com/scobru/gun-eth" target="_blank" class="btn btn-secondary">View on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Gun-ETH Section -->
+    <section class="why-section">
+        <div class="container">
+            <h2 class="section-title glow-text">✨ Why Gun-ETH?</h2>
+            
+            <p class="why-description">
+                🎯 Gun-ETH is a powerful plugin for Gun.js that extends its capabilities by adding advanced blockchain and cryptographic features to create more secure and private decentralized applications.
+            </p>
+
+            <p class="why-description">
+                🌐 Seamlessly integrating with Gun.js, Gun-ETH adds privacy layers through stealth transactions, proof chains, and encrypted bubbles, while maintaining Gun's signature simplicity and flexibility.
+            </p>
+
+            <p class="why-description">
+                🚀 With a modular architecture and intuitive APIs, Gun-ETH enables developers to easily implement blockchain and Web3 features in their Gun applications, bridging decentralized storage with Ethereum smart contracts.
+            </p>
+        </div>
+    </section>
+
+    <!-- Features Overview -->
+    <section class="feature-section">
+        <div class="container">
+            <h2 class="section-title glow-text">Core Features</h2>
+            <div class="feature-grid">
+                <!-- Stealth Feature -->
+                <div class="feature-card">
+                    <div class="card-icon">🔒</div>
+                    <h3 class="feature-title">Stealth Chain</h3>
+                    <p>Private transactions with stealth addresses for maximum privacy</p>
+                </div>
+
+                <!-- Proof Chain Feature -->
+                <div class="feature-card">
+                    <div class="card-icon">⛓️</div>
+                    <h3 class="feature-title">Proof Chain</h3>
+                    <p>Cryptographic data verification with blockchain anchoring</p>
+                </div>
+
+                <!-- Bubble Feature -->
+                <div class="feature-card">
+                    <div class="card-icon">🫧</div>
+                    <h3 class="feature-title">Encrypted Bubbles</h3>
+                    <p>Secure data containers with end-to-end encryption</p>
+                </div>
+
+                <!-- Gun-Eth Integration -->
+                <div class="feature-card">
+                    <div class="card-icon">🔐</div>
+                    <h3 class="feature-title">Web3 Integration</h3>
+                    <p>Seamless integration between Gun and Ethereum</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Documentation Sections -->
+    <section id="docs" class="dark-section">
+        <div class="container">
+            <h2 class="section-title glow-text">Documentation</h2>
+            
+            <!-- Stealth Chain Documentation -->
+            <div class="doc-section">
+                <h3 class="section-subtitle">🔒 Stealth Chain</h3>
+                <div class="code-demo">
+                    <div class="code-header">
+                        <h4>Initial Setup</h4>
+                        <div class="code-tabs">
+                            <button>Setup</button>
+                            <button>Keys</button>
+                            <button>Transactions</button>
+                        </div>
+                    </div>
+                    <div class="code-window">
+                        <!-- Setup Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Initialize StealthChain
+import { StealthChain } from 'gun-eth';
+import Gun from 'gun';
+
+const gun = Gun({
+    peers: ['your-gun-peer']
+});
+
+const stealthChain = new StealthChain(gun);</code></pre>
+                        </div>
+                        
+                        <!-- Keys Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Create and publish stealth keys
+const signature = await createSignature(MESSAGE_TO_SIGN);
+await stealthChain.publishStealthKeys(signature);
+
+// Verify key publication
+await waitForGunData(
+    gun,
+    'gun-eth/users/' + userAddress + '/publicKeys',
+    data => data?.viewingPublicKey && data?.spendingPublicKey
+);</code></pre>
+                        </div>
+
+                        <!-- Transactions Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Generate stealth address
+const stealthInfo = await stealthChain.generateStealthAddress(
+    recipientAddress,
+    senderSignature
+);
+
+// Announce payment
+await stealthChain.announceStealthPayment(
+    stealthInfo.stealthAddress,
+    stealthInfo.senderPublicKey,
+    stealthInfo.spendingPublicKey,
+    senderSignature,
+    { chain, onChain: true }
+);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proof Chain Documentation -->
+            <div class="doc-section">
+                <h3 class="section-subtitle">⛓️ Proof Chain</h3>
+                <div class="code-demo">
+                    <div class="code-header">
+                        <h4>Data Verification</h4>
+                        <div class="code-tabs">
+                            <button>Write</button>
+                            <button>Verify</button>
+                            <button>Monitor</button>
+                        </div>
+                    </div>
+                    <div class="code-window">
+                        <!-- Write Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Initialize ProofChain
+import { ProofChain } from 'gun-eth';
+import Gun from 'gun';
+
+const gun = Gun(options);
+const proofChain = new ProofChain(gun);
+
+// Write data with proof
+proofChain.proof(
+    chain,
+    null,  // nodeId (null for new data)
+    data,
+    (ack) => {
+        if (ack.ok) {
+            console.log("Node ID:", ack.nodeId);
+            console.log("Transaction Hash:", ack.txHash);
+        }
+    }
+);</code></pre>
+                        </div>
+
+                        <!-- Verify Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Verify data integrity
+gun.proof(
+    chain,
+    nodeId,
+    null,
+    (ack) => {
+        if (ack.ok) {
+            console.log("Verification passed");
+            console.log("Last update:", ack.timestamp);
+            console.log("Updater:", ack.updater);
+        }
+    }
+);</code></pre>
+                        </div>
+
+                        <!-- Monitor Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Monitor data changes
+gun.get(nodeId).on((data, key) => {
+    // Check data integrity
+    const originalHash = data._contentHash;
+    const currentHash = calculateHash(data);
+    
+    if (currentHash !== originalHash) {
+        console.warn("Data tampering detected!");
+        console.log("Original hash:", originalHash);
+        console.log("Current hash:", currentHash);
+    }
+});</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bubble Documentation -->
+            <div class="doc-section">
+                <h3 class="section-subtitle">🫧 Encrypted Bubbles</h3>
+                <div class="code-demo">
+                    <div class="code-header">
+                        <h4>Bubble Management</h4>
+                        <div class="code-tabs">
+                            <button>Setup</button>
+                            <button>Create</button>
+                            <button>Share</button>
+                        </div>
+                    </div>
+                    <div class="code-window">
+                        <!-- Setup Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Initialize providers
+import { HybridBubbleProvider } from 'gun-eth';
+
+const provider = new HybridBubbleProvider({
+    rpcUrl: 'your-rpc-url',
+    chain: 'your-network',
+    gun: gunInstance,
+    keypair: userKeypair
+});</code></pre>
+                        </div>
+
+                        <!-- Create Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Create encrypted bubble
+const bubble = await provider.handleCreateBubble({
+    name: "Private Bubble",
+    isPrivate: true,
+    userAddress: userAddress
+});
+
+// Upload file to bubble
+await provider.handleFileUpload(
+    bubble.id,
+    fileName,
+    content,
+    userAddress
+);</code></pre>
+                        </div>
+
+                        <!-- Share Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Share bubble with another user
+await provider.handleGrantPermission(
+    bubbleId,
+    recipientAddress,
+    ownerAddress,
+    {
+        granteeEpub: recipientPublicKey,
+        metadata: {
+            sharedAt: Date.now(),
+            granterAddress: ownerAddress
+        }
+    }
+);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gun-Ethereum Integration -->
+            <div class="doc-section">
+                <h3 class="section-subtitle">🔐 Gun-Ethereum Integration</h3>
+                <div class="code-demo">
+                    <div class="code-header">
+                        <h4>Authentication Example</h4>
+                        <div class="code-tabs">
+                            <button>Setup</button>
+                            <button>Usage</button>
+                        </div>
+                    </div>
+                    <div class="code-window">
+                        <!-- Setup Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Initialize Gun-Eth
+const gun = await GunEth.initializeGun('localhost');
+
+// Create new account
+const account = await gun.ethToGunAccount();</code></pre>
+                        </div>
+
+                        <!-- Usage Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Store encrypted keys
+await gun.createAndStoreEncryptedPair(ethereumAddress);
+
+// Retrieve keys when needed
+const signature = await gun.createSignature(MESSAGE_TO_SIGN);
+const pair = await gun.getAndDecryptPair(
+    ethereumAddress, 
+    signature
+);</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="steps-container">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Connect Wallet</h4>
+                            <p>Link your Ethereum wallet to get started</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Generate Keys</h4>
+                            <p>Create necessary key pairs automatically</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Encrypt</h4>
+                            <p>Keys are encrypted with your Ethereum signature</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Secure Access</h4>
+                            <p>Use signatures to access your data securely</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bubble Client & Provider Documentation -->
+            <div class="doc-section">
+                <h3 class="section-subtitle">🔄 Bubble Client & Provider</h3>
+                <div class="code-demo">
+                    <div class="code-header">
+                        <h4>Advanced Usage</h4>
+                        <div class="code-tabs">
+                            <button>Client Setup</button>
+                            <button>File Operations</button>
+                            <button>Provider Setup</button>
+                        </div>
+                    </div>
+                    <div class="code-window">
+                        <!-- Client Setup Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Initialize Bubble Client
+import { BubbleClient } from 'gun-eth';
+
+// Create client instance
+const bubbleClient = new BubbleClient({
+    providerUrl: "http://localhost:3000/api",
+    signer: signer,  // Your Ethereum signer
+    keypair: {       // Your encryption keypair
+        epub: "your-encryption-public-key",
+        epriv: "your-encryption-private-key"
+    }
+});</code></pre>
+                        </div>
+
+                        <!-- File Operations Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Create a new bubble
+const bubble = await bubbleClient.createBubble("My Bubble", {
+    isPrivate: true
+});
+
+// Write encrypted content
+await bubbleClient.writeBubble(
+    bubble.id,
+    "secret.txt",
+    "My secret content"
+);
+
+// Read and decrypt content
+const result = await bubbleClient.readBubble(
+    bubble.id,
+    "secret.txt"
+);
+
+// Share with another user
+await bubbleClient.shareBubble(
+    bubble.id,
+    recipientAddress,
+    { granteeEpub: recipientPublicKey }
+);</code></pre>
+                        </div>
+
+                        <!-- Provider Setup Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Initialize Bubble Provider
+import { HybridBubbleProvider } from 'gun-eth';
+import Gun from 'gun';
+
+// Setup Gun instance
+const gun = Gun({
+    peers: ['http://localhost:8765/gun'],
+    file: 'radata'  // Local storage path
+});
+
+// Create provider instance
+const provider = new HybridBubbleProvider({
+    gun: gun,
+    signer: signer,
+    keypair: keypair
+});
+
+// The provider handles:
+// - Encrypted storage
+// - Access control
+// - File management
+// - User permissions</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Provider Architecture -->
+            <div class="doc-section">
+                <h3 class="section-subtitle">🏗️ Provider Architecture</h3>
+                <div class="code-demo">
+                    <div class="code-header">
+                        <h4>Provider Types</h4>
+                        <div class="code-tabs">
+                            <button>Base Provider</button>
+                            <button>GUN Provider</button>
+                            <button>Hybrid Provider</button>
+                        </div>
+                    </div>
+                    <div class="code-window">
+                        <!-- Base Provider Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Base Provider - Abstract class for all providers
+import { BaseBubbleProvider } from 'gun-eth';
+
+class CustomProvider extends BaseBubbleProvider {
+    // Required methods to implement
+    async handleCreateBubble(options) { }
+    async handleWriteBubble(bubbleId, fileName, content) { }
+    async handleReadBubble(bubbleId, fileName) { }
+    async handleGrantPermission(bubbleId, granteeAddress) { }
+}</code></pre>
+                        </div>
+
+                        <!-- GUN Provider Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// GUN Provider - Uses GUN for storage
+import { GUNBubbleProvider } from 'gun-eth';
+
+const gunProvider = new GUNBubbleProvider({
+    gun: gunInstance,
+    signer: signer,
+    keypair: keypair
+});
+
+// Stores data directly in GUN's graph
+await gunProvider.handleCreateBubble({
+    name: "GUN Bubble",
+    isPrivate: true
+});</code></pre>
+                        </div>
+
+                        <!-- Hybrid Provider Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Hybrid Provider - Combines GUN with external storage
+import { HybridBubbleProvider } from 'gun-eth';
+
+const hybridProvider = new HybridBubbleProvider({
+    gun: gunInstance,
+    signer: signer,
+    keypair: keypair,
+    storage: customStorageAdapter
+});
+
+// Supports both GUN and external storage
+await hybridProvider.handleCreateBubble({
+    name: "Hybrid Bubble",
+    isPrivate: true,
+    useExternal: true
+});</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates -->
+            <div class="doc-section">
+                <h3 class="section-subtitle">📋 Templates</h3>
+                <div class="code-demo">
+                    <div class="code-header">
+                        <h4>Ready-to-Use Templates</h4>
+                        <div class="code-tabs">
+                            <button>Client Template</button>
+                            <button>Provider Template</button>
+                        </div>
+                    </div>
+                    <div class="code-window">
+                        <!-- Client Template Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// template-bubble-client.js
+// Complete client implementation with:
+// - Configuration management
+// - File handling (text, JSON, binary)
+// - Error handling
+// - Decrypted file storage
+
+const CONFIG = {
+    RPC_URL: process.env.RPC_URL,
+    PRIVATE_KEY: process.env.PRIVATE_KEY,
+    PROVIDER_URL: "http://localhost:3000/api",
+    GUN_PEERS: ['http://localhost:8765/gun'],
+    DECRYPTED_FILES_DIR: './decrypted-files'
+};
+
+// Initialize client with configuration
+const client = await initializeClient();
+
+// Example usage
+const bubble = await client.createBubble("Test Bubble");
+await client.writeBubble(bubble.id, "test.txt", "content");
+const result = await client.readBubble(bubble.id, "test.txt");</code></pre>
+                        </div>
+
+                        <!-- Provider Template Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// template-bubble-provider.js
+// Complete provider implementation with:
+// - Express server setup
+// - GUN configuration
+// - Directory management
+// - Error handling
+// - Optional external storage integration
+
+const CONFIG = {
+    RPC_URL: process.env.RPC_URL,
+    PRIVATE_KEY: process.env.PRIVATE_KEY,
+    GUN_PEERS: "http://localhost:8765/gun",
+    GUN_DIR: "radata",
+    BUBBLES_DIR: "bubbles"
+};
+
+// Initialize provider with configuration
+const app = express();
+const gun = Gun(gunOptions);
+const provider = new HybridBubbleProvider(CONFIG);
+
+// API endpoints
+app.post('/bubble', handleCreateBubble);
+app.post('/bubble/:id/write', handleWriteBubble);
+app.get('/bubble/:id', handleReadBubble);</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p class="footer-text">© 2024 Scobru. MIT License.</p>
+        </div>
+    </footer>
+</body>
+</html>

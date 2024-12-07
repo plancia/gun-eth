@@ -1,0 +1,27 @@
+{
+    "source": {
+      "include": ["src", "features"],
+      "exclude": ["node_modules", "dist"],
+      "includePattern": ".+\\.js(doc|x)?$",
+      "excludePattern": "(^|\\/|\\\\)_"
+    },
+    "plugins": ["plugins/markdown"],
+    "opts": {
+      "template": "templates/default",
+      "encoding": "utf8",
+      "destination": "./docs/",
+      "recurse": true,
+      "verbose": true,
+      "readme": "./README.md"
+    },
+    "templates": {
+      "better-docs": {
+        "name": "Gun-Eth Documentation",
+        "title": "Gun-Eth Documentation",
+        "css": "style.css"
+      }
+    },
+    "tags": {
+      "allowUnknownTags": true
+    }
+  }
