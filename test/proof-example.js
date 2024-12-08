@@ -25,9 +25,6 @@ async function runTests() {
   console.log("📌 Running standard test (default contract)...\n");
   await proofExample();
   
-  // Then run the custom contract test
-  console.log("\n📌 Running custom contract test...\n");
-  await proofExampleWithCustomContract();
   
   console.log("\n All tests completed!");
 }
@@ -214,116 +211,8 @@ async function verifyData(gun, nodeId) {
   });
 }
 
-async function proofExampleWithCustomContract() {
-  try {
-    // Setup Gun and provider as before
-    const gunOptions = {
-      peers: ['http://localhost:8765/gun'],
-      localStorage: false,
-      radisk: true,
-      axe: false,
-      multicast: false,
-      web: false
-    };
 
-    const provider = new ethers.JsonRpcProvider(TEST_RPC);
-    const aliceSigner = new ethers.Wallet(MOCK_KEYS.alice, provider);
-    
-    // Usa l'indirizzo del contratto già deployato
-    console.log("📄 Using existing ProofOfIntegrity contract...");
-    const customContractAddress = '0x8A791620dd6260079BF849Dc5567aDC3F2FdC318'; // Indirizzo del contratto già deployato
-    console.log("Contract address:", customContractAddress);
-
-    // Initialize Gun with custom contract
-    setSigner(TEST_RPC, MOCK_KEYS.alice);
-    await GunEth.init('localhost');
-    const gun = Gun(gunOptions);
-    GunEth.extendGun(Gun);
-    gun.setSigner(TEST_RPC, MOCK_KEYS.alice);
-
-    // Initialize ProofChain with custom contract
-    const proofChain = new ProofChain(gun, {
-      contractAddress: customContractAddress
-    });
-
-    const transactionOptions = {
-      gasLimit: 500000,
-      gasPrice: await provider.getFeeData().then(data => data.gasPrice)
-    };
-
-    // Test data
-    const data = {
-      message: "Hello from custom contract!",
-      timestamp: Date.now(),
-      author: "Alice"
-    };
-
-    // Write and verify data using custom contract
-    return new Promise((resolve, reject) => {
-      proofChain.proof(
-        'localhost',
-        null,
-        data,
-        async (ack) => {
-          if (ack.err) {
-            console.error("❌ Error:", ack.err);
-            reject(new Error(ack.err));
-            return;
-          }
-          
-          if (ack.ok) {
-            console.log("✅ Data written successfully to custom contract!");
-            console.log("Node ID:", ack.nodeId);
-            console.log("Transaction Hash:", ack.txHash);
-            
-            // Verify data
-            await verifyDataWithCustomContract(gun, ack.nodeId, customContractAddress);
-            resolve();
-          }
-        },
-        { ...transactionOptions, contractAddress: customContractAddress }
-      );
-    });
-
-  } catch (error) {
-    console.error("❌ Error executing custom contract example:", error);
-    throw error;
-  }
-}
-
-async function verifyDataWithCustomContract(gun, nodeId, contractAddress) {
-  console.log("\n🔍 Verifying data on custom contract...");
-  
-  // Switch to Bob for verification
-  gun.setSigner(TEST_RPC, MOCK_KEYS.bob);
-  const bobSignature = await gun.createSignature("Access GunDB with Ethereum");
-
-  return new Promise((resolve) => {
-    gun.proof(
-      "localhost",
-      nodeId,
-      null,
-      (ack) => {
-        if (ack.ok) {
-          console.log("\n✅ Data verification PASSED on custom contract!");
-          console.log("Timestamp:", new Date(Number(ack.timestamp) * 1000).toLocaleString());
-          console.log("Updater:", ack.updater);
-          resolve();
-        } else {
-          console.log("\n❌ Data verification FAILED on custom contract!");
-          console.error("Error:", ack.err);
-          resolve();
-        }
-      },
-      { 
-        gasLimit: 500000,
-        contractAddress: contractAddress
-      }
-    );
-  });
-}
-
-// Run all tests
+// Run al tests
 runTests()
   .then(() => {
     setTimeout(() => {

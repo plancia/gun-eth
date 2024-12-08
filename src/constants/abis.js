@@ -9,32 +9,34 @@
 
 import { ethers } from "ethers";
 import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const require = createRequire(import.meta.url);
 
-const ProofOfIntegrityArtifact = require('./ProofOfIntegrity.json');
-const StealthAnnouncerArtifact = require('./StealthAnnouncer.json');
-const BubbleRegistryArtifact = require('./BubbleRegistry.json');
-const BubbleProxyArtifact = require('./BubbleProxy.json');
+// Percorsi relativi agli artifacts
+const artifactsPath = join(__dirname, '../../artifacts/contracts');
 
-// Il resto del codice rimane invariato
+// Importa gli ABI dagli artifacts
+const StealthAnnouncer = require(join(artifactsPath, 'StealthAnnouncer.sol/StealthAnnouncer.json'));
+const BubbleRegistry = require(join(artifactsPath, 'BubbleRegistry.sol/BubbleRegistry.json'));
+const ProofOfIntegrity = require(join(artifactsPath, 'ProofOfIntegrity.sol/ProofOfIntegrity.json'));
 
 // Esporta gli ABI dai file JSON
-export const PROOF_OF_INTEGRITY_ABI = ProofOfIntegrityArtifact.abi;
-export const STEALTH_ANNOUNCER_ABI = StealthAnnouncerArtifact.abi;
-export const BUBBLE_REGISTRY_ABI = BubbleRegistryArtifact.abi;
-export const BUBBLE_PROXY_ABI = BubbleProxyArtifact.abi;
+export const STEALTH_ANNOUNCER_ABI = StealthAnnouncer.abi;
+export const BUBBLE_REGISTRY_ABI = BubbleRegistry.abi;
+export const PROOF_OF_INTEGRITY_ABI = ProofOfIntegrity.abi;
 
-/**
- * Configurazioni per diverse chain
- * @type {Object.<string, ChainConfig>}
- */
+// Configurazioni per diverse chain
 const chainConfigs = {
   localhost: {
     CHAIN_ID: 31337,
     RPC_URL: "http://127.0.0.1:8545",
-    PROOF_OF_INTEGRITY_ADDRESS: "0x8A791620dd6260079BF849Dc5567aDC3F2FdC318",
-    STEALTH_ANNOUNCER_ADDRESS: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
-    BUBBLE_REGISTRY_ADDRESS: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"
+    PROOF_OF_INTEGRITY_ADDRESS: "0x5081a39b8A5f0E35a8D959395a630b68B74Dd30f",
+    STEALTH_ANNOUNCER_ADDRESS: "0x922D6956C99E12DFeB3224DEA977D0939758A1Fe",
+    BUBBLE_REGISTRY_ADDRESS: "0x1fA02b2d6A771842690194Cf62D91bdd92BfE28d"
   },
   optimismSepolia: {
     CHAIN_ID: 11155420,

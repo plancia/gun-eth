@@ -251,20 +251,28 @@ export class StealthChain {
    * @param {string} spendingPublicKey - The recipient's spending public key
    * @param {string} signature - The sender's signature
    * @param {StealthPaymentOptions} options - Additional options
-   * @returns {Promise<void>}
+   * @returns {Promise<{stealthAddress: string, senderPublicKey: string, spendingPublicKey: string, timestamp: number, source: string}>}
    */
   async announceStealthPayment(stealthAddress, senderPublicKey, spendingPublicKey, signature, options = {}) {
     try {
-      const senderAddress = await verifySignature(MESSAGE_TO_SIGN, signature);
+      const { chain = 'mainnet', onChain = false } = options;
+      
+      // Verifica la firma
+      await this.gun.verifySignature(MESSAGE_TO_SIGN, signature);
 
-      if (options.onChain) {
-        const contract = await this.getContract(options.chain);
-
-        // Get dev fee
-        const devFee = await contract.devFee();
-        console.log("Dev fee:", devFee.toString());
+      if (onChain) {
+        const contract = await this.getContract(chain);
         
-        // Execute transaction with correct value
+        // Ottieni la devFee dal contratto
+        let devFee;
+        try {
+          devFee = await contract.devFee();
+        } catch (error) {
+          console.warn("Errore nel leggere devFee, uso il valore di default:", error);
+          devFee = ethers.parseEther("0.0001"); // 0.0001 ETH come default
+        }
+
+        // Esegui l'annuncio on-chain
         const tx = await contract.announcePayment(
           senderPublicKey,
           spendingPublicKey,
@@ -274,18 +282,25 @@ export class StealthChain {
         
         await tx.wait();
         console.log("Payment announced on-chain, tx:", tx.hash);
-      } else {
-        this.gun
-          .get("gun-eth")
-          .get("stealth-payments")
-          .set({
-            stealthAddress,
-            senderAddress,
-            senderPublicKey,
-            spendingPublicKey,
-            timestamp: Date.now(),
-          });
       }
+      
+      // Salva anche off-chain
+      const announcement = {
+        stealthAddress,
+        senderPublicKey,
+        spendingPublicKey,
+        timestamp: Date.now(),
+        source: onChain ? 'both' : 'off-chain'
+      };
+
+      this.gun
+        .get('gun-eth')
+        .get('stealth')
+        .get('announcements')
+        .set(announcement);
+
+      return announcement;
+
     } catch (error) {
       console.error("Error announcing stealth payment:", error);
       throw error;

@@ -6,7 +6,12 @@ contract StealthAnnouncer {
     address public devAddress;
     
     // Fee amount in wei
-    uint256 public devFee = 100000000000000;
+    uint256 private _devFee = 100000000000000;
+
+    // Getter function for devFee
+    function devFee() public view returns (uint256) {
+        return _devFee;
+    }
 
     // Eventi
     event StealthPaymentAnnounced(
@@ -45,7 +50,7 @@ contract StealthAnnouncer {
         string memory spendingPublicKey,
         address stealthAddress
     ) external payable {
-        require(msg.value >= devFee, "Insufficient fee");
+        require(msg.value >= _devFee, "Insufficient fee");
         
         announcements.push(StealthAnnouncement({
             senderPublicKey: senderPublicKey,
@@ -88,7 +93,7 @@ contract StealthAnnouncer {
 
     // Funzioni admin per il dev
     function updateDevFee(uint256 _newFee) external onlyDev {
-        devFee = _newFee;
+        _devFee = _newFee;
         emit DevFeeUpdated(_newFee);
     }
 

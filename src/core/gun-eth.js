@@ -21,27 +21,58 @@ import {
 } from '../utils/common.js';
 
 /**
- * @typedef {import('gun').IGunChain<any>} IGunChain
- * @typedef {import('gun').IGunInstance<any>} IGunInstance
+ * @typedef {import('gun').IGunChain<any, any, any, any>} IGunChain
+ * @typedef {import('gun').IGunInstance} IGunInstance
  * @typedef {import('gun').IGun} IGun
+ * @typedef {import('gun').GunOptions} GunOptions
+ * @typedef {import('gun').GunSchema} GunSchema
+ * @typedef {import('gun').GunHookCallbackCreate} GunHookCallbackCreate
+ * @typedef {import('gun').GunHookCallbackOpt} GunHookCallbackOpt
  */
 
 /**
- * @typedef {Object} ExtendedGunInstance
+ * @typedef {Object} GunMethods
+ * @property {(path: string) => IGunInstance} get - Get method
+ * @property {(data: any) => IGunInstance} put - Put method
+ * @property {(data: any) => IGunInstance} set - Set method
+ * @property {() => IGunInstance} map - Map method
+ * @property {() => IGunInstance} back - Back method
+ * @property {() => IGunInstance} off - Off method
+ * @property {{
+ *   (event: "create", callback: GunHookCallbackCreate): void;
+ *   (event: "opt", callback: GunHookCallbackOpt): void;
+ *   (event: string, callback: Function): IGunInstance;
+ * }} on - On method
+ * @property {(callback: (data: any, key: string) => void) => IGunInstance} once - Once method
+ */
+
+/**
+ * @typedef {Object} GunBase
  * @property {Object} state - Gun state
- * @property {IGunChain} chain - Gun chain
+ * @property {IGunChain & IGunInstance} chain - Gun chain
  * @property {Object} SEA - Gun SEA
- * @property {function} get - Get method
- * @property {function} put - Put method
- * @property {function} set - Set method
- * @property {function} map - Map method
- * @property {function} on - On method
+ * @property {(message: string, signature: string) => Promise<string>} verifySignature - Verify signature method
  * @property {Object} _ - Gun internal properties
  * @property {Object} user - Gun user instance
+ * @property {Object} opt - Gun options
  */
 
 /**
- * @typedef {ExtendedGunInstance & IGunInstance} FullGunInstance
+ * @typedef {GunBase & GunMethods & {
+ *   (options?: GunOptions): IGunInstance;
+ *   new (options?: GunOptions): IGunInstance;
+ * }} GunExtended
+ */
+
+/**
+ * @typedef {Object} StealthMethodsBase
+ * @property {function(this: IGunInstance, string, string, Object): Promise<any>} generateStealthAddress
+ * @property {function(this: IGunInstance, string, string, string, string, Object): Promise<{stealthAddress: string, senderPublicKey: string, spendingPublicKey: string, timestamp: number, source: string}>} announceStealthPayment
+ * @property {function(this: IGunInstance, string, Object): Promise<Array<any>>} getStealthPayments
+ * @property {function(this: IGunInstance, string, string, string, string): Promise<any>} recoverStealthFunds
+ * @property {function(this: IGunInstance, string): Promise<any>} publishStealthKeys
+ * @property {function(this: IGunInstance, string, ...any[]): Promise<any>} stealth
+ * @property {function(this: IGunInstance, function(any): void): any} monitorStealthEvents
  */
 
 /**
@@ -51,21 +82,6 @@ import {
  * @property {function(string): Promise<string>} signMessage - Signs a message
  * @property {function(): Promise<string>} getAddress - Gets the signer address
  * @property {Object} provider - Provider instance
- */
-
-/**
- * @typedef {Object} StealthMethodsBase
- * @property {function(this: IGunInstance, string, string, Object): Promise<any>} generateStealthAddress
- * @property {function(this: IGunInstance, string, string, string, string, Object): Promise<void>} announceStealthPayment
- * @property {function(this: IGunInstance, string, Object): Promise<Array<any>>} getStealthPayments
- * @property {function(this: IGunInstance, string, string, string, string): Promise<any>} recoverStealthFunds
- * @property {function(this: IGunInstance, string): Promise<any>} publishStealthKeys
- * @property {function(this: IGunInstance, string, ...any[]): Promise<any>} stealth
- * @property {function(this: IGunInstance, function(any): void): IGunInstance} monitorStealthEvents
- */
-
-/**
- * @typedef {StealthMethodsBase & IGunInstance} StealthMethods
  */
 
 /**
@@ -84,7 +100,40 @@ import {
  */
 
 /**
- * @typedef {StealthMethods & BaseMethods & IGunChain} ExtendedGunChain
+ * @typedef {StealthMethodsBase & IGunInstance} StealthMethods
+ */
+
+/**
+ * @typedef {Object} ExtendedGunBase
+ * @property {Object} state - Gun state
+ * @property {IGunChain & IGunInstance} chain - Gun chain
+ * @property {Object} SEA - Gun SEA
+ * @property {(path: string) => any} get - Get method
+ * @property {(data: any) => void} put - Put method
+ * @property {(data: any) => void} set - Set method
+ * @property {() => any} map - Map method
+ * @property {(event: string, callback: Function) => any} on - On method
+ * @property {(callback: (data: any, key: string) => void) => void} once - Once method
+ * @property {(message: string, signature: string) => Promise<string>} verifySignature - Verify signature method
+ * @property {Object} _ - Gun internal properties
+ * @property {Object} user - Gun user instance
+ * @property {Object} opt - Gun options
+ */
+
+/**
+ * @typedef {ExtendedGunBase & IGun} ExtendedGun
+ */
+
+/**
+ * @typedef {ExtendedGun & IGunInstance} FullGunInstance
+ */
+
+/**
+ * @typedef {Object} GunHookCallbacks
+ * @property {function} create - Create callback
+ * @property {function} put - Put callback
+ * @property {function} get - Get callback
+ * @property {function} opt - Opt callback
  */
 
 const MESSAGE_TO_SIGN = "Access GunDB with Ethereum";
@@ -122,6 +171,10 @@ async function initialize(chain = 'localhost') {
 // UTILITY FUNCTIONS
 // =============================================
 
+/**
+ * @param {string} newRpcUrl
+ * @param {string} newPrivateKey
+ */
 function setSigner(newRpcUrl, newPrivateKey) {
   rpcUrl = newRpcUrl;
   privateKey = newPrivateKey;
@@ -135,6 +188,9 @@ async function getSigner(chain = 'localhost') {
   return getCommonSigner(chain);
 }
 
+/**
+ * @param {ethers.BytesLike} signature
+ */
 function generatePassword(signature) {
   try {
     const hexSignature = ethers.hexlify(signature);
@@ -147,6 +203,10 @@ function generatePassword(signature) {
   }
 }
 
+/**
+ * @param {string | Uint8Array} message
+ * @param {ethers.SignatureLike} signature
+ */
 async function verifySignature(message, signature) {
   try {
     const recoveredAddress = ethers.verifyMessage(message, signature);
@@ -157,8 +217,11 @@ async function verifySignature(message, signature) {
   }
 }
 
+/**
+ * @param {string} gunPrivateKey
+ */
 function gunToEthAccount(gunPrivateKey) {
-  const base64UrlToHex = (base64url) => {
+  const base64UrlToHex = (/** @type {string} */ base64url) => {
     const padding = "=".repeat((4 - (base64url.length % 4)) % 4);
     const base64 = base64url.replace(/-/g, "+").replace(/_/g, "/") + padding;
     const binary = atob(base64);
@@ -177,6 +240,10 @@ function gunToEthAccount(gunPrivateKey) {
   };
 }
 
+/**
+ * @param {string} encryptedPair
+ * @param {any} password
+ */
 async function decryptPair(encryptedPair, password) {
   try {
     const keypair = {
@@ -190,6 +257,10 @@ async function decryptPair(encryptedPair, password) {
   }
 }
 
+/**
+ * @param {string} encryptedPair
+ * @param {any} password
+ */
 function decryptPairFromPassword(encryptedPair, password) {
   const encryptionKeypair = {
     epriv: password,
@@ -231,6 +302,9 @@ async function ethToGunAccount() {
   };
 }
 
+/**
+ * @param {any} address
+ */
 async function createAndStoreEncryptedPair(address) {
   const gun = this;
   try {
@@ -252,6 +326,10 @@ async function createAndStoreEncryptedPair(address) {
   }
 }
 
+/**
+ * @param {any} address
+ * @param {any} signature
+ */
 async function getAndDecryptPair(address, signature) {
   try {
     const gun = this;
@@ -294,43 +372,21 @@ async function createSignature(message) {
 // GUN EXTENSIONS
 // =============================================
 
+/**
+ * @param {{ chain: any; }} Gun
+ */
 function extendGunWithStealth(Gun) {
   /** @type {StealthMethodsBase} */
   const stealthMethods = {
-    generateStealthAddress: async function(recipientAddress, signature, options = {}) {
-      const stealth = new StealthChain(/** @type {IGunInstance} */ (this));
-      return stealth.generateStealthAddress(recipientAddress, signature, options);
-    },
-
-    announceStealthPayment: async function(stealthAddress, senderPublicKey, spendingPublicKey, signature, options = {}) {
-      const stealth = new StealthChain(/** @type {IGunInstance} */ (this));
-      return stealth.announceStealthPayment(stealthAddress, senderPublicKey, spendingPublicKey, signature, options);
-    },
-
-    getStealthPayments: async function(signature, options = {}) {
-      const stealth = new StealthChain(/** @type {IGunInstance} */ (this));
-      return stealth.getStealthPayments(signature, options);
-    },
-
-    recoverStealthFunds: async function(stealthAddress, senderPublicKey, signature, spendingPublicKey) {
-      const stealth = new StealthChain(/** @type {IGunInstance} */ (this));
-      return stealth.recoverStealthFunds(stealthAddress, senderPublicKey, signature, spendingPublicKey);
-    },
-
-    publishStealthKeys: async function(signature) {
-      const stealth = new StealthChain(/** @type {IGunInstance} */ (this));
-      return stealth.publishStealthKeys(signature);
-    },
-
-    stealth: function(method, ...args) {
-      const stealth = new StealthChain(/** @type {IGunInstance} */ (this));
-      const methods = {
-        generate: stealth.generateStealthAddress.bind(stealth),
-        announce: stealth.announceStealthPayment.bind(stealth),
-        getPayments: stealth.getStealthPayments.bind(stealth),
-        recover: stealth.recoverStealthFunds.bind(stealth),
-        publish: stealth.publishStealthKeys.bind(stealth)
-      };
+    stealth: async function(method, ...args) {
+      const stealth = new StealthChain(/** @type {GunExtended} */ (/** @type {unknown} */ (this))),
+            methods = {
+              generate: stealth.generateStealthAddress.bind(stealth),
+              announce: stealth.announceStealthPayment.bind(stealth),
+              getPayments: stealth.getStealthPayments.bind(stealth),
+              recover: stealth.recoverStealthFunds.bind(stealth),
+              publish: stealth.publishStealthKeys.bind(stealth)
+            };
       
       if (!(method in methods)) {
         throw new Error(`Unknown stealth method: ${method}`);
@@ -339,11 +395,36 @@ function extendGunWithStealth(Gun) {
       return methods[method](...args);
     },
 
+    generateStealthAddress: async function(recipientAddress, signature, options = {}) {
+      const stealth = new StealthChain(/** @type {GunExtended} */ (/** @type {unknown} */ (this)));
+      return stealth.generateStealthAddress(recipientAddress, signature, options);
+    },
+
+    announceStealthPayment: async function(stealthAddress, senderPublicKey, spendingPublicKey, signature, options = {}) {
+      const stealth = new StealthChain(/** @type {GunExtended} */ (/** @type {unknown} */ (this)));
+      return stealth.announceStealthPayment(stealthAddress, senderPublicKey, spendingPublicKey, signature, options);
+    },
+
+    getStealthPayments: async function(signature, options = {}) {
+      const stealth = new StealthChain(/** @type {GunExtended} */ (/** @type {unknown} */ (this)));
+      return stealth.getStealthPayments(signature, options);
+    },
+
+    recoverStealthFunds: async function(stealthAddress, senderPublicKey, signature, spendingPublicKey) {
+      const stealth = new StealthChain(/** @type {GunExtended} */ (/** @type {unknown} */ (this)));
+      return stealth.recoverStealthFunds(stealthAddress, senderPublicKey, signature, spendingPublicKey);
+    },
+
+    publishStealthKeys: async function(signature) {
+      const stealth = new StealthChain(/** @type {GunExtended} */ (/** @type {unknown} */ (this)));
+      return stealth.publishStealthKeys(signature);
+    },
+
     monitorStealthEvents: function(callback) {
-      const stealth = new StealthChain(/** @type {IGunInstance} */ (this));
-      const gun = /** @type {IGunInstance} */ (this);
+      const stealth = new StealthChain(/** @type {GunExtended} */ (/** @type {unknown} */ (this))),
+            gun = /** @type {GunExtended} */ (/** @type {unknown} */ (this));
       
-      gun.get('gun-eth')
+      const chain = gun.get('gun-eth')
         .get('stealth-payments')
         .map()
         .on((payment, id) => {
@@ -358,22 +439,22 @@ function extendGunWithStealth(Gun) {
 
       (async () => {
         try {
-          const signer = /** @type {ExtendedSigner} */ (await getSigner());
-          const chainConfig = getContractAddresses('localhost');
-          const contract = new ethers.Contract(
-            chainConfig.STEALTH_ANNOUNCER_ADDRESS,
-            STEALTH_ANNOUNCER_ABI,
-            signer
-          );
+          const signer = /** @type {ExtendedSigner} */ (await getSigner()),
+                chainConfig = getContractAddresses('localhost'),
+                contract = new ethers.Contract(
+                  chainConfig.STEALTH_ANNOUNCER_ADDRESS,
+                  STEALTH_ANNOUNCER_ABI,
+                  signer
+                );
 
-          contract.on('PaymentAnnounced', (sender, recipient, stealthAddress, event) => {
+          contract.on('PaymentAnnounced', function(sender, recipient, stealthAddress, event) {
             callback({
               type: 'onChain',
               event: 'PaymentAnnounced',
               data: {
-                sender,
-                recipient,
-                stealthAddress,
+                sender: sender,
+                recipient: recipient,
+                stealthAddress: stealthAddress,
                 blockNumber: event.blockNumber,
                 transactionHash: event.transactionHash
               }
@@ -384,18 +465,21 @@ function extendGunWithStealth(Gun) {
         }
       })();
 
-      return gun;
+      return chain;
     }
   };
 
   Object.assign(Gun.chain, stealthMethods);
 }
 
+/**
+ * @param {import("gun").IGun} Gun
+ */
 function extendGun(Gun) {
   /** @type {BaseMethods} */
   const baseMethods = {
     MESSAGE_TO_SIGN,
-    setSigner: function(newRpcUrl, newPrivateKey) {
+    setSigner: function(/** @type {string} */ newRpcUrl, /** @type {string} */ newPrivateKey) {
       rpcUrl = newRpcUrl;
       privateKey = newPrivateKey;
       console.log("Signer configuration set");
@@ -439,7 +523,7 @@ function extendGun(Gun) {
   methods.forEach(method => {
     const original = Gun.chain[method];
     if (original) {
-      Gun.chain[method] = async function(...args) {
+      Gun.chain[method] = async function(/** @type {any} */ ...args) {
         const maxRetries = 3;
         let lastError;
 

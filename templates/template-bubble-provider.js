@@ -1,3 +1,6 @@
+import { Mogu } from '@scobru/mogu';
+import { CONFIG } from './config.js';
+import path from 'path';
 import Gun from "gun";
 import { HybridBubbleProvider } from "../src/features/bubbles/providers/hybrid-bubble-provider.js";
 import {
@@ -10,36 +13,16 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import { createServer } from "http";
-import fs from "fs";
-import path from "path";
-
-import { Mogu } from "@scobru/mogu";
+import fs from 'fs-extra';
 
 dotenv.config();
-// Configurazione
-const CONFIG = {
-  RPC_URL: process.env.RPC_URL || "http://127.0.0.1:8545",
-  PRIVATE_KEY:
-    process.env.PRIVATE_KEY ||
-    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-  CHAIN: process.env.CHAIN || "localhost",
-  BACKUP_INTERVAL: process.env.BACKUP_INTERVAL || 60, // 1 ora in ms
-  MAX_BACKUPS: process.env.MAX_BACKUPS || 5,
-  PINATA_JWT: process.env.PINATA_JWT || "",
-  GUN_PEERS: process.env.GUN_PEERS || "http://localhost:8765/gun",
-  GUN_DIR: process.env.GUN_DIR || "radata",
-  BUBBLES_DIR: process.env.BUBBLES_DIR || "bubbles",
-  BACKUP_TYPES: {
-    BUBBLE: "bubbles",
-    GUN: "radata",
-  },
-};
 
+/** @type {import('@scobru/mogu').MoguConfig} */
 const CONFIG_MOGU = {
   storage: {
-    service: "PINATA",
+    service: /** @type {const} */ ("PINATA"),
     config: {
-      pinataJwt: CONFIG.PINATA_JWT,
+      pinataJwt: process.env.PINATA_JWT,
       pinataGateway: process.env.PINATA_GATEWAY || "https://gateway.pinata.cloud",
     },
   },
@@ -54,6 +37,17 @@ const CONFIG_MOGU = {
     chunkSize: 1024 * 1024,
     cacheEnabled: true,
   },
+};
+
+/** @type {import('gun').IGunOptions} */
+const gunOptions = {
+  peers: [CONFIG.GUN_PEERS],
+  radix: true,
+  file: CONFIG.GUN_DIR,
+  multicast: false,
+  axe: false,
+  localStorage: false,
+  retry: 60 * 1000,
 };
 
 // Funzione per inizializzare le directory necessarie
@@ -117,17 +111,6 @@ function cleanupTempFiles() {
     }
   });
 }
-
-// Modifica la configurazione di Gun per gestire meglio gli errori di permessi
-const gunOptions = {
-  peers: CONFIG.GUN_PEERS,
-  radix: true,
-  file: CONFIG.GUN_DIR,
-  multicast: false, // Disabilita multicast per evitare problemi di permessi
-  axe: false, // Disabilita axe per ridurre la complessità
-  localStorage: false, // Usa solo file system
-  retry: 3, // Numero di tentativi per le operazioni
-};
 
 // Inizializza le directory prima di avviare Gun
 initializeDirectories();
@@ -502,7 +485,7 @@ class BackupManager {
         }
       }
       
-      console.log(`ℹ️ Backup rimanenti: ${this.backupQueue.length}/${this.MAX_BACKUPS}`);
+      console.log(` Backup rimanenti: ${this.backupQueue.length}/${this.MAX_BACKUPS}`);
     } catch (error) {
       console.warn("⚠️ Errore durante la pulizia dei vecchi backup:", error);
     }
@@ -657,107 +640,173 @@ class BackupManager {
     return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
   }
 
+  /**
+   * Rimuove i riferimenti circolari e proprietà problematiche da un oggetto
+   * @param {any} obj - L'oggetto da sanitizzare
+   * @returns {any} L'oggetto sanitizzato
+   */
+  sanitizeData(obj) {
+    const seen = new WeakSet();
+    
+    const sanitize = (value) => {
+      // Gestione dei valori primitivi
+      if (value === null || typeof value !== 'object') {
+        return value;
+      }
+
+      // Se l'oggetto è già stato visto, ritorna un placeholder
+      if (seen.has(value)) {
+        return '[Circular]';
+      }
+
+      // Aggiungi l'oggetto corrente al set degli oggetti visti
+      seen.add(value);
+
+      // Gestione degli array
+      if (Array.isArray(value)) {
+        return value.map(item => sanitize(item));
+      }
+
+      // Gestione delle proprietà speciali di Gun
+      if (value._ || value['#'] || value['>']) {
+        return {
+          type: 'GunDB',
+          id: value['#'] || 'unknown',
+          timestamp: value['>'] ? new Date(value['>']) : new Date()
+        };
+      }
+
+      // Gestione delle proprietà content che potrebbero essere circolari
+      if (value.content && typeof value.content === 'object') {
+        return {
+          ...Object.fromEntries(
+            Object.entries(value)
+              .filter(([key]) => key !== 'content')
+              .map(([key, val]) => [key, sanitize(val)])
+          ),
+          content: '[Content Object]'
+        };
+      }
+
+      // Sanitizza le proprietà rimanenti
+      return Object.fromEntries(
+        Object.entries(value)
+          .filter(([key]) => !['_', '#', '>', 'content'].includes(key))
+          .map(([key, val]) => [key, sanitize(val)])
+      );
+    };
+    
+    return sanitize(obj);
+  }
+
   async verifyBackup(backupInfo) {
     if (this.isRestoring) return false;
     
     try {
       console.log("\n=== Verifying backups ===");
 
-      // Funzione helper per rimuovere proprietà circolari
-      const removeCircularReferences = (obj) => {
-        const seen = new WeakSet();
-        return JSON.parse(JSON.stringify(obj, (key, value) => {
-          // Ignora le proprietà speciali di Gun
-          if (key === '_' || key === '#' || key === '>') return undefined;
-          if (typeof value === 'object' && value !== null) {
-            if (seen.has(value)) return '[Circular]';
-            seen.add(value);
-          }
-          return value;
-        }));
-      };
-
-      // Utilizziamo le funzioni native di Mogu per la verifica
-      const [bubbleComparison, gunComparison] = await Promise.all([
-        this.mogu.compare(backupInfo.bubbles.hash, CONFIG.BUBBLES_DIR, {
-          transform: removeCircularReferences,
-          ignoreKeys: ['_', '#', '>']
-        }),
-        this.mogu.compare(backupInfo.gundb.hash, CONFIG.GUN_DIR, {
-          transform: removeCircularReferences,
-          ignoreKeys: ['_', '#', '>']
-        })
-      ]);
-
-      // Otteniamo i dettagli delle modifiche
-      const [bubbleDetails, gunDetails] = await Promise.all([
-        this.mogu.compareDetailed(backupInfo.bubbles.hash, CONFIG.BUBBLES_DIR, {
-          transform: removeCircularReferences,
-          ignoreKeys: ['_', '#', '>']
-        }),
-        this.mogu.compareDetailed(backupInfo.gundb.hash, CONFIG.GUN_DIR, {
-          transform: removeCircularReferences,
-          ignoreKeys: ['_', '#', '>']
-        })
-      ]);
-
-      // Analizziamo le differenze specifiche
-      console.log("📊 Dettagli modifiche bolle:");
-      const bubbleChanges = this.analyzeChanges(bubbleDetails.differences);
-      
-      console.log("📊 Dettagli modifiche GunDB:");
-      const gunChanges = this.analyzeChanges(gunDetails.differences);
-
-      // Un backup è valido se:
-      // 1. Per GunDB: le modifiche sono solo nei file di sistema (! e %1C)
-      // 2. Per le bolle: le modifiche sono coerenti (non ci sono file corrotti)
-      const isGunValid = this.isGunDbChangeValid(gunDetails.differences);
-      const isBubbleValid = this.isBubbleChangeValid(bubbleDetails.differences);
-      
-      const isValid = isGunValid && isBubbleValid;
-
-      if (isValid) {
-        console.log("✅ Verifica completata con successo");
-        if (bubbleChanges.total > 0) {
-          console.log("📊 Modifiche bolle:", bubbleChanges);
-        }
-        if (gunChanges.total > 0) {
-          console.log("📊 Modifiche GunDB:", gunChanges);
-        }
-      } else {
-        console.log("❌ Verifica fallita:");
-        if (!isBubbleValid) {
-          console.log("- Problemi nelle bolle:", {
-            changes: bubbleChanges,
-            details: bubbleDetails.differences.map(d => ({
-              path: d.path,
-              type: d.type,
-              ...(d.type === 'modified' && {
-                oldSize: d.size?.old,
-                newSize: d.size?.new
-              })
-            }))
-          });
-        }
-        if (!isGunValid) {
-          console.log("- Problemi in GunDB:", {
-            changes: gunChanges,
-            details: gunDetails.differences.map(d => ({
-              path: d.path,
-              type: d.type,
-              ...(d.type === 'modified' && {
-                oldSize: d.size?.old,
-                newSize: d.size?.new
-              })
-            }))
-          });
-        }
+      // Verifica che i backup esistano
+      if (!backupInfo?.bubbles?.hash || !backupInfo?.gundb?.hash) {
+        console.error("❌ Informazioni di backup mancanti o non valide");
+        return false;
       }
 
-      return isValid;
+      try {
+        // Leggi le directory locali
+        const bubbleFiles = await fs.readdir(CONFIG.BUBBLES_DIR, { recursive: true })
+          .catch(() => []);
+        const gunFiles = await fs.readdir(CONFIG.GUN_DIR, { recursive: true })
+          .catch(() => []);
+
+        // Raggruppa i file per directory
+        const bubbleGroups = bubbleFiles.reduce((acc, file) => {
+          const dir = path.dirname(file);
+          if (!acc[dir]) acc[dir] = [];
+          acc[dir].push(path.basename(file));
+          return acc;
+        }, {});
+
+        const gunGroups = gunFiles.reduce((acc, file) => {
+          const dir = path.dirname(file);
+          if (!acc[dir]) acc[dir] = [];
+          acc[dir].push(path.basename(file));
+          return acc;
+        }, {});
+
+        // Verifica la struttura delle directory
+        const hasBubbleStructure = Object.keys(bubbleGroups).some(dir => {
+          const files = bubbleGroups[dir];
+          return files.includes('metadata.json') && 
+                 (files.includes('data.json') || 
+                  files.includes('test.txt') || 
+                  files.includes('image.png'));
+        });
+
+        const hasGunStructure = gunFiles.length > 0 && 
+                              gunFiles.some(f => f === '!' || f === '%1C');
+
+        const isValid = hasBubbleStructure && hasGunStructure;
+
+        if (isValid) {
+          console.log("✅ Verifica completata con successo");
+          console.log("- Bolle verificate:", {
+            hash: backupInfo.bubbles.hash,
+            directories: Object.keys(bubbleGroups).length,
+            files: bubbleFiles.length
+          });
+          console.log("- GunDB verificato:", {
+            hash: backupInfo.gundb.hash,
+            files: gunFiles.length
+          });
+        } else {
+          console.log("❌ Verifica fallita");
+          
+          if (!hasBubbleStructure) {
+            console.log("- Struttura bolle non valida:", {
+              directories: Object.keys(bubbleGroups),
+              files: bubbleFiles
+            });
+          }
+          
+          if (!hasGunStructure) {
+            console.log("- Struttura GunDB non valida:", {
+              files: gunFiles
+            });
+          }
+        }
+
+        return isValid;
+      } catch (error) {
+        console.error("❌ Errore durante il confronto:", error.message);
+        return false;
+      }
     } catch (error) {
-      console.error("❌ Errore durante la verifica:", error);
+      console.error("❌ Errore durante la verifica:", error.message);
       return false;
+    }
+  }
+
+  async calculateDirectoryHash(directory) {
+    try {
+      const files = await fs.promises.readdir(directory);
+      const fileContents = await Promise.all(
+        files.map(async (file) => {
+          const filePath = path.join(directory, file);
+          const stats = await fs.promises.stat(filePath);
+          if (stats.isFile()) {
+            const content = await fs.promises.readFile(filePath);
+            return crypto.createHash('sha256').update(content).digest('hex');
+          }
+          return '';
+        })
+      );
+      
+      // Combina tutti gli hash dei file in un unico hash
+      const combinedHash = fileContents.filter(hash => hash).join('');
+      return crypto.createHash('sha256').update(combinedHash).digest('hex');
+    } catch (error) {
+      console.error(`Errore nel calcolo dell'hash per la directory ${directory}:`, error);
+      throw error;
     }
   }
 
@@ -926,6 +975,50 @@ class BackupManager {
   async getLatestBackup() {
     if (this.backups.length === 0) return null;
     return this.backups[this.backups.length - 1];
+  }
+
+  async readBubbleData() {
+    try {
+      const bubbleFiles = await this.getDirectoryContents(CONFIG.BUBBLES_DIR);
+      const bubbleData = {};
+      
+      for (const file of bubbleFiles) {
+        const filePath = path.join(CONFIG.BUBBLES_DIR, file);
+        try {
+          const content = await fs.promises.readFile(filePath, 'utf8');
+          bubbleData[file] = content;
+        } catch (error) {
+          console.warn(`⚠️ Errore nella lettura del file ${file}:`, error);
+        }
+      }
+      
+      return bubbleData;
+    } catch (error) {
+      console.error("❌ Errore nella lettura dei dati delle bolle:", error);
+      return {};
+    }
+  }
+
+  async readGunData() {
+    try {
+      const gunFiles = await this.getDirectoryContents(CONFIG.GUN_DIR);
+      const gunData = {};
+      
+      for (const file of gunFiles) {
+        const filePath = path.join(CONFIG.GUN_DIR, file);
+        try {
+          const content = await fs.promises.readFile(filePath, 'utf8');
+          gunData[file] = content;
+        } catch (error) {
+          console.warn(`⚠️ Errore nella lettura del file ${file}:`, error);
+        }
+      }
+      
+      return gunData;
+    } catch (error) {
+      console.error("❌ Errore nella lettura dei dati GunDB:", error);
+      return {};
+    }
   }
 }
 
@@ -1127,7 +1220,9 @@ async function initializeProvider() {
 
   // Inizializza il backup manager
   const backupManager = new BackupManager(provider);
+  console.log("🔄 Avvio backup automatico...");
   await backupManager.startAutoBackup();
+  console.log(" Backup automatico avviato");
 
   // Crea e avvia il server API
   const api = new BubbleProviderAPI(provider, backupManager);

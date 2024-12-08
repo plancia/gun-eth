@@ -100,6 +100,117 @@
             color: var(--text);
             font-size: 1rem;
         }
+
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0A1118 0%, #0D1117 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3rem;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .hero-logo {
+            width: 200px;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-image {
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 240, 0.2));
+        }
+
+        .hero-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #fff;
+            margin: 0;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+            margin: 0;
+            max-width: 600px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #00FFF0;
+            color: #0D1117;
+        }
+
+        .btn-primary:hover {
+            background: #00FFB3;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .btn-outline:hover {
+            border-color: #00FFF0;
+            color: #00FFF0;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .hero-logo {
+                width: 150px;
+                height: 150px;
+            }
+        }
+
+        .feature-image:hover {
+            transform: scale(1.02);
+        }
     </style>
 </head>
 <body>
@@ -118,14 +229,19 @@
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="container hero-content">
-            <h1 class="hero-title">Gun.js Blockchain Extension</h1>
-            <p class="hero-subtitle">
-                A powerful plugin that extends Gun.js with blockchain capabilities, stealth transactions, and encrypted storage
-            </p>
-            <div class="hero-buttons">
-                <a href="#quick-start" class="btn btn-primary">Get Started</a>
-                <a href="https://github.com/scobru/gun-eth" target="_blank" class="btn btn-secondary">View on GitHub</a>
+        <div class="hero-content">
+            <div class="hero-logo">
+                <img src="./assets/hero-image.webp" alt="Gun-ETH Logo" class="logo-image">
+            </div>
+            <div class="hero-text">
+                <h1 class="hero-title">Modern Decentralized Backup System</h1>
+                <p class="hero-subtitle">
+                    Secure, efficient, and reliable backups with encryption and versioning
+                </p>
+                <div class="hero-buttons">
+                    <a href="#quick-start" class="btn btn-primary">Get Started</a>
+                    <a href="https://github.com/scobru/gun-eth" target="_blank" class="btn btn-outline">View on GitHub</a>
+                </div>
             </div>
         </div>
     </section>
@@ -190,6 +306,134 @@
         <div class="container">
             <h2 class="section-title glow-text">Documentation</h2>
             
+            <!-- Gun-Ethereum Integration -->
+            <div class="doc-section">
+                <h3 class="section-subtitle">🔐 Gun-Ethereum Integration</h3>
+                <div class="code-demo">
+                    <div class="code-header">
+                        <h4>Authentication Example</h4>
+                        <div class="code-tabs">
+                            <button>Setup</button>
+                            <button>ETH to GUN</button>
+                            <button>GUN to ETH</button>
+                            <button>Usage</button>
+                        </div>
+                    </div>
+                    <div class="code-window">
+                        <!-- Setup Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Initialize Gun-Eth
+import { GunEth } from 'gun-eth';
+import Gun from 'gun';
+
+// Configura Gun con i peers
+const gun = Gun({
+    peers: ['http://localhost:8765/gun']
+});
+
+// Inizializza GunEth
+const gunEth = new GunEth(gun);</code></pre>
+                        </div>
+
+                        <!-- ETH to GUN Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Converti un account Ethereum in un account Gun
+import { ethToGunAccount, createSignature, MESSAGE_TO_SIGN } from 'gun-eth';
+
+// Crea una firma con il wallet Ethereum
+const signature = await createSignature(MESSAGE_TO_SIGN);
+
+// Converti in account Gun
+const gunAccount = await ethToGunAccount(signature);
+
+// L'account contiene:
+console.log({
+    pub: gunAccount.pub,    // Chiave pubblica Gun
+    priv: gunAccount.priv,  // Chiave privata Gun
+    epub: gunAccount.epub,  // Chiave pubblica di cifratura
+    epriv: gunAccount.epriv // Chiave privata di cifratura
+});</code></pre>
+                        </div>
+
+                        <!-- GUN to ETH Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Converti un account Gun in un account Ethereum
+import { gunToEthAccount } from 'gun-eth';
+
+// Usa un account Gun esistente
+const gunAccount = {
+    pub: "chiave-pubblica-gun",
+    priv: "chiave-privata-gun",
+    epub: "chiave-pubblica-cifratura",
+    epriv: "chiave-privata-cifratura"
+};
+
+// Converti in account Ethereum
+const ethAccount = await gunToEthAccount(gunAccount);
+
+// L'account contiene:
+console.log({
+    address: ethAccount.address,     // Indirizzo Ethereum
+    privateKey: ethAccount.privateKey // Chiave privata Ethereum
+});</code></pre>
+                        </div>
+
+                        <!-- Usage Tab -->
+                        <div class="tab-content">
+                            <pre><code class="language-javascript">
+// Esempio di utilizzo completo
+const signature = await createSignature(MESSAGE_TO_SIGN);
+const gunAccount = await ethToGunAccount(signature);
+
+// Salva dati cifrati
+await gun.user(gunAccount.pub).get('myData').put({
+    secret: "Dati cifrati con le chiavi Gun"
+});
+
+// Recupera dati cifrati
+const data = await gun.user(gunAccount.pub).get('myData').then();
+
+// Converti indietro in Ethereum se necessario
+const ethAccount = await gunToEthAccount(gunAccount);</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="steps-container">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Connect Wallet</h4>
+                            <p>Collega il tuo wallet Ethereum e firma il messaggio di autenticazione</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Convert Account</h4>
+                            <p>Converti l'account Ethereum in un account Gun con ethToGunAccount</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Use Gun Features</h4>
+                            <p>Utilizza tutte le funzionalità di Gun con l'account convertito</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Convert Back</h4>
+                            <p>Se necessario, riconverti in account Ethereum con gunToEthAccount</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Stealth Chain Documentation -->
             <div class="doc-section">
                 <h3 class="section-subtitle">🔒 Stealth Chain</h3>
@@ -331,7 +575,7 @@ gun.get(nodeId).on((data, key) => {
 
             <!-- Bubble Documentation -->
             <div class="doc-section">
-                <h3 class="section-subtitle">🫧 Encrypted Bubbles</h3>
+                <h3 class="section-subtitle">🔄 Encrypted Bubbles</h3>
                 <div class="code-demo">
                     <div class="code-header">
                         <h4>Bubble Management</h4>
@@ -391,76 +635,6 @@ await provider.handleGrantPermission(
         }
     }
 );</code></pre>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Gun-Ethereum Integration -->
-            <div class="doc-section">
-                <h3 class="section-subtitle">🔐 Gun-Ethereum Integration</h3>
-                <div class="code-demo">
-                    <div class="code-header">
-                        <h4>Authentication Example</h4>
-                        <div class="code-tabs">
-                            <button>Setup</button>
-                            <button>Usage</button>
-                        </div>
-                    </div>
-                    <div class="code-window">
-                        <!-- Setup Tab -->
-                        <div class="tab-content">
-                            <pre><code class="language-javascript">
-// Initialize Gun-Eth
-const gun = await GunEth.initializeGun('localhost');
-
-// Create new account
-const account = await gun.ethToGunAccount();</code></pre>
-                        </div>
-
-                        <!-- Usage Tab -->
-                        <div class="tab-content">
-                            <pre><code class="language-javascript">
-// Store encrypted keys
-await gun.createAndStoreEncryptedPair(ethereumAddress);
-
-// Retrieve keys when needed
-const signature = await gun.createSignature(MESSAGE_TO_SIGN);
-const pair = await gun.getAndDecryptPair(
-    ethereumAddress, 
-    signature
-);</code></pre>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="steps-container">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h4>Connect Wallet</h4>
-                            <p>Link your Ethereum wallet to get started</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h4>Generate Keys</h4>
-                            <p>Create necessary key pairs automatically</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h4>Encrypt</h4>
-                            <p>Keys are encrypted with your Ethereum signature</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">4</div>
-                        <div class="step-content">
-                            <h4>Secure Access</h4>
-                            <p>Use signatures to access your data securely</p>
                         </div>
                     </div>
                 </div>
