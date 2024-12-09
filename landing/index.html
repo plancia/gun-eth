@@ -547,7 +547,7 @@
         </p>
 
         <p class="why-description">
-          ��� It integrates natively with Gun.js's decentralized database through stealth transactions, proof chains, and encrypted bubbles.
+          ��������� It integrates natively with Gun.js's decentralized database through stealth transactions, proof chains, and encrypted bubbles.
         </p>
 
         <p class="why-description">
@@ -666,10 +666,12 @@
             <div class="overview-section">
               <h5>Stealth Chain</h5>
               <ul>
-                <li><code>gun.stealth('generate', recipientAddress, signature)</code> - Generate a stealth address</li>
-                <li><code>gun.stealth('announce', stealthAddress, senderPublicKey, spendingPublicKey)</code> - Announce a stealth payment</li>
-                <li><code>gun.stealth('getPayments', signature)</code> - Retrieve stealth payments</li>
-                <li><code>gun.stealth('recover', stealthAddress, senderPublicKey, signature)</code> - Recover stealth funds</li>
+                <li><code>gun.generateStealthAddress(recipientAddress, signature, options)</code> - Generate a stealth address</li>
+                <li><code>gun.announceStealthPayment(stealthAddress, senderPublicKey, spendingPublicKey, signature, options)</code> - Announce a stealth payment</li>
+                <li><code>gun.getStealthPayments(signature, options)</code> - Retrieve stealth payments</li>
+                <li><code>gun.recoverStealthFunds(stealthAddress, senderPublicKey, signature, spendingPublicKey)</code> - Recover stealth funds</li>
+                <li><code>gun.publishStealthKeys(signature)</code> - Publish stealth keys</li>
+                <li><code>gun.monitorStealthEvents(callback)</code> - Monitor stealth events</li>
               </ul>
             </div>
 
@@ -858,32 +860,32 @@ else {
 }</code></pre>
               </div>
 
-              <!-- ETH to GUN Tab -->
-              <div class="tab-content">
+              <!-- ETH to GUN Example -->
+              <div class="code-example">
                 <pre><code class="language-javascript">
 // Convert an Ethereum account to a Gun account
-import { ethToGunAccount, createSignature, MESSAGE_TO_SIGN } from 'gun-eth';
+import { GunEth } from 'gun-eth';
 
 // Create signature with Ethereum wallet
-const signature = await createSignature(MESSAGE_TO_SIGN);
+const signature = await GunEth.createSignature(GunEth.MESSAGE_TO_SIGN);
 
 // Convert to Gun SEA keypair
-const gunAccount = await ethToGunAccount(signature);
+const gunAccount = await GunEth.ethToGunAccount();
 
 // The account contains:
 console.log({
-    pub: gunAccount.pub,    // Gun public key
-    priv: gunAccount.priv,  // Gun private key
-    epub: gunAccount.epub,  // Encryption public key
-    epriv: gunAccount.epriv // Encryption private key
+    pub: gunAccount.pub,      // Gun public key
+    priv: gunAccount.priv,    // Gun private key
+    epub: gunAccount.epub,    // Encryption public key
+    epriv: gunAccount.epriv   // Encryption private key
 });</code></pre>
               </div>
 
-              <!-- GUN to ETH Tab -->
-              <div class="tab-content">
+              <!-- GUN to ETH Example -->
+              <div class="code-example">
                 <pre><code class="language-javascript">
 // Convert a Gun account to an Ethereum account
-import { gunToEthAccount } from 'gun-eth';
+import { GunEth } from 'gun-eth';
 
 // Use an existing Gun account
 const gunAccount = {
@@ -894,12 +896,12 @@ const gunAccount = {
 };
 
 // Convert to Ethereum account
-const ethAccount = await gunToEthAccount(gunAccount);
+const ethAccount = await GunEth.gunToEthAccount(gunAccount);
 
 // The account contains:
 console.log({
-    address: ethAccount.address,     // Ethereum address
-    privateKey: ethAccount.privateKey // Ethereum private key
+    address: ethAccount.address,       // Ethereum address
+    privateKey: ethAccount.privateKey  // Ethereum private key
 });</code></pre>
               </div>
 
@@ -1199,7 +1201,7 @@ const signature = await createSignature(MESSAGE_TO_SIGN);</code></pre>
           </div>
         </div>
 
-        <!-- Stealth Chain Documentation -->
+        <!-- StealthChain Documentation -->
         <div id="stealth" class="section">
           <h2>StealthChain</h2>
           <p>
@@ -1240,36 +1242,54 @@ const stealthInfo = await stealthChain.generateStealthAddress(
               </div>
 
               <!-- Advanced Tab -->
-              <div class="tab-content">
+              <div class="tab-content" data-tab="stealth">
                 <pre><code class="language-javascript">
+import { GunEth } from 'gun-eth';
+import { StealthChain } from 'gun-eth';
+
+// Initialize Gun and StealthChain
+const gun = Gun();
+GunEth.extendGun(Gun);
+const stealthChain = new StealthChain(gun);
+
+// Create signature and publish stealth keys
+const signature = await GunEth.createSignature(GunEth.MESSAGE_TO_SIGN);
+await stealthChain.publishStealthKeys(signature);
+
+// Generate stealth address for recipient
+const stealthInfo = await stealthChain.generateStealthAddress(
+  recipientAddress,
+  signature
+);
+
 // Announce payment
 await stealthChain.announceStealthPayment(
   stealthInfo.stealthAddress,
   stealthInfo.senderPublicKey,
   stealthInfo.spendingPublicKey,
-  senderSignature,
+  signature,
   { 
-    chain: 'localhost',
-    onChain: true
-  }
-);
-
-// Retrieve payments (recipient side)
-const payments = await stealthChain.getStealthPayments(
-  recipientSignature,
-  { 
-    chain: 'localhost',
+    onChain: true,
     source: 'both'
   }
 );
 
-// Recover funds
-const recoveredFunds = await stealthChain.recoverStealthFunds(
-  payment.stealthAddress,
-  payment.senderPublicKey,
-  recipientSignature,
-  payment.spendingPublicKey
-);</code></pre>
+// Get payments
+const payments = await stealthChain.getStealthPayments(
+  signature,
+  { source: 'both' }
+);
+
+// Recover funds from payment
+if (payments.length > 0) {
+  const payment = payments[0];
+  const recovered = await stealthChain.recoverStealthFunds(
+    payment.stealthAddress,
+    payment.senderPublicKey,
+    signature,
+    payment.spendingPublicKey
+  );
+}</code></pre>
               </div>
             </div>
           </div>
