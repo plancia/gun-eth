@@ -4,7 +4,9 @@ logs
 decrypted-files
 cache
 bubbles
+bubbles/*
 radata
+radata/*
 
 .env
 
