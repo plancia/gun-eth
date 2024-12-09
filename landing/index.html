@@ -808,9 +808,17 @@ const decryptedPair = await GunEth.getAndDecryptPair(address, signature);</code>
             <div class="code-header">
               <h4>Authentication Example</h4>
               <div class="code-tabs">
-                <button class="tab-button active" data-tab="setup">Setup</button>
-                <button class="tab-button" data-tab="eth2gun">ETH to GUN</button>
-                <button class="tab-button" data-tab="gun2eth">GUN to ETH</button>
+                <button>Setup</button>
+                <button>ETH to GUN</button>
+                <button>GUN to ETH</button>
+                <button>Usage</button>
+                <a
+                  href="https://github.com/scobru/gun-eth/tree/main/src/core/gun-eth.js"
+                  target="_blank"
+                  class="source-link"
+                >
+                  <i class="fas fa-code"></i> Example
+                </a>
               </div>
             </div>
             <div class="code-window">
@@ -895,6 +903,25 @@ console.log({
     address: ethAccount.address,       // Ethereum address
     privateKey: ethAccount.privateKey  // Ethereum private key
 });</code></pre>
+              </div>
+
+              <!-- Usage Tab -->
+              <div class="tab-content">
+                <pre><code class="language-javascript">
+// Complete usage example
+const signature = await createSignature(MESSAGE_TO_SIGN);
+const gunAccount = await ethToGunAccount(signature);
+
+// Save encrypted data
+await gun.user(gunAccount.pub).get('myData').put({
+    secret: "Data encrypted with Gun keys"
+});
+
+// Retrieve encrypted data
+const data = await gun.user(gunAccount.pub).get('myData').then();
+
+// Convert back to Ethereum if needed
+const ethAccount = await gunToEthAccount(gunAccount);</code></pre>
               </div>
             </div>
           </div>
@@ -1175,7 +1202,7 @@ const signature = await createSignature(MESSAGE_TO_SIGN);</code></pre>
         </div>
 
         <!-- StealthChain Documentation -->
-        <div id="stealth" class="section">
+        <div id="stealth-chain" class="section">
           <h2>StealthChain</h2>
           <p>
             Stealth Transactions enable private and secure transactions on the blockchain.
