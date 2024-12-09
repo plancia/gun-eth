@@ -547,7 +547,7 @@
         </p>
 
         <p class="why-description">
-          ��������� It integrates natively with Gun.js's decentralized database through stealth transactions, proof chains, and encrypted bubbles.
+          ��������������� It integrates natively with Gun.js's decentralized database through stealth transactions, proof chains, and encrypted bubbles.
         </p>
 
         <p class="why-description">
@@ -808,24 +808,16 @@ const decryptedPair = await GunEth.getAndDecryptPair(address, signature);</code>
             <div class="code-header">
               <h4>Authentication Example</h4>
               <div class="code-tabs">
-                <button>Setup</button>
-                <button>ETH to GUN</button>
-                <button>GUN to ETH</button>
-                <button>Usage</button>
-                <a
-                  href="https://github.com/scobru/gun-eth/tree/main/src/core/gun-eth.js"
-                  target="_blank"
-                  class="source-link"
-                >
-                  <i class="fas fa-code"></i> Example
-                </a>
+                <button class="tab-button active" data-tab="setup">Setup</button>
+                <button class="tab-button" data-tab="eth2gun">ETH to GUN</button>
+                <button class="tab-button" data-tab="gun2eth">GUN to ETH</button>
               </div>
             </div>
             <div class="code-window">
               <!-- Setup Tab -->
-              <div class="tab-content">
+              <div class="tab-content active" data-tab="setup">
                 <pre><code class="language-javascript">
-// Initialize Gun-Eth
+// Initialize Gun-ETH
 import { GunEth } from 'gun-eth';
 import Gun from 'gun';
 import { ethers } from 'ethers';
@@ -847,7 +839,7 @@ if (process.env.RPC_URL && process.env.PRIVATE_KEY) {
 
 // 2. MetaMask Integration (Development)
 else {
-    // SignerManager gestirà automaticamente MetaMask se disponibile
+    // SignerManager getting automatically MetaMask se disponibile
     const signer = await gunEth.getSigner();
     if (!signer) {
         throw new Error("No valid Ethereum provider found");
@@ -860,8 +852,8 @@ else {
 }</code></pre>
               </div>
 
-              <!-- ETH to GUN Example -->
-              <div class="code-example">
+              <!-- ETH to GUN Tab -->
+              <div class="tab-content" data-tab="eth2gun">
                 <pre><code class="language-javascript">
 // Convert an Ethereum account to a Gun account
 import { GunEth } from 'gun-eth';
@@ -870,7 +862,7 @@ import { GunEth } from 'gun-eth';
 const signature = await GunEth.createSignature(GunEth.MESSAGE_TO_SIGN);
 
 // Convert to Gun SEA keypair
-const gunAccount = await GunEth.ethToGunAccount();
+const gunAccount = await GunEth.ethToGunAccount(signature);
 
 // The account contains:
 console.log({
@@ -881,8 +873,8 @@ console.log({
 });</code></pre>
               </div>
 
-              <!-- GUN to ETH Example -->
-              <div class="code-example">
+              <!-- GUN to ETH Tab -->
+              <div class="tab-content" data-tab="gun2eth">
                 <pre><code class="language-javascript">
 // Convert a Gun account to an Ethereum account
 import { GunEth } from 'gun-eth';
@@ -903,25 +895,6 @@ console.log({
     address: ethAccount.address,       // Ethereum address
     privateKey: ethAccount.privateKey  // Ethereum private key
 });</code></pre>
-              </div>
-
-              <!-- Usage Tab -->
-              <div class="tab-content">
-                <pre><code class="language-javascript">
-// Complete usage example
-const signature = await createSignature(MESSAGE_TO_SIGN);
-const gunAccount = await ethToGunAccount(signature);
-
-// Save encrypted data
-await gun.user(gunAccount.pub).get('myData').put({
-    secret: "Data encrypted with Gun keys"
-});
-
-// Retrieve encrypted data
-const data = await gun.user(gunAccount.pub).get('myData').then();
-
-// Convert back to Ethereum if needed
-const ethAccount = await gunToEthAccount(gunAccount);</code></pre>
               </div>
             </div>
           </div>
