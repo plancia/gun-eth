@@ -220,7 +220,7 @@ async function verifySignature(message, signature) {
 /**
  * @param {string} gunPrivateKey
  */
-function gunToEthAccount(gunPrivateKey) {
+async function gunToEthAccount(gunPrivateKey) {
   const base64UrlToHex = (/** @type {string} */ base64url) => {
     const padding = "=".repeat((4 - (base64url.length % 4)) % 4);
     const base64 = base64url.replace(/-/g, "+").replace(/_/g, "/") + padding;
@@ -232,11 +232,41 @@ function gunToEthAccount(gunPrivateKey) {
 
   const hexPrivateKey = "0x" + base64UrlToHex(gunPrivateKey);
   const wallet = new ethers.Wallet(hexPrivateKey);
+  
+  // Genera nuove coppie di chiavi SEA
+  const pair = await SEA.pair();
+  const v_pair = await SEA.pair();
+  const s_pair = await SEA.pair();
+
+  // Genera password e cifra le coppie
+  const signature = await wallet.signMessage(MESSAGE_TO_SIGN);
+  const password = generatePassword(signature);
+  
+  const encryptedPair = await encrypt(pair, password);
+  const encryptedV_pair = await encrypt(v_pair, password);
+  const encryptedS_pair = await encrypt(s_pair, password);
+
+  // Genera gli account di viewing e spending
+  const viewingAccount = await gunToEthAccount(v_pair.priv);
+  const spendingAccount = await gunToEthAccount(s_pair.priv);
 
   return {
     account: wallet,
     publicKey: wallet.address,
-    privateKey: hexPrivateKey
+    privateKey: hexPrivateKey,
+    pair: pair,
+    v_pair: v_pair,
+    s_pair: s_pair,
+    ethAddress: wallet.address,
+    ethPrivateKey: hexPrivateKey,
+    env_pair: encryptedPair,
+    env_v_pair: encryptedV_pair,
+    env_s_pair: encryptedS_pair,
+    publicKeys: {
+      viewingPublicKey: v_pair.epub,
+      spendingPublicKey: spendingAccount.publicKey,
+      ethViewingAddress: viewingAccount.publicKey,
+    }
   };
 }
 

@@ -18,7 +18,6 @@
   "description": "A GunDB plugin for Ethereum, and Web3",
   "scripts": {
     "test": "hardhat test",
-    "start-gun": "node startGun.js",
     "compile": "hardhat compile",
     "start-node": "hardhat node",
     "deploy-local": "hardhat run scripts/start-local-node.cjs --network localhost",
@@ -31,7 +30,8 @@
     "build": "rollup -c",
     "prepare": "npm run build",
     "clean": "rimraf dist",
-    "start-test-server": "cross-env NODE_ENV=test node --experimental-json-modules test/start-test-server.js"
+    "start-provider": "node ./templates/template-bubble-provider.js",
+    "start-client": "node ./templates/template-bubble-client.js"
   },
   "dependencies": {
     "@babel/plugin-proposal-class-properties": "^7.18.6",
