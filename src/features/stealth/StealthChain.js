@@ -255,7 +255,7 @@ export class StealthChain {
    */
   async announceStealthPayment(stealthAddress, senderPublicKey, spendingPublicKey, signature, options = {}) {
     try {
-      const { chain = 'mainnet', onChain = false } = options;
+      const { chain = 'localhost', onChain = false } = options;
       
       // Verifica la firma
       await this.gun.verifySignature(MESSAGE_TO_SIGN, signature);

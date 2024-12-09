@@ -1,207 +1,368 @@
 # Gun-ETH 🔫
 
-![Gun-ETH Logo](landing/assets/hero-image.webp)
+<img src="landing/assets/hero-image.webp" alt="Gun-ETH Logo" width="300">
 
-Un potente plugin per Gun.js che estende le sue capacità aggiungendo funzionalità blockchain e crittografiche avanzate per creare applicazioni decentralizzate più sicure e private.
+A powerful Gun.js plugin that extends its capabilities by adding advanced blockchain and cryptographic features to create more secure and private decentralized applications.
 
-## ✨ Perché Gun-ETH?
+## ✨ Why Gun-ETH?
 
-- 🎯 **Estensione Potente**: Aggiunge funzionalità blockchain e crittografiche avanzate a Gun.js
-- 🌐 **Integrazione Seamless**: Si integra perfettamente con Gun.js mantenendone la semplicità
-- 🔒 **Privacy Avanzata**: Implementa transazioni stealth, proof chain e bolle crittografate
-- 🚀 **Architettura Modulare**: API intuitive per implementare facilmente funzionalità Web3
-
-## 🌟 Caratteristiche Principali
-
-### 🔒 Stealth Chain
-- Transazioni private con indirizzi stealth
-- Massima privacy nelle comunicazioni
-- Sistema di annunci on-chain
-
-### ⛓️ Proof Chain
-- Verifica crittografica dei dati
-- Ancoraggio su blockchain
-- Monitoraggio delle modifiche
-
-### 🫧 Bolle Crittografate
-- Container di dati sicuri
-- Crittografia end-to-end
-- Gestione avanzata delle autorizzazioni
-
-### 🔐 Integrazione Web3
-- Conversione seamless tra account Gun e Ethereum
-- Supporto per firme e autenticazione
-- Gestione completa delle chiavi
+- 🎯 **Powerful Extension**: Adds advanced blockchain and cryptographic features to Gun.js
+- 🌐 **Seamless Integration**: Perfectly integrates with Gun.js while maintaining simplicity
+- 🔒 **Advanced Privacy**: Implements stealth transactions, proof chain, and encrypted data
+- 🚀 **Modern Architecture**: Intuitive APIs for easy Web3 functionality implementation
 
 ## 🚀 Quick Start
 
-### Installazione
+### Installation
 
-\`\`\`bash
+```bash
 npm install gun-eth
-# o
+# or
 yarn add gun-eth
-\`\`\`
+```
 
-### Configurazione Base
+### Basic Configuration
 
-\`\`\`javascript
-// Inizializza Gun-Eth
-import { GunEth } from 'gun-eth';
+```javascript
 import Gun from 'gun';
+import { GunEth } from 'gun-eth';
+import { ethers } from 'ethers';
 
-// Configura Gun con i peers
+// Configure Gun with peers
 const gun = Gun({
     peers: ['http://localhost:8765/gun']
 });
 
-// Inizializza GunEth
-const gunEth = new GunEth(gun);
-\`\`\`
+// Initialize GunEth
+const gunEth = await GunEth.init('localhost'); // or 'mainnet', 'sepolia', etc.
+```
 
-## 📚 Documentazione
+### Signer Configuration
 
-### 🔐 Integrazione Gun-Ethereum
+Gun-ETH implements a smart signer selection strategy:
 
-#### Conversione ETH -> GUN
-\`\`\`javascript
-// Converti un account Ethereum in un account Gun
-import { ethToGunAccount, createSignature, MESSAGE_TO_SIGN } from 'gun-eth';
+1. **Manual Configuration (Recommended for Production)**
+```javascript
+// Using explicit RPC URL and private key
+if (SignerManager.rpcUrl && SignerManager.privateKey) {
+    SignerManager.provider = new ethers.JsonRpcProvider(SignerManager.rpcUrl);
+    const wallet = new ethers.Wallet(SignerManager.privateKey);
+}
+```
 
-// Crea una firma con il wallet Ethereum
-const signature = await createSignature(MESSAGE_TO_SIGN);
+2. **MetaMask Fallback (Development-Friendly)**
+```javascript
+// Automatic MetaMask detection if no manual configuration
+if (typeof window !== "undefined" && window?.ethereum) {
+    const windowWithEthereum = window;
+    await windowWithEthereum.ethereum?.request({ method: "eth_requestAccounts" });
+    const browserProvider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await browserProvider.getSigner();
+}
+```
 
-// Converti in account Gun
-const gunAccount = await ethToGunAccount(signature);
-\`\`\`
+The signer selection follows these priorities:
+1. Prioritizes manual configuration (more secure for production environments)
+2. Falls back to MetaMask for easier development and testing
+3. Maintains flexibility by supporting both approaches
+4. Throws an error if no valid provider is found
 
-#### Conversione GUN -> ETH
-\`\`\`javascript
-// Converti un account Gun in un account Ethereum
-import { gunToEthAccount } from 'gun-eth';
+### Error Handling
 
-const ethAccount = await gunToEthAccount(gunAccount);
-\`\`\`
+```javascript
+try {
+    const gunEth = await GunEth.init({
+        gun,
+        chain: 'localhost'
+    });
+} catch (error) {
+    console.error('Initialization error:', error);
+}
+```
+
+## 📚 Documentation
+
+### 🔐 Gun-Ethereum Integration
+
+#### ETH -> GUN Conversion
+```javascript
+try {
+    // Crea una firma con il wallet Ethereum
+    const signature = await GunEth.createSignature(GunEth.MESSAGE_TO_SIGN);
+    
+    // Converte in un pair di chiavi compatibile con Gun SEA
+    const gunKeyPair = await GunEth.ethToGunAccount(signature);
+    
+    console.log('Generated Gun SEA keypair:', gunKeyPair);
+    // Il keypair contiene le chiavi generate da Gun SEA:
+    // {
+    //     pub: "chiave-pubblica-SEA",
+    //     priv: "chiave-privata-SEA",
+    //     epub: "chiave-pubblica-cifratura-SEA",
+    //     epriv: "chiave-privata-cifratura-SEA"
+    // }
+} catch (error) {
+    console.error('Conversion error:', error);
+}
+```
+
+#### GUN -> ETH Conversion
+```javascript
+try {
+    // Richiede la chiave privata SEA generata da Gun
+    const ethAccount = await GunEth.gunToEthAccount(gunSEAPrivateKey);
+    console.log('Ethereum account:', ethAccount);
+} catch (error) {
+    console.error('Conversion error:', error);
+}
+```
 
 ### 🔒 Stealth Chain
 
-\`\`\`javascript
-// Inizializza StealthChain
-import { StealthChain } from 'gun-eth';
+```javascript
+// Initialize Gun
+const gun = Gun();
+await GunEth.init({ gun, chain: 'localhost' });
 
-const stealthChain = new StealthChain(gun);
+try {
+    // Publish stealth keys
+    const signature = await GunEth.createSignature(GunEth.MESSAGE_TO_SIGN);
+    await gun.publishStealthKeys(signature);
 
-// Pubblica chiavi stealth
-const signature = await createSignature(MESSAGE_TO_SIGN);
-await stealthChain.publishStealthKeys(signature);
+    // Generate stealth address
+    const stealthInfo = await gun.generateStealthAddress(recipientAddress, signature, {
+        // Additional options
+        expiresIn: '24h',
+        metadata: {
+            type: 'payment',
+            amount: '1.0'
+        }
+    });
 
-// Genera indirizzo stealth
-const stealthInfo = await stealthChain.generateStealthAddress(
-    recipientAddress,
-    senderSignature
-);
-\`\`\`
+    console.log('Generated stealth address:', stealthInfo);
+} catch (error) {
+    console.error('Stealth operation error:', error);
+}
+
+// Monitor stealth events
+gun.monitorStealthEvents((event) => {
+    console.log('New stealth event:', event);
+});
+```
 
 ### ⛓️ Proof Chain
 
-\`\`\`javascript
-// Inizializza ProofChain
-import { ProofChain } from 'gun-eth';
+```javascript
+try {
+    // Write data with proof
+    await gun.proof('users', null, {
+        name: 'Alice',
+        age: 25
+    }, (ack) => {
+        if (ack.err) {
+            console.error('Write error:', ack.err);
+            return;
+        }
+        console.log('Data written successfully:', {
+            nodeId: ack.nodeId,
+            txHash: ack.txHash
+        });
+    });
 
-const proofChain = new ProofChain(gun);
+    // Verify data integrity
+    await gun.proof('users', 'nodeId123', null, (ack) => {
+        if (ack.err) {
+            console.error('Verification error:', ack.err);
+            return;
+        }
+        console.log('Verification completed:', ack.ok);
+    });
+} catch (error) {
+    console.error('Proof operation error:', error);
+}
+```
 
-// Scrivi dati con prova
-proofChain.proof(chain, null, data, (ack) => {
-    if (ack.ok) {
-        console.log("Node ID:", ack.nodeId);
-        console.log("Transaction Hash:", ack.txHash);
+### 🫧 Encrypted Bubbles
+
+```javascript
+// Initialize Bubble Client
+import { BubbleClient } from 'gun-eth';
+
+const bubbleClient = new BubbleClient({
+    providerUrl: "http://localhost:3000/api",
+    signer: signer,  // Your Ethereum signer
+    keypair: {       // Your encryption keypair
+        epub: "your-encryption-public-key",
+        epriv: "your-encryption-private-key"
     }
 });
 
-// Verifica integrità dati
-gun.proof(chain, nodeId, null, (ack) => {
-    if (ack.ok) {
-        console.log("Verification passed");
-    }
+// Create and manage bubbles
+const bubble = await bubbleClient.createBubble("My Bubble", {
+    isPrivate: true
 });
-\`\`\`
 
-### 🫧 Bolle Crittografate
+// Write encrypted content
+await bubbleClient.writeBubble(
+    bubble.id,
+    "secret.txt",
+    "My secret content"
+);
 
-\`\`\`javascript
-// Inizializza provider
+// Read and decrypt content
+const result = await bubbleClient.readBubble(
+    bubble.id,
+    "secret.txt"
+);
+
+// Share with another user
+await bubbleClient.shareBubble(
+    bubble.id,
+    recipientAddress,
+    { granteeEpub: recipientPublicKey }
+);
+```
+
+### 🔄 Bubble Providers
+
+Gun-ETH offre tre tipi di provider per gestire le bolle crittografate:
+
+#### Base Provider
+```javascript
+import { BaseBubbleProvider } from 'gun-eth';
+
+class CustomProvider extends BaseBubbleProvider {
+    async handleCreateBubble(options) { }
+    async handleWriteBubble(bubbleId, fileName, content) { }
+    async handleReadBubble(bubbleId, fileName) { }
+    async handleGrantPermission(bubbleId, granteeAddress) { }
+}
+```
+
+#### GUN Provider
+```javascript
+import { GUNBubbleProvider } from 'gun-eth';
+
+const gunProvider = new GUNBubbleProvider({
+    gun: gunInstance,
+    signer: signer,
+    keypair: keypair
+});
+
+// Stores data directly in GUN's graph
+await gunProvider.handleCreateBubble({
+    name: "GUN Bubble",
+    isPrivate: true
+});
+```
+
+#### Hybrid Provider
+```javascript
 import { HybridBubbleProvider } from 'gun-eth';
 
-const provider = new HybridBubbleProvider({
-    rpcUrl: 'your-rpc-url',
-    chain: 'your-network',
+const hybridProvider = new HybridBubbleProvider({
     gun: gunInstance,
-    keypair: userKeypair
+    signer: signer,
+    keypair: keypair,
+    storage: customStorageAdapter
 });
 
-// Crea bolla crittografata
-const bubble = await provider.handleCreateBubble({
-    name: "Private Bubble",
+// Supports both GUN and external storage
+await hybridProvider.handleCreateBubble({
+    name: "Hybrid Bubble",
     isPrivate: true,
-    userAddress: userAddress
+    useExternal: true
 });
+```
 
-// Carica file nella bolla
-await provider.handleFileUpload(
-    bubble.id,
-    fileName,
-    content,
-    userAddress
-);
+### 📋 Templates
 
-// Condividi bolla
-await provider.handleGrantPermission(
-    bubbleId,
-    recipientAddress,
-    ownerAddress,
-    {
-        granteeEpub: recipientPublicKey,
-        metadata: {
-            sharedAt: Date.now(),
-            granterAddress: ownerAddress
-        }
-    }
-);
-\`\`\`
+Gun-ETH fornisce template pronti all'uso per implementazioni comuni:
 
-## 🏗️ Architettura Provider
+#### Client Template
+```javascript
+// template-bubble-client.js
+const CONFIG = {
+    RPC_URL: process.env.RPC_URL,
+    PRIVATE_KEY: process.env.PRIVATE_KEY,
+    PROVIDER_URL: "http://localhost:3000/api",
+    GUN_PEERS: ['http://localhost:8765/gun'],
+    DECRYPTED_FILES_DIR: './decrypted-files'
+};
 
-Gun-ETH supporta diversi tipi di provider per la gestione dei dati:
+// Initialize client with configuration
+const client = await initializeClient();
 
-### Base Provider
-- Classe astratta per tutti i provider
-- Definisce l'interfaccia base
-- Implementazione personalizzabile
+// Example usage
+const bubble = await client.createBubble("Test Bubble");
+await client.writeBubble(bubble.id, "test.txt", "content");
+const result = await client.readBubble(bubble.id, "test.txt");
+```
 
-### GUN Provider
-- Utilizza GUN per lo storage
-- Storage diretto nel grafo GUN
-- Ottimo per dati piccoli e frequenti
+#### Provider Template
+```javascript
+// template-bubble-provider.js
+const CONFIG = {
+    RPC_URL: process.env.RPC_URL,
+    PRIVATE_KEY: process.env.PRIVATE_KEY,
+    GUN_PEERS: "http://localhost:8765/gun",
+    GUN_DIR: "radata",
+    BUBBLES_DIR: "bubbles"
+};
 
-### Hybrid Provider
-- Combina GUN con storage esterno
-- Supporto per file di grandi dimensioni
-- Flessibilità massima
+// Initialize provider with configuration
+const app = express();
+const gun = Gun(gunOptions);
+const provider = new HybridBubbleProvider(CONFIG);
 
-## 📋 Templates
+// API endpoints
+app.post('/bubble', handleCreateBubble);
+app.post('/bubble/:id/write', handleWriteBubble);
+app.get('/bubble/:id', handleReadBubble);
+```
 
-Il progetto include templates pronti all'uso per:
+## 🏗️ Architecture
 
-- Client implementation completa
-- Provider implementation completa
-- Gestione configurazioni
-- Gestione errori
-- Storage file decriptati
+Gun-ETH is structured in independent modules:
 
-## 🤝 Contribuire
+- **Core**: Base functionality and Gun.js integration
+- **Stealth**: Private transaction implementation
+- **Proof**: Verification and anchoring system
+- **Crypto**: Cryptographic utilities
+- **Utils**: Common support functions
 
-Le contribuzioni sono benvenute! Per favore leggi le linee guida per contribuire prima di iniziare.
+## 🌟 Features
 
-## 📄 Licenza
+### Secure Backup System
+- End-to-end encryption
+- Version control
+- Decentralized storage
+
+### Advanced Privacy
+- Stealth transactions
+- Private communications
+- On-chain announcements
+
+### Data Integrity
+- Cryptographic verification
+- Blockchain anchoring
+- Change monitoring
+
+### Web3 Integration
+- Seamless Gun/Ethereum account conversion
+- Signature and authentication support
+- Complete key management
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+
+1. 🍴 Fork the repository
+2. 🌿 Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. 💾 Commit your changes (`git commit -m 'Add: amazing feature'`)
+4. 📤 Push to the branch (`git push origin feature/AmazingFeature`)
+5. 🔄 Open a Pull Request
+
+## 📄 License
 
 MIT © 2024 Scobru
