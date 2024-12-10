@@ -212,8 +212,150 @@
         }
 
         .hero-logo {
+          width: 200px;
+          height: 200px;
+        }
+
+        .hero-buttons {
+          flex-direction: column;
+          gap: 1rem;
+          width: 100%;
+        }
+
+        .btn {
+          width: 100%;
+          text-align: center;
+        }
+
+        .feature-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .code-demo {
+          margin: 1rem -1rem;
+        }
+
+        .code-tabs {
+          overflow-x: auto;
+          padding: 0.5rem;
+        }
+
+        .code-tabs button {
+          white-space: nowrap;
+        }
+
+        .integration-overview {
+          padding: 1rem;
+        }
+
+        pre {
+          overflow-x: auto;
+        }
+
+        .container {
+          padding: 0 1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .hero-title {
+          font-size: 2rem;
+        }
+
+        .hero-subtitle {
+          font-size: 0.9rem;
+        }
+
+        .hero-logo {
           width: 150px;
           height: 150px;
+        }
+
+        .section-title {
+          font-size: 1.8rem;
+        }
+
+        .section-subtitle {
+          font-size: 1.4rem;
+        }
+
+        .code-header h4 {
+          font-size: 0.9rem;
+        }
+
+        .overview-section h5 {
+          font-size: 1rem;
+        }
+      }
+
+      /* Aggiungo stili per la navigazione mobile */
+      .mobile-menu-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.5rem;
+      }
+
+      @media (max-width: 768px) {
+        .mobile-menu-toggle {
+          display: block;
+        }
+
+        .nav-content {
+          justify-content: space-between;
+          padding: 1rem;
+        }
+
+        .nav-links {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: rgba(13, 17, 23, 0.95);
+          padding: 1rem;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .nav-links.active {
+          display: flex;
+        }
+
+        .nav-link {
+          width: 100%;
+          text-align: center;
+          padding: 0.5rem;
+        }
+      }
+
+      /* Miglioro la leggibilità su dispositivi mobili */
+      @media (max-width: 768px) {
+        body {
+          font-size: 16px;
+          line-height: 1.6;
+        }
+
+        .overview-section ul,
+        .overview-section ol {
+          padding-left: 1.2rem;
+        }
+
+        .comparison-table {
+          display: block;
+          overflow-x: auto;
+        }
+
+        .steps-container {
+          flex-direction: column;
+          gap: 1.5rem;
+        }
+
+        .step {
+          width: 100%;
         }
       }
 
@@ -440,6 +582,135 @@
           margin-left: 0;
         }
       }
+
+      /* Stili per il nuovo menu nell'header */
+      .nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(13, 17, 23, 0.95);
+        z-index: 1000;
+        border-bottom: 1px solid rgba(0, 194, 255, 0.1);
+      }
+
+      .nav-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+      }
+
+      .nav-menu-container {
+        position: relative;
+      }
+
+      .menu-toggle {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        display: none;
+      }
+
+      .header-nav-menu {
+        position: relative;
+      }
+
+      .header-nav-menu ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        gap: 2rem;
+      }
+
+      .header-nav-menu .menu-item {
+        position: relative;
+      }
+
+      .header-nav-menu .menu-item > a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        display: block;
+        transition: all 0.3s ease;
+      }
+
+      .header-nav-menu .menu-item > a:hover {
+        color: #00fff0;
+      }
+
+      .header-nav-menu .submenu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: rgba(13, 17, 23, 0.95);
+        border: 1px solid rgba(0, 194, 255, 0.1);
+        border-radius: 4px;
+        min-width: 200px;
+        padding: 0.5rem 0;
+        z-index: 1000;
+      }
+
+      .header-nav-menu .menu-item:hover > .submenu {
+        display: block;
+      }
+
+      .header-nav-menu .submenu a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        display: block;
+        transition: all 0.3s ease;
+      }
+
+      .header-nav-menu .submenu a:hover {
+        background: rgba(0, 194, 255, 0.1);
+        color: #00fff0;
+      }
+
+      @media (max-width: 1024px) {
+        .menu-toggle {
+          display: block;
+        }
+
+        .header-nav-menu {
+          display: none;
+          position: absolute;
+          top: 100%;
+          right: 0;
+          background: rgba(13, 17, 23, 0.95);
+          border: 1px solid rgba(0, 194, 255, 0.1);
+          border-radius: 4px;
+          padding: 1rem;
+          min-width: 250px;
+        }
+
+        .header-nav-menu.active {
+          display: block;
+        }
+
+        .header-nav-menu ul {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .header-nav-menu .submenu {
+          position: static;
+          border: none;
+          background: transparent;
+          padding-left: 1rem;
+          min-width: auto;
+        }
+
+        .header-nav-menu .menu-item > a {
+          padding: 0.5rem;
+        }
+      }
     </style>
 
     <!-- Add Font Awesome for icons -->
@@ -459,52 +730,45 @@
     />
   </head>
   <body>
-    <!-- Navigation Menu -->
-    <nav class="nav-menu">
-      <ul>
-        <li class="menu-item">
-          <a href="#getting-started">Getting Started</a>
-        </li>
-        <li class="menu-item">
-          <a href="#features">Features</a>
-          <ul class="submenu">
-            <li>
-              <a href="#gun-ethereum-integration">Gun-Ethereum Integration</a>
-            </li>
-            <li><a href="#stealth-chain">StealthChain</a></li>
-            <li><a href="#proof-chain">ProofChain</a></li>
-            <li><a href="#encrypted-bubbles">Encrypted Bubbles</a></li>
-          </ul>
-        </li>
-        <li class="menu-item">
-          <a href="#advanced-usage">Advanced Usage</a>
-          <ul class="submenu">
-            <li><a href="#contract-deployment">Contract Deployment</a></li>
-            <li><a href="#testing">Testing</a></li>
-          </ul>
-        </li>
-        <li class="menu-item">
-          <a href="#support">Support</a>
-        </li>
-        <li class="menu-item">
-          <a href="https://github.com/scobru/gun-eth" target="_blank">GitHub</a>
-        </li>
-      </ul>
-    </nav>
-
     <!-- Top Navigation Bar -->
     <nav class="nav">
       <div class="container nav-content">
         <a href="#" class="nav-logo">Gun-ETH</a>
-        <div class="nav-links">
-          <a
-            href="https://github.com/scobru/gun-eth"
-            target="_blank"
-            class="nav-link"
-            >GitHub</a
-          >
-          <a href="#support" class="nav-link">Support</a>
+        <div class="nav-menu-container">
+          <button class="menu-toggle" aria-label="Toggle menu">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="header-nav-menu">
+            <ul>
+              <li class="menu-item">
+                <a href="#getting-started">Getting Started</a>
+              </li>
+              <li class="menu-item">
+                <a href="#features">Features</a>
+                <ul class="submenu">
+                  <li><a href="#gun-ethereum-integration">Gun-Ethereum Integration</a></li>
+                  <li><a href="#stealth-chain">StealthChain</a></li>
+                  <li><a href="#proof-chain">ProofChain</a></li>
+                  <li><a href="#encrypted-bubbles">Encrypted Bubbles</a></li>
+                </ul>
+              </li>
+              <li class="menu-item">
+                <a href="#advanced-usage">Advanced Usage</a>
+                <ul class="submenu">
+                  <li><a href="#contract-deployment">Contract Deployment</a></li>
+                  <li><a href="#testing">Testing</a></li>
+                </ul>
+              </li>
+              <li class="menu-item">
+                <a href="#support">Support</a>
+              </li>
+              <li class="menu-item">
+                <a href="https://github.com/plancia/gun-eth" target="_blank">Github</a>
+              </li>
+            </ul>
+          </div>
         </div>
+       
       </div>
     </nav>
 
@@ -519,15 +783,14 @@
           />
         </div>
         <div class="hero-text">
-          <h1 class="hero-title">Modern Decentralized Backup System</h1>
+          <h1 class="hero-title">Gun.js Blockchain Extension</h1>
           <p class="hero-subtitle">
-            Secure, efficient, and reliable backups with encryption and
-            versioning
+            A powerful Gun.js plugin that extends its capabilities by adding advanced blockchain and cryptographic features to create more secure and private decentralized applications
           </p>
           <div class="hero-buttons">
             <a href="#quick-start" class="btn btn-primary">Get Started</a>
             <a
-              href="https://github.com/scobru/gun-eth"
+              href="https://github.com/plancia/gun-eth"
               target="_blank"
               class="btn btn-outline"
               >View on GitHub</a
@@ -542,17 +805,31 @@
       <div class="container">
         <h2 class="section-title glow-text">✨ Why Gun-ETH?</h2>
 
-        <p class="why-description">
-          🎯 Gun-ETH is a plugin for Gun.js that adds Ethereum integration and advanced cryptographic features.
-        </p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="card-icon">🎯</div>
+            <h3 class="feature-title">Powerful Extension</h3>
+            <p>Adds advanced blockchain and cryptographic features to Gun.js</p>
+          </div>
 
-        <p class="why-description">
-          ��������������� It integrates natively with Gun.js's decentralized database through stealth transactions, proof chains, and encrypted bubbles.
-        </p>
+          <div class="feature-card">
+            <div class="card-icon">🌐</div>
+            <h3 class="feature-title">Seamless Integration</h3>
+            <p>Perfectly integrates with Gun.js while maintaining simplicity</p>
+          </div>
 
-        <p class="why-description">
-          🚀 It provides simple APIs for implementing Web3 functionality in Gun applications, connecting decentralized storage with Ethereum smart contracts.
-        </p>
+          <div class="feature-card">
+            <div class="card-icon">🔒</div>
+            <h3 class="feature-title">Advanced Privacy</h3>
+            <p>Implements stealth transactions, proof chain, and encrypted data</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="card-icon">🚀</div>
+            <h3 class="feature-title">Modern Architecture</h3>
+            <p>Intuitive APIs for easy Web3 functionality implementation</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -813,7 +1090,7 @@ const decryptedPair = await GunEth.getAndDecryptPair(address, signature);</code>
                 <button>GUN to ETH</button>
                 <button>Usage</button>
                 <a
-                  href="https://github.com/scobru/gun-eth/tree/main/src/core/gun-eth.js"
+                  href="https://github.com/plancia/gun-eth/tree/main/src/core/gun-eth.js"
                   target="_blank"
                   class="source-link"
                 >
@@ -1209,7 +1486,7 @@ const signature = await createSignature(MESSAGE_TO_SIGN);</code></pre>
           </p>
           <div style="margin-bottom: 10px">
             <a
-              href="https://github.com/scobru/gun-eth/tree/main/src/features/stealth/StealthChain.js"
+              href="https://github.com/plancia/gun-eth/tree/main/src/features/stealth/StealthChain.js"
               target="_blank"
               class="source-link"
             >
@@ -1303,7 +1580,7 @@ if (payments.length > 0) {
           </p>
           <div style="margin-bottom: 10px">
             <a
-              href="https://github.com/scobru/gun-eth/tree/main/src/features/proof/ProofChain.js"
+              href="https://github.com/plancia/gun-eth/tree/main/src/features/proof/ProofChain.js"
               target="_blank"
               class="source-link"
             >
@@ -1513,7 +1790,7 @@ await hybridProvider.handleFileUpload(
           <h3 class="section-subtitle">
             📋 Bubble Templates
             <a
-              href="https://github.com/scobru/gun-eth/tree/main/templates"
+              href="https://github.com/plancia/gun-eth/tree/main/templates"
               target="_blank"
               class="source-link"
             >
@@ -1541,7 +1818,7 @@ await hybridProvider.handleFileUpload(
                 <li>
                   <strong>Client Template:</strong>
                   <a
-                    href="https://github.com/scobru/gun-eth/blob/main/templates/template-bubble-client.js"
+                    href="https://github.com/plancia/gun-eth/blob/main/templates/template-bubble-client.js"
                     target="_blank"
                     class="source-link"
                   >
@@ -1557,7 +1834,7 @@ await hybridProvider.handleFileUpload(
                 <li>
                   <strong>Provider Template:</strong>
                   <a
-                    href="https://github.com/scobru/gun-eth/blob/main/templates/template-bubble-provider.js"
+                    href="https://github.com/plancia/gun-eth/blob/main/templates/template-bubble-provider.js"
                     target="_blank"
                     class="source-link"
                   >
@@ -1684,7 +1961,7 @@ app.get('/bubble/:id', handleReadBubble);</code></pre>
               <h3 class="section-subtitle">
                 Contract Deployment
                 <a
-                  href="https://github.com/scobru/gun-eth/tree/main/contracts"
+                  href="https://github.com/plancia/gun-eth/tree/main/contracts"
                   target="_blank"
                   class="source-link"
                 >
@@ -1983,7 +2260,7 @@ yarn clean         # Removes dist folder
               If you find this project useful, consider supporting its
               development:
             </p>
-            <pre><code class="language-text">ETH: 0xD0CDbD17E4f2DDCE27B51721095048302768434f</code></pre>
+            <pre><code class="language-text">ETH: 0xb542E27732a390f509fD1FF6844a8386fe320f7f</code></pre>
           </div>
         </div>
       </div>
@@ -1992,7 +2269,7 @@ yarn clean         # Removes dist folder
     <!-- Footer -->
     <footer class="footer">
       <div class="container">
-        <p class="footer-text">© 2024 Scobru. MIT License.</p>
+        <p class="footer-text">© 2024 Plancia. MIT License.</p>
       </div>
     </footer>
 
@@ -2064,6 +2341,46 @@ yarn clean         # Removes dist folder
             const href = this.getAttribute("href");
             if (href && href !== "#") {
               scrollToElement(href.substring(1));
+            }
+          });
+        });
+      });
+    </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.querySelector('.menu-toggle');
+        const headerNavMenu = document.querySelector('.header-nav-menu');
+
+        menuToggle.addEventListener('click', function() {
+          headerNavMenu.classList.toggle('active');
+        });
+
+        // Chiudi il menu quando si clicca fuori
+        document.addEventListener('click', function(event) {
+          if (!event.target.closest('.nav-menu-container')) {
+            headerNavMenu.classList.remove('active');
+          }
+        });
+
+        // Gestione click sui link del menu
+        document.querySelectorAll('.header-nav-menu a').forEach(link => {
+          link.addEventListener('click', function() {
+            headerNavMenu.classList.remove('active');
+            
+            // Scroll alla sezione corrispondente
+            const href = this.getAttribute('href');
+            if (href.startsWith('#')) {
+              event.preventDefault();
+              const targetElement = document.querySelector(href);
+              if (targetElement) {
+                const headerHeight = document.querySelector('.nav').offsetHeight;
+                const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                window.scrollTo({
+                  top: targetPosition,
+                  behavior: 'smooth'
+                });
+              }
             }
           });
         });

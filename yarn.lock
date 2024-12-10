@@ -1971,10 +1971,10 @@
     estree-walker "^2.0.2"
     picomatch "^4.0.2"
 
-"@scobru/mogu@^4.0.3":
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/@scobru/mogu/-/mogu-4.0.3.tgz#7bd4a7e1fed09b61b69e04b1e4681cb2426de828"
-  integrity sha512-JFHnVtK40od2XZisNpMmxsW+xSeE3bKgxOGAAYfvWeQWJDHA2bGRex2IhPRZJDa/rDk7h5SYD5oxpxRwN3mREg==
+"@scobru/mogu@^4.0.7":
+  version "4.0.7"
+  resolved "https://registry.yarnpkg.com/@scobru/mogu/-/mogu-4.0.7.tgz#83fe735504cf65ca943aa44e4f6b85adf20066ac"
+  integrity sha512-Be1O9ASN24gA9HscgWv+HLjRZWAzvafgZwE72m4fDHCjDbs7qr/X2XIzNw1UIyHoAs2lBDWnAXjoBETN4aqF1A==
   dependencies:
     "@types/jsonwebtoken" "^9.0.7"
     "@types/mime-types" "^2.1.1"

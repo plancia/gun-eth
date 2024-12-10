@@ -7,7 +7,6 @@
  * @property {string} BUBBLE_REGISTRY_ADDRESS - Indirizzo del contratto BubbleRegistry
  */
 
-import { ethers } from "ethers";
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -67,12 +66,6 @@ export function getAddressesForChain(chain = 'localhost') {
 // Esporta gli indirizzi di default (localhost)
 export const {
   PROOF_OF_INTEGRITY_ADDRESS,
-  STEALTH_ANNOUNCER_ADDRESS
-,
-  polygon: {
-    CHAIN_ID: 137,
-    RPC_URL: process.env.POLYGON_RPC_URL,
-    PROOF_OF_INTEGRITY_ADDRESS: "0x8515fa00a00A5483a3485526c7aD1f44E2779321",
-    STEALTH_ANNOUNCER_ADDRESS: "0xD0CDbD17E4f2DDCE27B51721095048302768434f",
-    BUBBLE_REGISTRY_ADDRESS: "0xc70DC231B9690D9dA988f6D4E518356eE9e45cd9"
-  }} = chainConfigs.localhost;
+  STEALTH_ANNOUNCER_ADDRESS,
+  BUBBLE_REGISTRY_ADDRESS
+} = getAddressesForChain('localhost');
