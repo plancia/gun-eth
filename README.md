@@ -39,33 +39,39 @@ const gunEth = await GunEth.init('localhost'); // or 'mainnet', 'sepolia', etc.
 
 ### Signer Configuration
 
-Gun-ETH implements a smart signer selection strategy:
+Gun-ETH provides two ways to configure the signer:
 
 1. **Manual Configuration (Recommended for Production)**
 ```javascript
-// Using explicit RPC URL and private key
-if (SignerManager.rpcUrl && SignerManager.privateKey) {
-    SignerManager.provider = new ethers.JsonRpcProvider(SignerManager.rpcUrl);
-    const wallet = new ethers.Wallet(SignerManager.privateKey);
-}
+import { setSigner, getSigner } from 'gun-eth';
+
+// Configure with explicit RPC URL and private key
+await setSigner(
+    "https://your-rpc-url", 
+    "your-private-key"
+);
+
+// Get the configured signer
+const signer = await getSigner();
 ```
 
 2. **MetaMask Fallback (Development-Friendly)**
 ```javascript
-// Automatic MetaMask detection if no manual configuration
-if (typeof window !== "undefined" && window?.ethereum) {
-    const windowWithEthereum = window;
-    await windowWithEthereum.ethereum?.request({ method: "eth_requestAccounts" });
-    const browserProvider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await browserProvider.getSigner();
+import { getSigner } from 'gun-eth';
+
+// Will automatically use MetaMask if available
+try {
+    const signer = await getSigner();
+    console.log("Connected with address:", await signer.getAddress());
+} catch (error) {
+    console.error("No valid provider found");
 }
 ```
 
 The signer selection follows these priorities:
-1. Prioritizes manual configuration (more secure for production environments)
-2. Falls back to MetaMask for easier development and testing
-3. Maintains flexibility by supporting both approaches
-4. Throws an error if no valid provider is found
+1. Uses manually configured signer if set via `setSigner()`
+2. Falls back to MetaMask if available and no manual configuration
+3. Throws an error if no valid provider is found
 
 ### Error Handling
 

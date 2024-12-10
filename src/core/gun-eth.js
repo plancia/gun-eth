@@ -17,7 +17,9 @@ import { encrypt, decrypt } from '../utils/encryption.js';
 import { 
   generateRandomId, 
   getContractAddresses,
-  getSigner as getCommonSigner 
+  getSigner as getCommonSigner,
+  setSigner as setCommonSigner
+
 } from '../utils/common.js';
 
 /**
@@ -176,9 +178,7 @@ async function initialize(chain = 'localhost') {
  * @param {string} newPrivateKey
  */
 function setSigner(newRpcUrl, newPrivateKey) {
-  rpcUrl = newRpcUrl;
-  privateKey = newPrivateKey;
-  console.log("Standalone configuration set");
+  return setCommonSigner(newRpcUrl, newPrivateKey);
 }
 
 async function getSigner(chain = 'localhost') {
