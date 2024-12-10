@@ -132,23 +132,26 @@ try {
     // Generate stealth address
     const stealthInfo = await gun.generateStealthAddress(
         recipientAddress,
-        signature
+        signature,
+        {} // Additional options if needed
     );
 
-    console.log('Generated stealth address:', stealthInfo.stealthAddress);
-    
+    console.log('Generated stealth address:', stealthInfo);
+    // Returns:
+    // {
+    //     stealthAddress: "0x...",      // The generated stealth address
+    //     senderPublicKey: "...",       // The sender's public key
+    //     spendingPublicKey: "..."      // The recipient's spending public key
+    // }
+
     // Announce the payment
     await gun.announceStealthPayment(
         stealthInfo.stealthAddress,
         stealthInfo.senderPublicKey,
         stealthInfo.spendingPublicKey,
         signature,
-        { 
-            chain: 'localhost',
-            onChain: true 
-        }
+        { onChain: true } // Optional: announce on-chain
     );
-
 } catch (error) {
     console.error('Stealth operation error:', error);
 }
