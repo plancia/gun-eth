@@ -301,8 +301,13 @@ function decryptPairFromPassword(encryptedPair, password) {
 
 async function ethToGunAccount() {
   const signer = /** @type {ExtendedSigner} */ (await getSigner());
+  console.log("Signer:", signer);
+  
   const signature = await signer.signMessage(MESSAGE_TO_SIGN);
+  console.log("Signature:", signature);
+  
   const password = generatePassword(signature);
+  console.log("Password:", password);
   
   const pair = await SEA.pair();
   const v_pair = await SEA.pair();

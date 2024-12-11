@@ -1,6 +1,6 @@
 {
   "name": "gun-eth",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "type": "module",
   "main": "./dist/gun-eth.cjs",
   "module": "./dist/gun-eth.mjs",

@@ -38,7 +38,7 @@ class SignerManager {
       return SignerManager.signer;
     }
 
-    if (SignerManager.rpcUrl && SignerManager.privateKey) {
+    if (SignerManager.rpcUrl !== "" && SignerManager.privateKey !== "") {
       SignerManager.provider = new ethers.JsonRpcProvider(SignerManager.rpcUrl);
       const wallet = new ethers.Wallet(SignerManager.privateKey, SignerManager.provider);
       // Create a proxy instead of modifying the wallet directly
