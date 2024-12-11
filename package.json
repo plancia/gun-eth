@@ -1,10 +1,10 @@
 {
   "name": "gun-eth",
-  "version": "3.0.1",
+  "version": "3.0.3",
   "type": "module",
   "main": "./dist/gun-eth.cjs",
   "module": "./dist/gun-eth.mjs",
-  "browser": "./dist/gun-eth.browser.mjs",
+  "browser": "./dist/gun-eth.bundle.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
