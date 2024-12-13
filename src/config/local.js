@@ -1,20 +1,28 @@
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { readFileSync } from 'fs';
-
+// Importazioni condizionali per ambiente Node.js
 let contractAddresses = {};
 
-if (typeof window === 'undefined') {
-  try {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-    const rawdata = readFileSync(join(__dirname, '../config/contract-address.json'), 'utf8');
-    contractAddresses = JSON.parse(rawdata);
-    console.log("Loaded contract addresses:", contractAddresses);
-  } catch (error) {
-    console.warn("Warning: contract-address.json not found or invalid");
+(async () => {
+  if (typeof window === 'undefined') {
+    try {
+      // Ambiente Node.js
+      const url = await import('url');
+      const path = await import('path');
+      const fs = await import('fs');
+      
+      const fileURLToPath = url.fileURLToPath;
+      const dirname = path.dirname;
+      const join = path.join;
+      
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = dirname(__filename);
+      const rawdata = fs.readFileSync(join(__dirname, '../config/contract-address.json'), 'utf8');
+      Object.assign(contractAddresses, JSON.parse(rawdata));
+      console.log("Loaded contract addresses:", contractAddresses);
+    } catch (error) {
+      console.warn("Warning: contract-address.json not found or invalid");
+    }
   }
-}
+})();
 
 export const LOCAL_CONFIG = {
   STEALTH_ANNOUNCER_ADDRESS: contractAddresses.StealthAnnouncer || '0x5FbDB2315678afecb367f032d93F642f64180aa3',

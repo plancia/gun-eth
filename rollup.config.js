@@ -42,7 +42,8 @@ const basePlugins = {
     resolve({
       browser: true,
       preferBuiltins: false,
-      mainFields: ['browser', 'module', 'main']
+      mainFields: ['browser', 'module', 'main'],
+      extensions: ['.js', '.json']
     }),
     commonjs({
       transformMixedEsModules: true,
@@ -50,7 +51,11 @@ const basePlugins = {
       ignore: ['path', 'fs', 'util', 'crypto'],
       requireReturnsDefault: 'auto'
     }),
-    json(),
+    json({
+      compact: true,
+      preferConst: true,
+      namedExports: true
+    }),
     babel({
       babelHelpers: 'bundled',
       exclude: 'node_modules/**',

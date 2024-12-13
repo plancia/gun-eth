@@ -7,26 +7,15 @@
  * @property {string} BUBBLE_REGISTRY_ADDRESS - Indirizzo del contratto BubbleRegistry
  */
 
-import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const require = createRequire(import.meta.url);
-
-// Percorsi relativi agli artifacts
-const artifactsPath = join(__dirname, '../../artifacts/contracts');
-
-// Importa gli ABI dagli artifacts
-const StealthAnnouncer = require(join(artifactsPath, 'StealthAnnouncer.sol/StealthAnnouncer.json'));
-const BubbleRegistry = require(join(artifactsPath, 'BubbleRegistry.sol/BubbleRegistry.json'));
-const ProofOfIntegrity = require(join(artifactsPath, 'ProofOfIntegrity.sol/ProofOfIntegrity.json'));
+// Importa gli ABI direttamente
+import StealthAnnouncerArtifact from './abis/StealthAnnouncer.json';
+import BubbleRegistryArtifact from './abis/BubbleRegistry.json';
+import ProofOfIntegrityArtifact from './abis/ProofOfIntegrity.json';
 
 // Esporta gli ABI dai file JSON
-export const STEALTH_ANNOUNCER_ABI = StealthAnnouncer.abi;
-export const BUBBLE_REGISTRY_ABI = BubbleRegistry.abi;
-export const PROOF_OF_INTEGRITY_ABI = ProofOfIntegrity.abi;
+export const STEALTH_ANNOUNCER_ABI = StealthAnnouncerArtifact.abi;
+export const BUBBLE_REGISTRY_ABI = BubbleRegistryArtifact.abi;
+export const PROOF_OF_INTEGRITY_ABI = ProofOfIntegrityArtifact.abi;
 
 // Configurazioni per diverse chain
 const chainConfigs = {
@@ -47,7 +36,7 @@ const chainConfigs = {
 };
 
 /** @type {boolean} */
-export const isLocalEnvironment = process.env.NODE_ENV === 'development';
+export const isLocalEnvironment = typeof process !== 'undefined' && process.env.NODE_ENV === 'development';
 
 /**
  * Ottiene le configurazioni degli indirizzi per una specifica chain

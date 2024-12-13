@@ -594,7 +594,7 @@ async function initializeGun(chain = 'localhost', options = {}) {
 /**
  * Classe principale per l'integrazione di Gun con Ethereum
  */
-export class GunEth {
+class GunEth {
   static keypair = null;
   static v_keypair = null;
   static s_keypair = null;
@@ -604,7 +604,7 @@ export class GunEth {
     return this;
   }
 
-  // Metodi statici
+  // Metodi statici rimangono gli stessi
   static generateRandomId = generateRandomId;
   static generatePassword = generatePassword;
   static getSigner = getSigner;
@@ -625,8 +625,38 @@ export class GunEth {
   static contractAddresses = contractAddresses;
 }
 
-// Esporto le funzioni necessarie
+
+// Aggiungi supporto per CommonJS
+if (typeof module !== 'undefined' && module.exports) {
+  const GunEthExports = {
+    GunEth,
+    MESSAGE_TO_SIGN,
+    generateRandomId,
+    getContractAddresses,
+    getSigner,
+    generatePassword,
+    verifySignature,
+    initializeGun,
+    extendGun,
+    createSignature,
+    setSigner,
+    gunToEthAccount,
+    decryptPair,
+    decryptPairFromPassword,
+    ethToGunAccount,
+    createAndStoreEncryptedPair,
+    getAndDecryptPair,
+    init: GunEth.init.bind(GunEth) // Importante: esporta init esplicitamente
+  };
+
+  module.exports = GunEthExports;
+  module.exports.default = GunEthExports;
+}
+
+// Mantieni anche l'esportazione ESM
 export {
+  GunEth as default,
+  GunEth,
   MESSAGE_TO_SIGN,
   generateRandomId,
   getContractAddresses,
