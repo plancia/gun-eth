@@ -1,50 +1,90 @@
-import { GunEth } from "./core/gun-eth.js";
-import { ProofChain } from "./features/proof/ProofChain.js";
-import { StealthChain } from "./features/stealth/StealthChain.js";
-import { GUNBubbleProvider } from "./features/bubbles/providers/gun-bubble-provider.js";
+import {
+  MESSAGE_TO_SIGN,
+  generateRandomId,
+  getSigner,
+  generatePassword,
+  verifySignature,
+  initializeGun,
+  extendGun,
+  createSignature,
+  setSigner,
+  gunToEthAccount,
+  ethToGunAccount,
+  createAndStoreEncryptedPair,
+  getAndDecryptPair,
+  decryptWithPassword,
+  encryptWithPassword,
+  encrypt,
+  decrypt
+} from './gun-eth.js';
 
-/**
- * @typedef {Object} BubbleProviderOptions
- * @property {string} rpcUrl - RPC URL for the provider
- * @property {string} contractAddress - Contract address
- * @property {Object} [contractAbi] - Contract ABI
- * @property {Object} gun - Gun instance
- * @property {Object} keypair - Encryption keypair
- * @property {string} keypair.epub - Public key
- * @property {string} keypair.epriv - Private key
- */
+const GunEth = {
+  MESSAGE_TO_SIGN,
+  generateRandomId,
+  getSigner,
+  generatePassword,
+  verifySignature,
+  initializeGun,
+  extendGun,
+  createSignature,
+  setSigner,
+  gunToEthAccount,
+  ethToGunAccount,
+  createAndStoreEncryptedPair,
+  getAndDecryptPair,
+  decryptWithPassword,
+  encryptWithPassword,
+  encrypt,
+  decrypt,
+  async init(options = {}) {
+    try {
+      // Configurazione di default
+      const defaultOptions = {
+        peers: ['http://localhost:8765/gun'],
+        localStorage: false,
+        radisk: true,
+        ...options
+      };
 
-/**
- * @typedef {Object} GunNode
- * @property {string} [name]
- * @property {string} [owner]
- * @property {string} [filePath]
- * @property {string} [content]
- * @property {number} [created]
- * @property {number} [updated]
- * @property {number} [size]
- * @property {boolean} [readOnly]
- * @property {Object} [encryptionInfo]
- * @property {string} encryptionInfo.ownerEpub
- * @property {string} encryptionInfo.ownerAddress
- */
+      // Inizializza Gun
+      let gun;
+      try {
+        gun = initializeGun(defaultOptions);
+      } catch (error) {
+        console.error("Errore nell'inizializzazione di Gun:", error);
+        throw new Error("Impossibile inizializzare Gun");
+      }
 
-/**
- * @typedef {Object} EthereumProvider
- * @property {(request: { method: string; params?: any[] | Record<string, any> }) => Promise<any>} request
- * @property {string} [chainId]
- * @property {boolean} [isMetaMask]
- */
+      // Verifica la connessione con MetaMask
+      try {
+        const signer = await getSigner();
+        if (!signer) {
+          throw new Error("MetaMask non disponibile");
+        }
+        
+        // Verifica che possiamo ottenere l'indirizzo
+        const address = await signer.getAddress();
+        if (!address) {
+          throw new Error("Impossibile ottenere l'indirizzo Ethereum");
+        }
+        
+        console.log("MetaMask connesso con indirizzo:", address);
+      } catch (error) {
+        console.error("Errore nella connessione con MetaMask:", error);
+        throw new Error("Impossibile connettersi a MetaMask");
+      }
 
-/**
- * @typedef {Object} FileMetadata
- * @property {string} name
- * @property {string} owner
- * @property {string} filePath
- * @property {number} created
- * @property {number} updated
- * @property {number} size
- * @property {boolean} readOnly
- */
+      return this;
+    } catch (error) {
+      console.error("Errore durante l'inizializzazione di GunEth:", error);
+      throw error;
+    }
+  }
+};
 
-export { GunEth, ProofChain, StealthChain, GUNBubbleProvider };
+// Esponi GunEth globalmente nel browser
+if (typeof window !== 'undefined') {
+  window.GunEth = GunEth;
+}
+
+export { GunEth }; 

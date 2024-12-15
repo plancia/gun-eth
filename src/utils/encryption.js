@@ -1,4 +1,5 @@
 import SEA from 'gun/sea.js';
+import CryptoJS from 'crypto-js';
 
 /**
  * @typedef {Object|string} KeyPair
@@ -32,6 +33,22 @@ export async function encrypt(data, keypair) {
 }
 
 /**
+ * Encrypts data using a simple password
+ * @param {string|Object} data - Data to encrypt
+ * @param {string} password - Password for encryption
+ * @returns {string} Encrypted data
+ */
+export async function encryptWithPassword(data, password) {
+  try {
+    const dataToEncrypt = typeof data === 'object' ? JSON.stringify(data) : data;
+    return CryptoJS.AES.encrypt(dataToEncrypt, password).toString();
+  } catch (error) {
+    console.error('Password encryption error:', error);
+    throw error;
+  }
+}
+
+/**
  * Decrypts data using SEA decryption
  * @param {string} data - Encrypted data to decrypt
  * @param {KeyPair} keypair - Keypair for decryption
@@ -48,7 +65,8 @@ export async function decrypt(data, keypair) {
 
     try {
       return typeof decrypted === 'string' ? JSON.parse(decrypted) : decrypted;
-    } catch {
+    } catch (error) {
+      console.log("Decryption returned non-string",error);
       return decrypted;
     }
   } catch (error) {
@@ -60,6 +78,27 @@ export async function decrypt(data, keypair) {
       hasPub: !!keypair?.pub,
       hasPriv: !!keypair?.priv
     });
+    throw error;
+  }
+}
+
+/**
+ * Decrypts data using a simple password
+ * @param {string} encryptedData - Encrypted data to decrypt
+ * @param {string} password - Password for decryption
+ * @returns {string|Object} Decrypted data
+ */
+export async function decryptWithPassword(encryptedData, password) {
+  try {
+    const decrypted = CryptoJS.AES.decrypt(encryptedData, password).toString(CryptoJS.enc.Utf8);
+    
+    try {
+      return JSON.parse(decrypted);
+    } catch {
+      return decrypted;
+    }
+  } catch (error) {
+    console.error('Password decryption error:', error);
     throw error;
   }
 }

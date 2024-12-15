@@ -1,20 +1,11 @@
 // @ts-nocheck
 import { ethers } from 'ethers';
-import { PROOF_OF_INTEGRITY_ADDRESS, STEALTH_ANNOUNCER_ADDRESS, getAddressesForChain, isLocalEnvironment } from '../constants/abis.js';
-
-let contractAddresses = {
-  PROOF_OF_INTEGRITY_ADDRESS,
-  STEALTH_ANNOUNCER_ADDRESS,
-};
 
 /**
  * @typedef {import('ethers').Eip1193Provider} EthereumProvider
  */
 
-
-
 /** @typedef {Window & { ethereum?: EthereumProvider }} WindowWithEthereum */
-
 
 const window = globalThis.window;
 
@@ -106,24 +97,10 @@ export function generateRandomId() {
   return ethers.hexlify(ethers.randomBytes(32));
 }
 
-export function getContractAddresses(chain = 'localhost') {
-  if (isLocalEnvironment && contractAddresses) {
-    console.log('Using local contract addresses:', contractAddresses);
-    return contractAddresses;
-  }
-
-  const chainConfig = getAddressesForChain(chain);
-  console.log(`Using ${chain} configuration:`, chainConfig);
-  return {
-    PROOF_OF_INTEGRITY_ADDRESS: chainConfig.PROOF_OF_INTEGRITY_ADDRESS,
-    STEALTH_ANNOUNCER_ADDRESS: chainConfig.STEALTH_ANNOUNCER_ADDRESS
-  };
-}
-
 export function setSigner(newRpcUrl, newPrivateKey) {
   return SignerManager.setSigner(newRpcUrl, newPrivateKey);
 }
 
-export async function getSigner(chain = 'localhost') {
+export async function getSigner() {
   return SignerManager.getSigner();
 } 
