@@ -769,7 +769,7 @@ function initializeGun(options = {}) {
   // Configurazione di default
   const defaultOptions = {
     localStorage: false,
-    radisk: true,
+    radisk: false,
     ...options
   };
 
