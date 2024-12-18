@@ -767,11 +767,7 @@ function extendGun(Gun) {
  */
 function initializeGun(options = {}) {
   // Configurazione di default
-  const defaultOptions = {
-    localStorage: false,
-    radisk: false,
-    ...options
-  };
+  const defaultOptions = options
 
   // Verifica che Gun sia stato caricato correttamente
   if (!Gun.SEA) {
