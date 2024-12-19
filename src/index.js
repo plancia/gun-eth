@@ -16,7 +16,7 @@ import {
   encryptWithPassword,
   encrypt,
   decrypt,
-  addToGun
+  saveUserToGun
 } from './gun-eth.js';
 
 const GunEth = {
@@ -37,7 +37,7 @@ const GunEth = {
   encryptWithPassword,
   encrypt,
   decrypt,
-  addToGun
+  saveUserToGun
 };
 
 // Esponi GunEth globalmente nel browser

@@ -23,75 +23,109 @@ export class StealthChain {
       console.log("[generateStealthAddress] Cercando dati per:", recipientAddress);
 
       let userData;
-      let userPub = recipientAddress;
+      let userPub;
 
-      // Se l'input è un indirizzo Ethereum, cerchiamo prima il pub corrispondente
+      // Se l'input è un indirizzo Ethereum, cerchiamo i dati dell'utente
       if (recipientAddress.startsWith('0x')) {
-        // Cerca l'utente tramite indirizzo Ethereum
+        console.log("[generateStealthAddress] Cercando utente con indirizzo:", recipientAddress);
+        
         userData = await new Promise((resolve) => {
           this.gun
             .get("gun-eth")
             .get("users")
-            .map()
-            .once((data, key) => {
-              if (data && data.profile && data.profile.address === recipientAddress) {
-                resolve({ ...data, pub: key });
+            .get(recipientAddress)
+            .once((data) => {
+              console.log("[generateStealthAddress] Dati utente trovati:", data);
+              if (data && data.publicKeys) {
+                // I dati sono già nella struttura corretta
+                resolve(data);
+              } else {
+                console.log("[generateStealthAddress] Dati utente non validi o mancanti");
+                resolve(null);
               }
             });
           
-          // Timeout dopo 1 secondo se non troviamo l'utente
-          setTimeout(() => resolve(null), 1000);
+          setTimeout(() => {
+            console.log("[generateStealthAddress] Timeout nella ricerca utente");
+            resolve(null);
+          }, 3000);
         });
 
-        if (!userData) {
-          throw new Error(`No user found for Ethereum address: ${recipientAddress}`);
+        console.log("[generateStealthAddress] UserData recuperato:", userData);
+
+        if (!userData || !userData.publicKeys) {
+          // Proviamo a cercare usando il pub dell'utente
+          userData = await new Promise((resolve) => {
+            this.gun
+              .get("gun-eth")
+              .get("users")
+              .map()
+              .once((data) => {
+                if (data && data.pub && data.publicKeys) {
+                  resolve(data);
+                }
+              });
+            
+            setTimeout(() => resolve(null), 3000);
+          });
         }
 
-        userPub = userData.pub;
-      }
-
-      // Cerchiamo le chiavi stealth in ordine di priorità
-      let stealthKeys;
-
-      // 1. Prima controlliamo in gun-eth/stealth-keys
-      stealthKeys = await this.gun
-        .get("gun-eth")
-        .get("stealth-keys")
-        .get(userPub)
-        .then();
-
-      // 2. Se non troviamo le chiavi, controlliamo nel profilo
-      if (!stealthKeys || !stealthKeys.viewingPublicKey) {
-        const userProfile = await this.gun
-          .get("~" + userPub)
-          .get("profile")
-          .then();
-
-        console.log("[generateStealthAddress] Profilo utente:", userProfile);
-
-        if (userProfile && userProfile.publicKeys) {
-          stealthKeys = userProfile.publicKeys;
+        if (!userData || !userData.publicKeys) {
+          throw new Error(`Nessun utente trovato per l'indirizzo Ethereum: ${recipientAddress}`);
         }
+
+        // Usiamo la chiave pubblica corretta per la generazione dell'indirizzo stealth
+        userPub = userData.publicKeys.spendingPublicKey;
+        console.log("[generateStealthAddress] Chiave pubblica estratta:", userPub);
+      } else {
+        // Se non è un indirizzo Ethereum, assumiamo sia già una chiave pubblica
+        userPub = recipientAddress;
       }
 
-      // 3. Se ancora non troviamo le chiavi, le generiamo
-      if (!stealthKeys || !stealthKeys.viewingPublicKey) {
+      if (!userPub) {
+        console.log("[generateStealthAddress] Dati completi utente:", JSON.stringify(userData, null, 2));
+        throw new Error("Chiave pubblica non trovata per il destinatario");
+      }
+
+      // Prima cerchiamo le chiavi stealth dedicate
+      console.log("[generateStealthAddress] Cercando chiavi stealth per:", userPub);
+      let stealthKeys = await new Promise((resolve) => {
+        this.gun
+          .get("gun-eth")
+          .get("stealth-keys")
+          .get(userPub)
+          .once((data) => {
+            console.log("[generateStealthAddress] Chiavi stealth trovate:", data);
+            resolve(data);
+          });
+      });
+
+      // Se non troviamo chiavi stealth dedicate, le generiamo
+      if (!stealthKeys || !stealthKeys.viewingPublicKey || !stealthKeys.spendingPublicKey) {
         console.log("[generateStealthAddress] Generando nuove chiavi stealth per:", userPub);
-        stealthKeys = await this.publishStealthKeys(userPub);
+        // Generiamo nuove chiavi stealth dedicate
+        const [v_pair, s_pair] = await Promise.all([
+          SEA.pair(),
+          SEA.pair()
+        ]);
 
-        // Salviamo le chiavi sia in stealth-keys che nel profilo
-        await Promise.all([
+        stealthKeys = {
+          viewingPublicKey: v_pair.epub,
+          spendingPublicKey: s_pair.epub,
+          timestamp: Date.now()
+        };
+
+        // Salviamo le nuove chiavi stealth
+        await new Promise((resolve) => {
           this.gun
             .get("gun-eth")
             .get("stealth-keys")
             .get(userPub)
-            .put(stealthKeys),
-          this.gun
-            .get("~" + userPub)
-            .get("profile")
-            .get("publicKeys")
-            .put(stealthKeys)
-        ]);
+            .put(stealthKeys, (ack) => {
+              if (ack.err) throw new Error(ack.err);
+              resolve();
+            });
+        });
       }
 
       if (!stealthKeys.viewingPublicKey || !stealthKeys.spendingPublicKey) {
