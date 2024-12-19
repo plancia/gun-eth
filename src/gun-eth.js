@@ -421,6 +421,69 @@ async function ethToGunAccount(isSecondary = false) {
   }
 }
 
+async function addToGun(internalWallet) {
+  try {
+    if (!internalWallet || !internalWallet.ethAddress || typeof internalWallet.ethAddress !== 'string') {
+      throw new Error("Wallet non valido");
+    }
+
+    const gun = this;
+    const { env_pair, env_v_pair, env_s_pair, publicKeys, ethAddress } = internalWallet;
+
+    // Salviamo i dati cifrati e attendiamo la conferma
+    await new Promise((resolve, reject) => {
+      let timeoutId = setTimeout(() => {
+        reject(new Error("Timeout storing encrypted data"));
+      }, 5000); // 5 secondi di timeout
+
+      const data = {
+        env_pair,
+        env_v_pair,
+        env_s_pair,
+        publicKeys
+      };
+
+      gun.get("gun-eth")
+        .get("users")
+        .get(ethAddress)
+        .put(data, (ack) => {
+          clearTimeout(timeoutId);
+          if (ack.err) {
+            console.error("Error storing data:", ack.err);
+            reject(new Error(ack.err));
+          } else {
+            resolve(ack);
+          }
+        });
+    });
+
+    // Verifichiamo che i dati siano stati salvati
+    await new Promise((resolve, reject) => {
+      let timeoutId = setTimeout(() => {
+        reject(new Error("Timeout verifying stored data"));
+      }, 5000); // 5 secondi di timeout
+
+      gun.get("gun-eth")
+        .get("users")
+        .get(ethAddress)
+        .on((data) => {
+          clearTimeout(timeoutId);
+          if (data && data.env_pair) {
+            resolve(data);
+          } else {
+            reject(new Error("Data verification failed"));
+          }
+        });
+    });
+
+    console.log("Encrypted pairs and public keys stored for:", ethAddress);
+    return internalWallet;
+  } catch (error) {
+    console.error("Error storing encrypted pair:", error);
+    throw error;
+  }
+}
+
 /**
  * @param {any} address
  */
@@ -753,7 +816,8 @@ function extendGun(Gun) {
     decryptWithPassword,
     encryptWithPassword,
     encrypt,
-    decrypt
+    decrypt,
+    addToGun
   };
 
   Object.assign(Gun.chain, baseMethods);
@@ -807,5 +871,6 @@ export {
   decrypt,
   ethToGunAccount,
   createAndStoreEncryptedPair,
-  getAndDecryptPair
+  getAndDecryptPair,
+  addToGun
 };
