@@ -1,6 +1,34 @@
 // @ts-nocheck
 import { ethers } from 'ethers';
 
+export const MESSAGE_TO_SIGN = "Access GunDB with Ethereum";
+
+/**
+ * Genera una password da una firma
+ * @param {string} signature - La firma da usare
+ * @returns {Promise<string>} La password generata
+ */
+export async function generatePassword(signature) {
+  if (!signature) {
+    throw new Error("Firma non valida");
+  }
+  const hash = ethers.keccak256(ethers.toUtf8Bytes(signature));
+  return hash.slice(2, 66); // Rimuovi 0x e usa i primi 32 bytes
+}
+
+/**
+ * Verifica una firma
+ * @param {string} message - Il messaggio originale
+ * @param {string} signature - La firma da verificare
+ * @returns {Promise<string>} L'indirizzo recuperato
+ */
+export async function verifySignature(message, signature) {
+  if (!message || !signature) {
+    throw new Error("Messaggio o firma non validi");
+  }
+  return ethers.verifyMessage(message, signature);
+}
+
 /**
  * @typedef {import('ethers').Eip1193Provider} EthereumProvider
  */

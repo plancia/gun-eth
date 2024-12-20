@@ -2,6 +2,12 @@
 
 import { ethers } from "ethers";
 import SEA from "gun/sea.js";
+import { 
+  MESSAGE_TO_SIGN,
+  generatePassword,
+  verifySignature
+} from "../utils/common.js";
+import { decrypt, deriveSharedKey } from "../utils/encryption.js";
 
 export class StealthChain {
   constructor(gun) {
@@ -36,13 +42,7 @@ export class StealthChain {
             .get(recipientAddress)
             .once((data) => {
               console.log("[generateStealthAddress] Dati utente trovati:", data);
-              if (data && data.publicKeys) {
-                // I dati sono già nella struttura corretta
-                resolve(data);
-              } else {
-                console.log("[generateStealthAddress] Dati utente non validi o mancanti");
-                resolve(null);
-              }
+              resolve(data);
             });
           
           setTimeout(() => {
@@ -53,30 +53,46 @@ export class StealthChain {
 
         console.log("[generateStealthAddress] UserData recuperato:", userData);
 
-        if (!userData || !userData.publicKeys) {
-          // Proviamo a cercare usando il pub dell'utente
-          userData = await new Promise((resolve) => {
+        if (!userData) {
+          throw new Error(`Nessun utente trovato per l'indirizzo Ethereum: ${recipientAddress}`);
+        }
+
+        // Controlliamo prima le chiavi nella struttura root
+        userPub = userData.spendingPublicKey;
+        
+        // Se non troviamo le chiavi nella root, proviamo a caricarle da publicKeys
+        if (!userPub && userData.publicKeys) {
+          userPub = userData.publicKeys.spendingPublicKey;
+        }
+
+        // Se ancora non abbiamo le chiavi, proviamo a caricarle direttamente
+        if (!userPub) {
+          console.log("[generateStealthAddress] Tentativo di caricamento diretto delle chiavi pubbliche");
+          const publicKeys = await new Promise((resolve) => {
             this.gun
               .get("gun-eth")
               .get("users")
-              .map()
+              .get(recipientAddress)
+              .get("publicKeys")
               .once((data) => {
-                if (data && data.pub && data.publicKeys) {
-                  resolve(data);
-                }
+                console.log("[generateStealthAddress] Chiavi pubbliche caricate:", data);
+                resolve(data);
               });
             
             setTimeout(() => resolve(null), 3000);
           });
+
+          if (publicKeys) {
+            userPub = publicKeys.spendingPublicKey;
+          }
         }
 
-        if (!userData || !userData.publicKeys) {
-          throw new Error(`Nessun utente trovato per l'indirizzo Ethereum: ${recipientAddress}`);
+        if (!userPub) {
+          console.log("[generateStealthAddress] Struttura dati utente completa:", userData);
+          throw new Error("Chiave pubblica di spesa non trovata per l'utente");
         }
 
-        // Usiamo la chiave pubblica corretta per la generazione dell'indirizzo stealth
-        userPub = userData.publicKeys.spendingPublicKey;
-        console.log("[generateStealthAddress] Chiave pubblica estratta:", userPub);
+        console.log("[generateStealthAddress] Chiave pubblica di spesa trovata:", userPub);
       } else {
         // Se non è un indirizzo Ethereum, assumiamo sia già una chiave pubblica
         userPub = recipientAddress;
@@ -132,26 +148,78 @@ export class StealthChain {
         throw new Error("Invalid stealth keys structure");
       }
 
-      // Genera una coppia di chiavi effimere
-      const ephemeralKeyPair = await SEA.pair();
+      // Get sender's keys
+      const senderAddress = await verifySignature(MESSAGE_TO_SIGN, signature);
+      const password = await generatePassword(signature);
       
-      // Calcola l'indirizzo stealth usando le chiavi effimere e quelle del destinatario
-      const stealthAddress = ethers.getAddress(
-        ethers.keccak256(
-          ethers.concat([
-            ethers.toUtf8Bytes(stealthKeys.viewingPublicKey),
-            ethers.toUtf8Bytes(ephemeralKeyPair.epub)
-          ])
-        )
+      const senderData = await this.gun
+        .get("gun-eth")
+        .get("users")
+        .get(senderAddress)
+        .then();
+
+      if (!senderData?.s_pair) {
+        throw new Error("Chiavi del mittente non trovate");
+      }
+
+      // Decrypt sender's spending pair
+      let spendingKeyPair;
+      try {
+        const decryptedData = await decrypt(senderData.s_pair, password);
+        spendingKeyPair = typeof decryptedData === 'string' ? 
+          JSON.parse(decryptedData) : 
+          decryptedData;
+      } catch (error) {
+        console.error("Errore nella decrittazione delle chiavi di spesa:", error);
+        throw new Error("Impossibile decrittare le chiavi di spesa");
+      }
+
+      // Generate shared secret using SEA ECDH
+      const sharedSecret = await deriveSharedKey(stealthKeys.viewingPublicKey, spendingKeyPair);
+      
+      if (!sharedSecret) {
+        throw new Error("Impossibile generare la chiave condivisa");
+      }
+
+      console.log("[generateStealthAddress] Chiave condivisa generata");
+
+      // Base64 to hex conversion
+      const base64ToHex = (base64) => {
+        const cleanBase64 = base64.split('.')[0];
+        const withoutPrefix = cleanBase64.replace('0x', '');
+        const raw = atob(withoutPrefix.replace(/-/g, '+').replace(/_/g, '/'));
+        let hex = '';
+        for (let i = 0; i < raw.length; i++) {
+          const hexByte = raw.charCodeAt(i).toString(16);
+          hex += hexByte.length === 2 ? hexByte : '0' + hexByte;
+        }
+        return '0x' + hex;
+      };
+
+      // Convert values to hex
+      const sharedSecretHex = base64ToHex(sharedSecret);
+      const spendingPublicKeyHex = base64ToHex(stealthKeys.spendingPublicKey);
+
+      // Generate stealth private key
+      const stealthPrivateKey = ethers.keccak256(
+        ethers.concat([
+          ethers.getBytes(sharedSecretHex),
+          ethers.getBytes(spendingPublicKeyHex)
+        ])
       );
+      
+      // Create stealth wallet
+      const stealthWallet = new ethers.Wallet(stealthPrivateKey);
+      const stealthAddress = stealthWallet.address;
 
       console.log("[generateStealthAddress] Indirizzo stealth generato:", stealthAddress);
 
       return {
         stealthAddress,
-        ephemeralPublicKey: ephemeralKeyPair.epub,
+        ephemeralPublicKey: spendingKeyPair.epub,
         viewingPublicKey: stealthKeys.viewingPublicKey,
-        spendingPublicKey: stealthKeys.spendingPublicKey
+        spendingPublicKey: stealthKeys.spendingPublicKey,
+        wallet: stealthWallet // Includiamo il wallet per operazioni future
       };
     } catch (error) {
       console.error("[generateStealthAddress] Errore:", error);
@@ -164,18 +232,16 @@ export class StealthChain {
    * @param {string} stealthAddress - Indirizzo stealth
    * @param {string} senderPublicKey - Chiave pubblica del mittente
    * @param {string} spendingPublicKey - Chiave pubblica di spesa
-   * @param {string} signature - Firma per l'autenticazione
    * @returns {Promise<Object>} Dettagli dell'annuncio
    */
-  async announceStealthPayment(stealthAddress, senderPublicKey, spendingPublicKey, signature) {
+  async announceStealthPayment(stealthAddress, senderPublicKey, spendingPublicKey) {
     try {
       const timestamp = Date.now();
       const announcement = {
         stealthAddress,
         senderPublicKey,
         spendingPublicKey,
-        timestamp,
-        signature
+        timestamp
       };
 
       await this.gun
