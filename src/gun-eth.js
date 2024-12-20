@@ -309,24 +309,6 @@ async function gunToEthAccount(gunPrivateKey) {
       password
     };
 
-    const userDataPublic = {
-      pub: pair.pub,
-      internalWallet: internalWallet.address,
-      externalWallet: wallet.address,  // Usiamo il wallet come external
-      env_pair: encryptedPair,
-      env_v_pair: encryptedV_pair,
-      env_s_pair: encryptedS_pair,
-      publicKeys: {
-        viewingPublicKey: v_pair.epub,
-        spendingPublicKey: s_pair.epub,
-        externalWallet: wallet.address  // Usiamo il wallet come external
-      }
-    };
-
-    // Salviamo usando l'istanza gun
-    const gun = this;
-    await gun.saveUserToGun(userDataPublic);
-
     return userData;
   } catch (error) {
     console.error("Errore in gunToEthAccount:", error);
@@ -410,24 +392,6 @@ async function ethToGunAccount(isSecondary = false) {
       },
       password
     };
-
-    const userDataPublic = {
-      pub: pair.pub,
-      internalWallet: internalWallet.address,
-      externalWallet: signer.address,
-      env_pair: encryptedPair,
-      env_v_pair: encryptedV_pair,
-      env_s_pair: encryptedS_pair,
-      publicKeys: {
-        viewingPublicKey: v_pair.epub,
-        spendingPublicKey: s_pair.epub,
-        externalWallet: signer.address
-      }
-    };
-
-    // Salviamo usando l'istanza gun
-    const gun = this;
-    await gun.saveUserToGun(userDataPublic);
 
     return userData;
   } catch (error) {
