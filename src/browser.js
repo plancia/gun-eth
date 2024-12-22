@@ -13,8 +13,6 @@
  * @property {function} GunEth.encrypt
  * @property {function} GunEth.decrypt
  * @property {function} GunEth.ethToGunAccount
- * @property {function} GunEth.createAndStoreEncryptedPair
- * @property {function} GunEth.getAndDecryptPair
  * @property {function} GunEth.createSignature
  * @property {function} GunEth.generateRandomId
  * @property {function} GunEth.extendGun
@@ -33,8 +31,6 @@ import {
   setSigner,
   gunToEthAccount,
   ethToGunAccount,
-  createAndStoreEncryptedPair,
-  getAndDecryptPair,
   decryptWithPassword,
   encryptWithPassword,
   encrypt,
@@ -59,8 +55,6 @@ const browserGunEth = {
     encrypt,
     decrypt,
     ethToGunAccount,
-    createAndStoreEncryptedPair,
-    getAndDecryptPair,
     async init() {
       return this;
     }

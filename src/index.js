@@ -10,14 +10,11 @@ import {
   setSigner,
   gunToEthAccount,
   ethToGunAccount,
-  createAndStoreEncryptedPair,
-  getAndDecryptPair,
   decryptWithPassword,
   encryptWithPassword,
   encrypt,
   decrypt,
-  saveUserToGun
-} from './gun-eth.js';
+} from "./gun-eth.js";
 
 const GunEth = {
   MESSAGE_TO_SIGN,
@@ -31,18 +28,15 @@ const GunEth = {
   setSigner,
   gunToEthAccount,
   ethToGunAccount,
-  createAndStoreEncryptedPair,
-  getAndDecryptPair,
   decryptWithPassword,
   encryptWithPassword,
   encrypt,
   decrypt,
-  saveUserToGun
 };
 
 // Esponi GunEth globalmente nel browser
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.GunEth = GunEth;
 }
 
-export { GunEth }; 
+export { GunEth };

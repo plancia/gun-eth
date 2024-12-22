@@ -20,199 +20,32 @@ import {
   generateRandomId,
   getSigner as getCommonSigner,
   setSigner as setCommonSigner,
+  verifySignature,
+  generatePassword,
+  MESSAGE_TO_SIGN,
 } from "./utils/common.js";
 import { StealthChain } from "./features/StealthChain.js";
 
-/**
- * @typedef {Object} EthereumProvider
- * @property {function} request - Metodo per fare richieste a Ethereum
- */
-
-/**
- * @type {Window & { ethereum?: EthereumProvider }}
- */
-const windowWithEthereum = window;
-
 const SEA = Gun.SEA;
-
-/**
- * @typedef {import('gun').IGunChain<any, any, any, any>} IGunChain
- * @typedef {import('gun').IGunInstance} IGunInstance
- * @typedef {import('gun').IGun} IGun
- * @typedef {import('gun').GunOptions} GunOptions
- */
-
-/**
- * @typedef {Object} ExtendedSigner
- * @property {string} address - Ethereum address
- * @property {string} privateKey - Private key
- * @property {function(string): Promise<string>} signMessage - Signs a message
- * @property {function(): Promise<string>} getAddress - Gets the signer address
- * @property {Object} provider - Provider instance
- */
-
-/**
- * @typedef {Object} BaseMethods
- * @property {string} MESSAGE_TO_SIGN - Messaggio da firmare per l'autenticazione
- * @property {function(string, string): Promise<ExtendedSigner>} setSigner - Imposta il signer
- * @property {function(): Promise<ExtendedSigner>} getSigner - Ottiene il signer corrente
- * @property {function(string, string): Promise<string>} verifySignature - Verifica una firma
- * @property {function(string): Promise<string>} generatePassword - Genera una password da una firma
- * @property {function(string): Promise<string>} createSignature - Crea una firma
- * @property {function(string): Promise<Object>} createAndStoreEncryptedPair - Crea e salva una coppia di chiavi cifrata
- * @property {function(string, string): Promise<Object>} getAndDecryptPair - Ottiene e decifra una coppia di chiavi
- * @property {function(): Promise<Object>} ethToGunAccount - Converte un account Ethereum in un account Gun
- * @property {function(string): Promise<Object>} gunToEthAccount - Converte un account Gun in un account Ethereum
- * @property {function(string, string): Promise<Object>} decryptWithPassword - Decifra dati con una password
- * @property {function(Object, string): Promise<string>} encryptWithPassword - Cifra dati con una password
- * @property {function(Object, Object): Promise<string>} encrypt - Cifra dati con una coppia di chiavi
- * @property {function(string, Object): Promise<Object>} decrypt - Decifra dati con una coppia di chiavi
- */
-
-const MESSAGE_TO_SIGN = "Access GunDB with Ethereum";
-
-let testSigner = null;
-
-// =============================================
-// UTILITY FUNCTIONS
-// =============================================
+let gun = null;
 
 /**
  * @param {string} newRpcUrl
  * @param {string} newPrivateKey
  */
-function setSigner(newRpcUrl, newPrivateKey) {
+export function setSigner(newRpcUrl, newPrivateKey) {
   return setCommonSigner(newRpcUrl, newPrivateKey);
 }
 
-async function getSigner() {
-  try {
-    if (testSigner) {
-      return testSigner;
-    }
-
-    if (!windowWithEthereum.ethereum) {
-      throw new Error("MetaMask non trovato");
-    }
-
-    // Utilizziamo eth_accounts invece di selectedAddress
-    const accounts = await windowWithEthereum.ethereum.request({
-      method: "eth_accounts",
-    });
-
-    if (!accounts || accounts.length === 0) {
-      // Se non ci sono account, richiediamo l'accesso
-      await windowWithEthereum.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-    }
-
-    const provider = new ethers.BrowserProvider(windowWithEthereum.ethereum);
-    const signer = await provider.getSigner();
-
-    if (!signer) {
-      throw new Error("Impossibile ottenere il signer");
-    }
-
-    return signer;
-  } catch (error) {
-    console.error("Errore nell'ottenere il signer:", error);
-    throw error;
-  }
-}
-
-// Cache per le password generate
-const passwordCache = new Map();
-
-/**
- * Genera una password da una firma
- * @param {string | Uint8Array} signature - La firma da cui generare la password
- * @returns {string | null} La password generata o null in caso di errore
- */
-async function generatePassword(signature) {
-  try {
-    if (!signature) {
-      throw new Error("Firma non valida");
-    }
-
-    // Controlla se la password è già in cache
-    const cacheKey =
-      signature instanceof Uint8Array ? ethers.hexlify(signature) : signature;
-
-    if (passwordCache.has(cacheKey)) {
-      return passwordCache.get(cacheKey);
-    }
-
-    let signatureBytes;
-    if (signature instanceof Uint8Array) {
-      signatureBytes = signature;
-    } else if (typeof signature === "string") {
-      // Se la firma è una stringa hex, convertiamola in bytes
-      if (signature.startsWith("0x")) {
-        signatureBytes = ethers.getBytes(signature);
-      } else {
-        // Se non è hex, prima convertiamo in UTF8 bytes
-        signatureBytes = ethers.toUtf8Bytes(signature);
-      }
-    } else {
-      throw new Error("Tipo di firma non supportato");
-    }
-
-    // Generiamo un hash dai bytes della firma usando keccak256
-    const hash = ethers.keccak256(signatureBytes);
-
-    // Rimuoviamo il prefisso 0x e usiamo solo i primi 32 bytes per la password
-    const password = hash.slice(2, 66);
-
-    // Salviamo in cache
-    passwordCache.set(cacheKey, password);
-
-    return password;
-  } catch (error) {
-    console.error("Errore nella generazione della password:", error);
-    return null;
-  }
+export async function getSigner() {
+  return getCommonSigner();
 }
 
 /**
- * @param {string | Uint8Array} message - Il messaggio originale
- * @param {ethers.SignatureLike} signature - La firma da verificare
- * @returns {Promise<string|null>} L'indirizzo recuperato o null in caso di errore
+ * Converte una chiave privata Gun in formato Ethereum
+ * @param {string} gunPrivateKey - Chiave privata in formato Gun
+ * @returns {Promise<string>} Chiave privata in formato Ethereum
  */
-async function verifySignature(message, signature) {
-  try {
-    if (!message) {
-      throw new Error("Messaggio non valido");
-    }
-
-    if (!signature) {
-      throw new Error("Firma non valida");
-    }
-
-    // Convertiamo il messaggio in formato corretto se necessario
-    let messageBytes;
-    if (message instanceof Uint8Array) {
-      messageBytes = message;
-    } else if (typeof message === "string") {
-      messageBytes = ethers.toUtf8Bytes(message);
-    } else {
-      throw new Error("Formato messaggio non supportato");
-    }
-
-    // Verifichiamo la firma
-    const recoveredAddress = ethers.verifyMessage(messageBytes, signature);
-
-    if (!ethers.isAddress(recoveredAddress)) {
-      throw new Error("Indirizzo recuperato non valido");
-    }
-
-    return recoveredAddress;
-  } catch (error) {
-    console.error("Errore nella verifica della firma:", error);
-    return null;
-  }
-}
-
 async function convertToEthAddress(gunPrivateKey) {
   const base64UrlToHex = (base64url) => {
     try {
@@ -238,103 +71,63 @@ async function convertToEthAddress(gunPrivateKey) {
 }
 
 /**
- * @param {string} gunPrivateKey
- * @param {boolean} [isSecondary=false] - Flag per indicare se è un account secondario
+ * Converte un account Gun in un account Ethereum
+ * @param {Object} gunKeyPair - Coppia di chiavi Gun
  * @returns {Promise<Object>} Account convertito
- * @throws {Error} Se la conversione fallisce
  */
-async function gunToEthAccount(gunPrivateKey) {
+export async function gunToEthAccount(gunKeyPair, password) {
   try {
-    if (!gunPrivateKey || typeof gunPrivateKey !== "string") {
-      throw new Error("Chiave privata Gun non valida");
-    }
-
-    const hexPrivateKey = await convertToEthAddress(gunPrivateKey);
+    const hexPrivateKey = await convertToEthAddress(gunKeyPair.epriv);
 
     if (!ethers.isHexString(hexPrivateKey, 32)) {
       throw new Error("Chiave privata non valida dopo la conversione");
     }
 
-    const wallet = new ethers.Wallet(hexPrivateKey);
-
-    // Per l'account principale, procediamo con la creazione completa
-    const [pair, v_pair, s_pair] = await Promise.all([
-      SEA.pair(),
-      SEA.pair(),
-      SEA.pair(),
-    ]);
-
-    if (!pair || !v_pair || !s_pair) {
-      throw new Error("Impossibile generare le coppie di chiavi Gun");
-    }
-
-    const signature = await wallet.signMessage(MESSAGE_TO_SIGN);
-    const password = await generatePassword(signature);
-
-    if (!password) {
-      throw new Error("Impossibile generare la password");
-    }
-
-    const [encryptedPair, encryptedV_pair, encryptedS_pair] = await Promise.all([
-      encryptWithPassword(pair, password),
-      encryptWithPassword(v_pair, password),
-      encryptWithPassword(s_pair, password),
-    ]);
-
-    if (!encryptedPair || !encryptedV_pair || !encryptedS_pair) {
-      throw new Error("Impossibile cifrare le coppie di chiavi");
-    }
-
-    // Creiamo un wallet interno usando la chiave privata del pair
     const internalWallet = new ethers.Wallet(hexPrivateKey);
 
-    const userData = {
-      account: wallet,
-      pub: pair.pub,
-      internalWallet: internalWallet.address,
+    const [v_pair, s_pair] = await Promise.all([SEA.pair(), SEA.pair()]);
+
+    if (!v_pair || !s_pair) {
+      throw new Error("Impossibile generare le coppie di chiavi stealth");
+    }
+
+    // hash the password
+
+    const [encryptedPair, encryptedV_pair, encryptedS_pair] = await Promise.all(
+      [
+        encryptWithPassword(gunKeyPair, password),
+        encryptWithPassword(v_pair, password),
+        encryptWithPassword(s_pair, password),
+      ]
+    );
+
+    return {
+      pub: gunKeyPair.pub,
+      internalWalletAddress: internalWallet.address,
       internalWalletPk: hexPrivateKey,
-      pair: pair,
-      v_pair: v_pair,
-      s_pair: s_pair,
-      externalWallet: wallet.address,  // Usiamo il wallet come external
-      externalWalletPk: undefined,
+      pair: gunKeyPair,
+      v_pair,
+      s_pair,
+      viewingPublicKey: v_pair.epub,
+      spendingPublicKey: s_pair.epub,
       env_pair: encryptedPair,
       env_v_pair: encryptedV_pair,
       env_s_pair: encryptedS_pair,
-      publicKeys: {
-        viewingPublicKey: v_pair.epub,
-        spendingPublicKey: s_pair.epub,
-        externalWallet: wallet.address  // Usiamo il wallet come external
-      },
-      password
     };
-
-    return userData;
   } catch (error) {
     console.error("Errore in gunToEthAccount:", error);
     throw error;
   }
 }
 
-async function ethToGunAccount(isSecondary = false) {
+/**
+ * Crea un account Gun da un account Ethereum
+ * @param {boolean} [isSecondary] - Flag per indicare se è un account secondario
+ * @returns {Promise<Object>} Account creato
+ */
+
+export async function ethToGunAccount(isSecondary = false) {
   try {
-    if (!windowWithEthereum.ethereum) {
-      throw new Error("MetaMask non trovato");
-    }
-
-    // Otteniamo il signer e la firma
-    const signer = await getSigner();
-    const signature = await createSignature(MESSAGE_TO_SIGN);
-
-    if (!signature) {
-      throw new Error("Firma non generata");
-    }
-
-    const password = await generatePassword(signature);
-    if (!password) {
-      throw new Error("Impossibile generare la password");
-    }
-
     // Se è un account secondario, creiamo solo il wallet base
     if (isSecondary) {
       const randomBytes = ethers.randomBytes(32);
@@ -348,432 +141,53 @@ async function ethToGunAccount(isSecondary = false) {
       };
     }
 
-    // Per l'account principale, procediamo con la creazione completa
+    // Otteniamo il signer e la firma
+    const signer = await getSigner();
+    const signature = await signer.signMessage(MESSAGE_TO_SIGN);
+    const password = await generatePassword(signature);
+
+    // Generiamo le coppie di chiavi per stealth paymentseth
     const [pair, v_pair, s_pair] = await Promise.all([
       SEA.pair(),
       SEA.pair(),
       SEA.pair(),
     ]);
 
-    const internalWallet = await gunToEthAccount(pair.epriv);
-
     if (!pair || !v_pair || !s_pair) {
-      throw new Error("Impossibile generare le coppie di chiavi");
+      throw new Error("Impossibile generare le coppie di chiavi stealth");
     }
 
-    // Cifriamo le coppie di chiavi in parallelo
-    const [encryptedPair, encryptedV_pair, encryptedS_pair] = await Promise.all([
-      encryptWithPassword(pair, password),
-      encryptWithPassword(v_pair, password),
-      encryptWithPassword(s_pair, password),
-    ]);
+    const [encryptedPair, encryptedV_pair, encryptedS_pair] = await Promise.all(
+      [
+        encryptWithPassword(pair, password),
+        encryptWithPassword(v_pair, password),
+        encryptWithPassword(s_pair, password),
+      ]
+    );
 
-    if (!encryptedPair || !encryptedV_pair || !encryptedS_pair) {
-      throw new Error("Impossibile cifrare le coppie di chiavi");
+    const hexPrivateKey = await convertToEthAddress(pair.epriv);
+
+    if (!ethers.isHexString(hexPrivateKey, 32)) {
+      throw new Error("Chiave privata non valida dopo la conversione");
     }
 
-    const userData = {
-      account: signer,
+    const internalWallet = new ethers.Wallet(hexPrivateKey);
+
+    return {
       pub: pair.pub,
-      internalWallet: internalWallet.address,
-      internalWalletPk: internalWallet.privateKey,
+      internalWalletAddress: internalWallet.address,
+      internalWalletPk: hexPrivateKey,
       pair: pair,
-      v_pair: v_pair,
-      s_pair: s_pair,
-      externalWallet: signer.address,
-      externalWalletPk: undefined,
+      v_pair,
+      s_pair,
+      viewingPublicKey: v_pair.epub,
+      spendingPublicKey: s_pair.epub,
       env_pair: encryptedPair,
       env_v_pair: encryptedV_pair,
       env_s_pair: encryptedS_pair,
-      publicKeys: {
-        viewingPublicKey: v_pair.epub,
-        spendingPublicKey: s_pair.epub,
-        externalWallet: signer.address
-      },
-      password
     };
-
-    return userData;
   } catch (error) {
     console.error("Errore in ethToGunAccount:", error);
-    throw error;
-  }
-}
-
-/**
- * @param {string} encryptedPair - La coppia di chiavi cifrata
- * @param {Object} keypair - La coppia di chiavi per la decifratura
- * @returns {Promise<Object|null>} La coppia di chiavi decifrata o null in caso di errore
- */
-async function decryptPair(encryptedPair, keypair) {
-  try {
-    if (!encryptedPair || !keypair) {
-      throw new Error("Parametri mancanti per la decifratura");
-    }
-
-    // Verifica che il keypair abbia i campi necessari
-    if (!keypair.pub || !keypair.priv || !keypair.epub || !keypair.epriv) {
-      throw new Error("Keypair non valido: campi mancanti");
-    }
-
-    const decrypted = await decrypt(encryptedPair, keypair);
-    if (!decrypted) {
-      throw new Error("Decifratura fallita");
-    }
-
-    // Verifica che il risultato decifrato sia nel formato corretto
-    if (
-      !decrypted.pub ||
-      !decrypted.priv ||
-      !decrypted.epub ||
-      !decrypted.epriv
-    ) {
-      throw new Error("Risultato decifratura non valido: campi mancanti");
-    }
-
-    return decrypted;
-  } catch (error) {
-    console.error("Errore nella decifratura della coppia di chiavi:", error);
-    return null;
-  }
-}
-
-async function saveUserToGun(userData) {
-  try {
-    // Validazione input
-    if (!userData || !userData.pub || !userData.publicKeys) {
-      throw new Error("Dati utente non validi o incompleti");
-    }
-
-    const gun = this;
-    const { pub, internalWallet, externalWallet, env_pair, env_v_pair, env_s_pair, publicKeys } = userData;
-
-    // Validazione campi obbligatori
-    if (!env_pair || !env_v_pair || !env_s_pair || !publicKeys.viewingPublicKey || !publicKeys.spendingPublicKey) {
-      throw new Error("Dati del wallet incompleti");
-    }
-
-    // Salviamo i dati cifrati e attendiamo la conferma
-    await new Promise((resolve, reject) => {
-      let timeoutId = setTimeout(() => {
-        reject(new Error("Timeout nel salvataggio dei dati cifrati"));
-      }, 5000);
-
-      const data = {
-        pub,
-        internalWallet,
-        externalWallet,
-        env_pair,
-        env_v_pair,
-        env_s_pair,
-        publicKeys,
-        timestamp: Date.now()
-      };
-
-      // Usiamo l'indirizzo esterno come chiave se disponibile, altrimenti quello interno
-      const address = externalWallet || internalWallet;
-      
-      gun
-        .get("gun-eth")
-        .get("users")
-        .get(address)
-        .put(data, (ack) => {
-          clearTimeout(timeoutId);
-          if (ack.err) {
-            console.error("Errore nel salvataggio dei dati:", ack.err);
-            reject(new Error(ack.err));
-          } else {
-            resolve(ack);
-          }
-        });
-    });
-
-    // Verifica del salvataggio con retry
-    let retries = 3;
-    const address = externalWallet || internalWallet;
-    
-    while (retries > 0) {
-      try {
-        await new Promise((resolve, reject) => {
-          let timeoutId = setTimeout(() => {
-            reject(new Error("Timeout nella verifica dei dati"));
-          }, 5000);
-
-          gun
-            .get("gun-eth")
-            .get("users")
-            .get(address)
-            .once((data) => {
-              clearTimeout(timeoutId);
-              if (data && data.env_pair && data.publicKeys) {
-                resolve(data);
-              } else {
-                reject(new Error("Verifica dei dati fallita"));
-              }
-            });
-        });
-        break; // Se la verifica ha successo, usciamo dal ciclo
-      } catch (err) {
-        retries--;
-        if (retries === 0) throw err;
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Attesa prima del retry
-      }
-    }
-
-    console.log("Dati utente salvati per:", address);
-    return userData;
-  } catch (error) {
-    console.error("Errore nel salvataggio dei dati utente:", error);
-    throw error;
-  }
-}
-
-/**
- * @param {any} address
- */
-async function createAndStoreEncryptedPair(address) {
-  try {
-    if (!address || typeof address !== "string") {
-      throw new Error("Indirizzo non valido");
-    }
-
-    const gun = this;
-    const account = await ethToGunAccount.call(gun);  // Passiamo il contesto gun
-
-    if (!account || !account.pair) {
-      throw new Error("Impossibile creare l'account");
-    }
-
-    const { env_pair, env_v_pair, env_s_pair, publicKeys } = account;
-
-    // Usiamo saveUserToGun invece di salvare manualmente
-    const userDataPublic = {
-      pub: account.pub,
-      internalWallet: account.internalWallet,
-      externalWallet: account.externalWallet,
-      env_pair,
-      env_v_pair,
-      env_s_pair,
-      publicKeys
-    };
-
-    await gun.saveUserToGun(userDataPublic);
-
-    return account;
-  } catch (error) {
-    console.error("Error creating and storing encrypted pair:", error);
-    throw error;
-  }
-}
-
-/**
- * @param {any} address
- * @param {any} password
- */
-async function getAndDecryptPair(address, password) {
-  try {
-    console.log("[getAndDecryptPair] Inizio recupero per indirizzo:", address);
-    console.log(
-      "[getAndDecryptPair] Password ricevuta:",
-      typeof password,
-      password ? password.substring(0, 10) + "..." : "assente"
-    );
-
-    if (!address || !password) {
-      throw new Error(
-        "Parametri mancanti: " + (!address ? "address" : "password")
-      );
-    }
-
-    const gun = this;
-    console.log(
-      "[getAndDecryptPair] Istanza Gun:",
-      gun ? "presente" : "assente"
-    );
-
-    // Otteniamo i dati cifrati
-    console.log("[getAndDecryptPair] Inizio recupero dati cifrati...");
-    const encryptedData = await new Promise((resolve, reject) => {
-      let resolved = false;
-      const timeoutId = setTimeout(() => {
-        if (!resolved) {
-          console.log("[getAndDecryptPair] Timeout nel recupero dati");
-          reject(new Error("Timeout nel recupero dati dopo 5 secondi"));
-        }
-      }, 5000);
-
-      console.log("[getAndDecryptPair] Query Gun:", "gun-eth/users/" + address);
-      gun
-        .get("gun-eth")
-        .get("users")
-        .get(address)
-        .once((data, key) => {
-          // Cambiato da .on a .once
-          console.log(
-            "[getAndDecryptPair] Dati ricevuti:",
-            key,
-            data ? "presenti" : "assenti"
-          );
-          clearTimeout(timeoutId);
-
-          if (!data) {
-            console.log("[getAndDecryptPair] Nessun dato trovato");
-            reject(new Error("Nessun dato trovato"));
-            return;
-          }
-
-          if (!data.env_pair) {
-            console.log(
-              "[getAndDecryptPair] env_pair mancante nei dati:",
-              Object.keys(data)
-            );
-            reject(new Error("env_pair non trovato nei dati"));
-            return;
-          }
-
-          console.log(
-            "[getAndDecryptPair] env_pair trovato, lunghezza:",
-            data.env_pair.length
-          );
-          console.log(
-            "[getAndDecryptPair] Primi 50 caratteri env_pair:",
-            data.env_pair.substring(0, 50)
-          );
-          resolved = true;
-          resolve(data.env_pair);
-        });
-    });
-
-    if (!encryptedData) {
-      console.log("[getAndDecryptPair] Dati cifrati non trovati");
-      throw new Error("Dati cifrati non trovati per questo indirizzo");
-    }
-
-    console.log(
-      "[getAndDecryptPair] Dati cifrati recuperati, lunghezza:",
-      encryptedData.length
-    );
-    console.log(
-      "[getAndDecryptPair] Primi 50 caratteri dei dati cifrati:",
-      encryptedData.substring(0, 50)
-    );
-
-    // Decrittiamo i dati
-    console.log(
-      "[getAndDecryptPair] Inizio decifratura con password:",
-      password.substring(0, 10) + "..."
-    );
-    try {
-      const decryptedPair = await decryptWithPassword(encryptedData, password);
-      console.log(
-        "[getAndDecryptPair] Risultato decifratura:",
-        decryptedPair ? "successo" : "fallito"
-      );
-
-      if (!decryptedPair) {
-        throw new Error("Decifratura fallita - risultato nullo");
-      }
-
-      if (typeof decryptedPair !== "object") {
-        console.log(
-          "[getAndDecryptPair] Tipo risultato non valido:",
-          typeof decryptedPair
-        );
-        throw new Error(
-          `Formato coppia decifrata non valido: ${typeof decryptedPair}`
-        );
-      }
-
-      // Verifichiamo che il pair abbia tutti i campi necessari
-      const requiredFields = ["pub", "priv", "epub", "epriv"];
-      const missingFields = requiredFields.filter(
-        (field) => !decryptedPair[field]
-      );
-
-      if (missingFields.length > 0) {
-        console.log("[getAndDecryptPair] Campi mancanti:", missingFields);
-        throw new Error(
-          `Coppia decifrata mancante dei campi: ${missingFields.join(", ")}`
-        );
-      }
-
-      console.log("[getAndDecryptPair] Verifica campi completata con successo");
-      console.log("[getAndDecryptPair] Coppia decifrata:", {
-        pub: decryptedPair.pub.substring(0, 20) + "...",
-        priv: "***nascosta***",
-        epub: decryptedPair.epub.substring(0, 20) + "...",
-        epriv: "***nascosta***",
-      });
-
-      return decryptedPair;
-    } catch (decryptError) {
-      console.error(
-        "[getAndDecryptPair] Errore durante la decifratura:",
-        decryptError
-      );
-      console.error(
-        "[getAndDecryptPair] Stack decifratura:",
-        decryptError.stack
-      );
-      throw new Error(`Errore nella decifratura: ${decryptError.message}`);
-    }
-  } catch (error) {
-    console.error("[getAndDecryptPair] Errore generale:", error.message);
-    console.error("[getAndDecryptPair] Stack generale:", error.stack);
-    throw error;
-  }
-}
-
-/**
- * Crea una firma utilizzando MetaMask
- * @param {string} message - Messaggio da firmare
- * @returns {Promise<string>} Firma generata
- * @throws {Error} Se MetaMask non è disponibile o se la firma fallisce
- */
-async function createSignature(message) {
-  try {
-    if (!windowWithEthereum.ethereum) {
-      throw new Error("MetaMask non trovato");
-    }
-
-    if (!message) {
-      throw new Error("Messaggio da firmare non valido");
-    }
-
-    // Prima verifichiamo se abbiamo già accesso
-    let accounts = await windowWithEthereum.ethereum.request({
-      method: "eth_accounts",
-    });
-
-    // Se non abbiamo accesso, lo richiediamo
-    if (!accounts || accounts.length === 0) {
-      accounts = await windowWithEthereum.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-    }
-
-    if (!accounts || accounts.length === 0) {
-      throw new Error("Nessun account MetaMask disponibile");
-    }
-
-    const address = accounts[0];
-
-    // Prepariamo il messaggio in formato hex
-    const messageHex = ethers.hexlify(ethers.toUtf8Bytes(message));
-
-    // Firmiamo il messaggio
-    const signature = await windowWithEthereum.ethereum.request({
-      method: "personal_sign",
-      params: [messageHex, address],
-    });
-
-    if (!signature || typeof signature !== "string") {
-      throw new Error("Firma non valida");
-    }
-
-    return signature;
-  } catch (error) {
-    console.error("Errore nella creazione della firma:", error);
     throw error;
   }
 }
@@ -783,91 +197,60 @@ async function createSignature(message) {
 // =============================================
 
 /**
- * @typedef {Object} StealthMethods
- * @property {function} generateStealthAddress
- * @property {function} announceStealthPayment
- * @property {function} getStealthPayments
- * @property {function} recoverStealthFunds
- * @property {function} publishStealthKeys
- */
-
-/**
  * Estende Gun con i metodi stealth
  * @param {import("gun").IGun} Gun
  */
 function extendGunWithStealth(Gun) {
   const stealthMethods = {
-    /**
-     * Genera un indirizzo stealth
-     * @param {string} recipientAddress
-     * @param {string} signature
-     */
-    async generateStealthAddress(recipientAddress, signature) {
-      const stealth = new StealthChain(this);
-      return stealth.generateStealthAddress(recipientAddress, signature);
+    async generateStealthAddress(receiverViewingKey, receiverSpendingKey) {
+      const stealth = new StealthChain();
+      return stealth.generateStealthAddress(receiverViewingKey, receiverSpendingKey);
     },
 
-    /**
-     * Annuncia un pagamento stealth
-     * @param {string} stealthAddress
-     * @param {string} senderPublicKey
-     * @param {string} spendingPublicKey
-     * @param {string} signature
-     */
-    async announceStealthPayment(
-      stealthAddress,
-      senderPublicKey,
-      spendingPublicKey,
-      signature
+    async deriveStealthAddress(
+      sharedSecret,
+      receiverSpendingKey,
+      senderEphemeralKey,
+      receiverViewingKey
     ) {
-      const stealth = new StealthChain(this);
-      return stealth.announceStealthPayment(
-        stealthAddress,
-        senderPublicKey,
-        spendingPublicKey,
-        signature
+      const stealth = new StealthChain();
+      return stealth.deriveStealthAddress(
+        sharedSecret,
+        receiverSpendingKey,
+        senderEphemeralKey,
+        receiverViewingKey
       );
     },
 
-    /**
-     * Recupera i pagamenti stealth
-     * @param {string} signature
-     */
-    async getStealthPayments(signature) {
-      const stealth = new StealthChain(this);
-      return stealth.getStealthPayments(signature);
+    async announceStealthPayment(
+      stealthAddress,
+      senderEphemeralKey,
+      receiverViewingKey,
+      receiverSpendingKey
+    ) {
+      const stealth = new StealthChain();
+      return stealth.createStealthAnnouncement(
+        stealthAddress,
+        senderEphemeralKey,
+        receiverViewingKey,
+        receiverSpendingKey
+      );
     },
 
-    /**
-     * Recupera i fondi stealth
-     * @param {string} stealthAddress
-     * @param {string} senderPublicKey
-     * @param {string} signature
-     * @param {string} spendingPublicKey
-     */
     async recoverStealthFunds(
       stealthAddress,
       senderPublicKey,
       signature,
       spendingPublicKey
     ) {
-      const stealth = new StealthChain(this);
-      return stealth.recoverStealthFunds(
+      const stealth = new StealthChain();
+      return stealth.createRecoveryData(
         stealthAddress,
         senderPublicKey,
         signature,
         spendingPublicKey
       );
-    },
-
-    /**
-     * Pubblica le chiavi stealth
-     * @param {string} signature
-     */
-    async publishStealthKeys(signature) {
-      const stealth = new StealthChain(this);
-      return stealth.publishStealthKeys(signature);
-    },
+    }
   };
 
   Object.assign(Gun.chain, stealthMethods);
@@ -881,24 +264,19 @@ function extendGunWithStealth(Gun) {
  * @param {import("gun").IGun} Gun
  */
 function extendGun(Gun) {
-  /** @type {BaseMethods} */
   const baseMethods = {
     MESSAGE_TO_SIGN,
     setSigner,
     getSigner,
     verifySignature,
     generatePassword,
-    createSignature,
-    createAndStoreEncryptedPair,
-    getAndDecryptPair,
-    ethToGunAccount,
     gunToEthAccount,
-    decryptPair,
-    decryptWithPassword,
     encryptWithPassword,
+    decryptWithPassword,
     encrypt,
     decrypt,
-    saveUserToGun,
+    createSignature,
+    convertToEthAddress,
   };
 
   Object.assign(Gun.chain, baseMethods);
@@ -908,25 +286,17 @@ function extendGun(Gun) {
 /**
  * Inizializza Gun con le estensioni e le opzioni specificate
  * @param {Object} options - Opzioni di configurazione per Gun
- * @returns {IGunInstance}
+ * @returns {import("gun").IGunInstance}
  */
 function initializeGun(options = {}) {
-  // Configurazione di default
-  const defaultOptions = options;
-
-  // Verifica che Gun sia stato caricato correttamente
   if (!Gun.SEA) {
     console.warn("Gun.SEA non disponibile, ricarico le estensioni...");
     require("gun/sea");
   }
 
-  // Estendi Gun con i nostri metodi
   extendGun(Gun);
+  gun = new Gun(options);
 
-  // Crea una nuova istanza di Gun
-  const gun = new Gun(defaultOptions);
-
-  // Verifica che l'istanza sia stata creata correttamente
   if (!gun || typeof gun.user !== "function") {
     throw new Error("Inizializzazione Gun fallita: user API non disponibile");
   }
@@ -934,24 +304,41 @@ function initializeGun(options = {}) {
   return gun;
 }
 
-// Esportazioni
+/**
+ * Crea una firma utilizzando il signer configurato
+ * @param {string} message - Messaggio da firmare
+ * @returns {Promise<string>} Firma generata
+ */
+async function createSignature(message) {
+  try {
+    if (!message) {
+      throw new Error("Messaggio da firmare non valido");
+    }
+
+    const signer = await getSigner();
+    const signature = await signer.signMessage(message);
+
+    if (!signature || typeof signature !== "string") {
+      throw new Error("Firma non valida");
+    }
+
+    return signature;
+  } catch (error) {
+    console.error("Errore nella creazione della firma:", error);
+    throw error;
+  }
+}
+
 export {
   MESSAGE_TO_SIGN,
   generateRandomId,
-  getSigner,
   generatePassword,
   verifySignature,
   initializeGun,
   extendGun,
-  createSignature,
-  setSigner,
-  gunToEthAccount,
-  decryptWithPassword,
-  encryptWithPassword,
   encrypt,
   decrypt,
-  ethToGunAccount,
-  createAndStoreEncryptedPair,
-  getAndDecryptPair,
-  saveUserToGun,
+  encryptWithPassword,
+  decryptWithPassword,
+  createSignature,
 };

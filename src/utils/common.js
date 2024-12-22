@@ -132,3 +132,12 @@ export function setSigner(newRpcUrl, newPrivateKey) {
 export async function getSigner() {
   return SignerManager.getSigner();
 } 
+
+export function verifyPublicKeys(userData) {
+  if (!userData) return false;
+  
+  const hasDirectKeys = userData.viewingPublicKey && userData.spendingPublicKey;
+  const hasNestedKeys = userData.publicKeys?.viewingPublicKey && userData.publicKeys?.spendingPublicKey;
+  
+  return hasDirectKeys || hasNestedKeys;
+}
