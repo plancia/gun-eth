@@ -14,6 +14,7 @@ import {
   encryptWithPassword,
   encrypt,
   decrypt,
+  convertToEthAddress,
 } from "./gun-eth.js";
 
 const GunEth = {
@@ -32,10 +33,12 @@ const GunEth = {
   encryptWithPassword,
   encrypt,
   decrypt,
+  convertToEthAddress,
 };
 
-// Esponi GunEth globalmente nel browser
+// @ts-ignore
 if (typeof window !== "undefined") {
+  // @ts-ignore
   window.GunEth = GunEth;
 }
 

@@ -1,6 +1,7 @@
 // @ts-check
 import { ethers } from "ethers";
 import { deriveSharedKey } from "../utils/encryption.js";
+import SEA from "gun/sea.js";
 
 export class StealthChain {
   /**

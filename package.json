@@ -18,9 +18,12 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
+    "@rollup/plugin-typescript": "^12.1.2",
     "crypto-js": "^4.2.0",
-    "ethers": "^6.0.0",
-    "gun": "^0.2020.1239"
+    "ethers": "^6.13.4",
+    "gun": "^0.2020.1239",
+    "tslib": "^2.8.1",
+    "typescript": "^5.7.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.1",

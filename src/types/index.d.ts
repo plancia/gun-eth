@@ -11,7 +11,7 @@ export interface KeyPair {
 export interface ExtendedSigner extends ethers.Signer {
   address: string;
   privateKey: string;
-  provider: Object;
+  provider: ethers.Provider;
 }
 
 export interface GunExtended extends Gun {
@@ -47,12 +47,12 @@ export interface StealthPayment {
   senderPublicKey: string;
   spendingPublicKey: string;
   timestamp: number;
-  source: 'onChain' | 'offChain' | 'both';
+  source: "onChain" | "offChain" | "both";
   id?: string;
   wallet?: ethers.Wallet;
 }
 
 export interface StealthOptions {
-  source?: 'onChain' | 'offChain' | 'both';
+  source?: "onChain" | "offChain" | "both";
   chain?: string;
-} 
+}

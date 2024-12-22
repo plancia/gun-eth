@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { ethers } from 'ethers';
+import { ethers } from "ethers";
 
 export const MESSAGE_TO_SIGN = "Access GunDB with Ethereum";
 
@@ -59,40 +59,24 @@ class SignerManager {
 
     if (SignerManager.rpcUrl !== "" && SignerManager.privateKey !== "") {
       SignerManager.provider = new ethers.JsonRpcProvider(SignerManager.rpcUrl);
-      const wallet = new ethers.Wallet(SignerManager.privateKey, SignerManager.provider);
-      // Create a proxy instead of modifying the wallet directly
-      SignerManager.signer = new Proxy(wallet, {
-        get(target, prop) {
-          if (prop === 'address') {
-            return target.address;
-          }
-          if (prop === 'privateKey') {
-            return SignerManager.privateKey;
-          }
-          return target[prop];
-        }
-      });
+      const wallet = new ethers.Wallet(
+        SignerManager.privateKey,
+        SignerManager.provider
+      );
+      SignerManager.signer = wallet;
       return SignerManager.signer;
     }
 
-    if (typeof window !== "undefined" && window?.ethereum) { 
+    if (typeof window !== "undefined" && window?.ethereum) {
       /** @type {WindowWithEthereum} */
       const windowWithEthereum = window;
-      await windowWithEthereum.ethereum?.request({ method: "eth_requestAccounts" });
-      const browserProvider = new ethers.BrowserProvider(windowWithEthereum.ethereum);
-      const signer = await browserProvider.getSigner();
-      // Create a proxy for the browser signer as well
-      SignerManager.signer = new Proxy(signer, {
-        get(target, prop) {
-          if (prop === 'address') {
-            return target.getAddress();
-          }
-          if (prop === 'privateKey') {
-            return '';
-          }
-          return target[prop];
-        }
+      await windowWithEthereum.ethereum?.request({
+        method: "eth_requestAccounts",
       });
+      const browserProvider = new ethers.BrowserProvider(
+        windowWithEthereum.ethereum
+      );
+      SignerManager.signer = await browserProvider.getSigner();
       return SignerManager.signer;
     }
 
@@ -104,18 +88,7 @@ class SignerManager {
     SignerManager.privateKey = newPrivateKey;
     SignerManager.provider = new ethers.JsonRpcProvider(newRpcUrl);
     const wallet = new ethers.Wallet(newPrivateKey, SignerManager.provider);
-    // Create a proxy for the new signer
-    SignerManager.signer = new Proxy(wallet, {
-      get(target, prop) {
-        if (prop === 'address') {
-          return target.address;
-        }
-        if (prop === 'privateKey') {
-          return SignerManager.privateKey;
-        }
-        return target[prop];
-      }
-    });
+    SignerManager.signer = wallet;
     console.log("Signer configured with address:", wallet.address);
     return SignerManager.instance;
   }
@@ -131,13 +104,4 @@ export function setSigner(newRpcUrl, newPrivateKey) {
 
 export async function getSigner() {
   return SignerManager.getSigner();
-} 
-
-export function verifyPublicKeys(userData) {
-  if (!userData) return false;
-  
-  const hasDirectKeys = userData.viewingPublicKey && userData.spendingPublicKey;
-  const hasNestedKeys = userData.publicKeys?.viewingPublicKey && userData.publicKeys?.spendingPublicKey;
-  
-  return hasDirectKeys || hasNestedKeys;
 }

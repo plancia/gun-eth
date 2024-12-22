@@ -29,6 +29,74 @@ import { StealthChain } from "./features/StealthChain.js";
 const SEA = Gun.SEA;
 let gun = null;
 
+class SignerManager {
+  static instance = null;
+  static provider = null;
+  static signer = null;
+  static rpcUrl = "";
+  static privateKey = "";
+
+  static getInstance() {
+    if (!SignerManager.instance) {
+      SignerManager.instance = new SignerManager();
+    }
+    return SignerManager.instance;
+  }
+
+  static async getSigner() {
+    if (SignerManager.signer) {
+      return SignerManager.signer;
+    }
+
+    if (SignerManager.rpcUrl !== "" && SignerManager.privateKey !== "") {
+      SignerManager.provider = new ethers.JsonRpcProvider(SignerManager.rpcUrl);
+      const wallet = new ethers.Wallet(
+        SignerManager.privateKey,
+        SignerManager.provider
+      );
+      SignerManager.signer = wallet;
+      return SignerManager.signer;
+    }
+
+    // @ts-ignore
+    if (typeof window !== "undefined" && window?.ethereum) {
+      // @ts-ignore
+      /** @type {WindowWithEthereum} */
+      const windowWithEthereum = window;
+      await windowWithEthereum.ethereum?.request({
+        method: "eth_requestAccounts",
+      });
+      const browserProvider = new ethers.BrowserProvider(
+        windowWithEthereum.ethereum
+      );
+      const signer = await browserProvider.getSigner();
+
+      // Creiamo un wrapper attorno al signer per gestire l'indirizzo
+      SignerManager.signer = {
+        ...signer,
+        address: await signer.getAddress(),
+        signMessage: async (message) => {
+          return signer.signMessage(message);
+        },
+      };
+
+      return SignerManager.signer;
+    }
+
+    throw new Error("No valid Ethereum provider found. Call setSigner first.");
+  }
+
+  static setSigner(newRpcUrl, newPrivateKey) {
+    SignerManager.rpcUrl = newRpcUrl;
+    SignerManager.privateKey = newPrivateKey;
+    SignerManager.provider = new ethers.JsonRpcProvider(newRpcUrl);
+    const wallet = new ethers.Wallet(newPrivateKey, SignerManager.provider);
+    SignerManager.signer = wallet;
+    console.log("Signer configured with address:", wallet.address);
+    return SignerManager.instance;
+  }
+}
+
 /**
  * @param {string} newRpcUrl
  * @param {string} newPrivateKey
@@ -204,7 +272,10 @@ function extendGunWithStealth(Gun) {
   const stealthMethods = {
     async generateStealthAddress(receiverViewingKey, receiverSpendingKey) {
       const stealth = new StealthChain();
-      return stealth.generateStealthAddress(receiverViewingKey, receiverSpendingKey);
+      return stealth.generateStealthAddress(
+        receiverViewingKey,
+        receiverSpendingKey
+      );
     },
 
     async deriveStealthAddress(
@@ -250,7 +321,7 @@ function extendGunWithStealth(Gun) {
         signature,
         spendingPublicKey
       );
-    }
+    },
   };
 
   Object.assign(Gun.chain, stealthMethods);
@@ -271,6 +342,7 @@ function extendGun(Gun) {
     verifySignature,
     generatePassword,
     gunToEthAccount,
+    ethToGunAccount,
     encryptWithPassword,
     decryptWithPassword,
     encrypt,
@@ -341,4 +413,5 @@ export {
   encryptWithPassword,
   decryptWithPassword,
   createSignature,
+  convertToEthAddress,
 };
