@@ -48,10 +48,10 @@ const basePlugins = [
   process.env.NODE_ENV === "production" && terser(),
 ].filter(Boolean);
 
-const external = ["gun", "gun/sea.js", "ethers"];
+const external = ["gun", "gun/sea", "ethers"];
 const globals = {
   gun: "Gun",
-  "gun/sea.js": "SEA",
+  "gun/sea": "SEA",
   ethers: "ethers",
 };
 
