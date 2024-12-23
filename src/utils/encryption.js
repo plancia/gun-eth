@@ -1,4 +1,5 @@
-import SEA from 'gun/sea.js';
+import SEA from "gun/sea.js";
+import CryptoJS from "crypto-js";
 
 /**
  * @typedef {Object|string} KeyPair
@@ -17,16 +18,40 @@ import SEA from 'gun/sea.js';
  */
 export async function encrypt(data, keypair) {
   try {
-    const dataToEncrypt = typeof data === 'object' ? JSON.stringify(data) : data;
+    const dataToEncrypt =
+      typeof data === "object" ? JSON.stringify(data) : data;
     const encrypted = await SEA.encrypt(dataToEncrypt, keypair);
-    
+
     if (!encrypted) {
-      throw new Error('Encryption failed');
+      throw new Error("Encryption failed");
     }
 
     return encrypted;
   } catch (error) {
-    console.error('Encryption error:', error);
+    console.error("Encryption error:", error);
+    throw error;
+  }
+}
+
+/**
+ * Encrypts data using a simple password
+ * @param {string|Object} data - Data to encrypt
+ * @param {string} password - Password for encryption
+ * @returns {Promise<string>} Encrypted data
+ */
+export async function encryptWithPassword(data, password) {
+  try {
+    const dataToEncrypt = typeof data === "object" ? JSON.stringify(data) : data;
+    
+    const encrypted = await SEA.encrypt(dataToEncrypt, password);
+    
+    if (!encrypted) {
+      throw new Error("Encryption failed");
+    }
+    
+    return encrypted;
+  } catch (error) {
+    console.error("Password encryption error:", error);
     throw error;
   }
 }
@@ -43,23 +68,54 @@ export async function decrypt(data, keypair) {
     const decrypted = await SEA.decrypt(data, keypair);
     if (!decrypted) {
       console.log("Decryption returned null");
-      throw new Error('Decryption failed');
+      throw new Error("Decryption failed");
     }
 
     try {
-      return typeof decrypted === 'string' ? JSON.parse(decrypted) : decrypted;
-    } catch {
+      return typeof decrypted === "string" ? JSON.parse(decrypted) : decrypted;
+    } catch (error) {
+      console.log("Decryption returned non-string", error);
       return decrypted;
     }
   } catch (error) {
-    console.error('Decryption error:', error);
-    console.error('Data:', data);
-    console.error('Keypair:', {
+    console.error("Decryption error:", error);
+    console.error("Data:", data);
+    console.error("Keypair:", {
       hasEpriv: !!keypair?.epriv,
       hasEpub: !!keypair?.epub,
       hasPub: !!keypair?.pub,
-      hasPriv: !!keypair?.priv
+      hasPriv: !!keypair?.priv,
     });
+    throw error;
+  }
+}
+
+/**
+ * Decrypts data using a simple password
+ * @param {string} encryptedData - Encrypted data to decrypt
+ * @param {string} password - Password for decryption
+ * @returns {Promise<string|Object>} Decrypted data
+ */
+export async function decryptWithPassword(encryptedData, password) {
+  try {
+    if (!encryptedData || !password) {
+      throw new Error("Missing required parameters");
+    }
+
+    console.log('Decrypting data:', {
+      encryptedLength: encryptedData.length,
+      passwordLength: password.length
+    });
+
+    const decrypted = await SEA.decrypt(encryptedData, password);
+    
+    if (!decrypted) {
+      throw new Error("Decryption failed");
+    }
+
+    return decrypted;
+  } catch (error) {
+    console.error("Password decryption error:", error);
     throw error;
   }
 }
@@ -74,17 +130,17 @@ export async function decrypt(data, keypair) {
 export async function deriveSharedKey(recipientEpub, senderKeypair) {
   try {
     if (!recipientEpub || !senderKeypair || !senderKeypair.epriv) {
-      throw new Error('Invalid parameters for shared key derivation');
+      throw new Error("Invalid parameters for shared key derivation");
     }
 
     const sharedKey = await SEA.secret(recipientEpub, senderKeypair);
     if (!sharedKey) {
-      throw new Error('Failed to derive shared key');
+      throw new Error("Failed to derive shared key");
     }
 
-    return sharedKey
+    return sharedKey;
   } catch (error) {
-    console.error('Error deriving shared key:', error);
+    console.error("Error deriving shared key:", error);
     throw error;
   }
-} 
+}

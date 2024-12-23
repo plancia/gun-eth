@@ -1,50 +1,135 @@
-import { GunEth } from "./core/gun-eth.js";
-import { ProofChain } from "./features/proof/ProofChain.js";
-import { StealthChain } from "./features/stealth/StealthChain.js";
-import { GUNBubbleProvider } from "./features/bubbles/providers/gun-bubble-provider.js";
+import {
+  MESSAGE_TO_SIGN,
+  generateRandomId,
+  getSigner,
+  generatePassword,
+  verifySignature,
+  initializeGun,
+  extendGun,
+  createSignature,
+  setSigner,
+  gunToEthAccount,
+  ethToGunAccount,
+  decryptWithPassword,
+  encryptWithPassword,
+  encrypt,
+  decrypt,
+  convertToEthAddress,
+} from "./gun-eth.js";
 
-/**
- * @typedef {Object} BubbleProviderOptions
- * @property {string} rpcUrl - RPC URL for the provider
- * @property {string} contractAddress - Contract address
- * @property {Object} [contractAbi] - Contract ABI
- * @property {Object} gun - Gun instance
- * @property {Object} keypair - Encryption keypair
- * @property {string} keypair.epub - Public key
- * @property {string} keypair.epriv - Private key
- */
+import { StealthChain } from "./features/StealthChain.js";
 
-/**
- * @typedef {Object} GunNode
- * @property {string} [name]
- * @property {string} [owner]
- * @property {string} [filePath]
- * @property {string} [content]
- * @property {number} [created]
- * @property {number} [updated]
- * @property {number} [size]
- * @property {boolean} [readOnly]
- * @property {Object} [encryptionInfo]
- * @property {string} encryptionInfo.ownerEpub
- * @property {string} encryptionInfo.ownerAddress
- */
+const GunEth = {
+  MESSAGE_TO_SIGN,
+  generateRandomId,
+  getSigner,
+  generatePassword,
+  verifySignature,
+  initializeGun,
+  extendGun,
+  createSignature,
+  setSigner,
+  gunToEthAccount,
+  ethToGunAccount,
+  decryptWithPassword,
+  encryptWithPassword,
+  encrypt,
+  decrypt,
+  convertToEthAddress,
+  StealthChain,
+};
 
-/**
- * @typedef {Object} EthereumProvider
- * @property {(request: { method: string; params?: any[] | Record<string, any> }) => Promise<any>} request
- * @property {string} [chainId]
- * @property {boolean} [isMetaMask]
- */
+// Funzioni helper per StealthChain
+GunEth.createStealthTransaction = async (
+  provider,
+  chainId,
+  receiverViewingKey,
+  receiverSpendingKey
+) => {
+  const stealthChain = new StealthChain(provider, chainId);
 
-/**
- * @typedef {Object} FileMetadata
- * @property {string} name
- * @property {string} owner
- * @property {string} filePath
- * @property {number} created
- * @property {number} updated
- * @property {number} size
- * @property {boolean} readOnly
- */
+  // Verifica supporto chain
+  const isSupported = await stealthChain.isOnSupportedChain();
+  if (!isSupported) {
+    await stealthChain.requestChainSwitch();
+  }
 
-export { GunEth, ProofChain, StealthChain, GUNBubbleProvider };
+  // Genera indirizzo stealth
+  const stealthInfo = await stealthChain.generateStealthAddress(
+    receiverViewingKey,
+    receiverSpendingKey
+  );
+
+  // Crea annuncio
+  const announcement = stealthChain.createStealthAnnouncement(
+    stealthInfo.stealthAddress,
+    stealthInfo.senderEphemeralPublicKey,
+    receiverViewingKey,
+    receiverSpendingKey
+  );
+
+  // Annuncia il pagamento
+  const tx = await stealthChain.announceStealthPayment(
+    announcement.stealthAddress,
+    announcement.senderEphemeralKey,
+    announcement.receiverViewingKey,
+    announcement.receiverSpendingKey
+  );
+
+  return {
+    stealthInfo,
+    announcement,
+    transaction: tx,
+  };
+};
+
+GunEth.recoverStealthFunds = async (
+  provider,
+  chainId,
+  stealthAddress,
+  senderPublicKey,
+  signature,
+  spendingPublicKey
+) => {
+  const stealthChain = new StealthChain(provider, chainId);
+
+  // Verifica supporto chain
+  const isSupported = await stealthChain.isOnSupportedChain();
+  if (!isSupported) {
+    await stealthChain.requestChainSwitch();
+  }
+
+  // Recupera i fondi
+  return await stealthChain.recoverStealthFunds(
+    stealthAddress,
+    senderPublicKey,
+    signature,
+    spendingPublicKey
+  );
+};
+
+GunEth.getStealthPayments = async (
+  provider,
+  chainId,
+  viewingKey,
+  options = {}
+) => {
+  const stealthChain = new StealthChain(provider, chainId);
+
+  // Verifica supporto chain
+  const isSupported = await stealthChain.isOnSupportedChain();
+  if (!isSupported) {
+    await stealthChain.requestChainSwitch();
+  }
+
+  // Recupera i pagamenti
+  return await stealthChain.getStealthPayments(viewingKey, options);
+};
+
+// @ts-ignore
+if (typeof window !== "undefined") {
+  // @ts-ignore
+  window.GunEth = GunEth;
+}
+
+export { GunEth };

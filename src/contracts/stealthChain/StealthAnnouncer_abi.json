@@ -1,0 +1,181 @@
+[
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_devAddress", "type": "address" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "newAddress",
+        "type": "address"
+      }
+    ],
+    "name": "DevAddressUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "DevFeeUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "senderPublicKey",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "spendingPublicKey",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "stealthAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "StealthPaymentAnnounced",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "senderPublicKey", "type": "string" },
+      {
+        "internalType": "string",
+        "name": "spendingPublicKey",
+        "type": "string"
+      },
+      { "internalType": "address", "name": "stealthAddress", "type": "address" }
+    ],
+    "name": "announcePayment",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "announcements",
+    "outputs": [
+      { "internalType": "string", "name": "senderPublicKey", "type": "string" },
+      {
+        "internalType": "string",
+        "name": "spendingPublicKey",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "stealthAddress",
+        "type": "address"
+      },
+      { "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "devAddress",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "devFee",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAnnouncementsCount",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "fromIndex", "type": "uint256" },
+      { "internalType": "uint256", "name": "toIndex", "type": "uint256" }
+    ],
+    "name": "getAnnouncementsInRange",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "senderPublicKey",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "spendingPublicKey",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "stealthAddress",
+            "type": "address"
+          },
+          { "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+        ],
+        "internalType": "struct StealthAnnouncer.StealthAnnouncement[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_newAddress", "type": "address" }
+    ],
+    "name": "updateDevAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "_newFee", "type": "uint256" }
+    ],
+    "name": "updateDevFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdrawStuckETH",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
