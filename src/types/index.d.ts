@@ -8,10 +8,14 @@ export interface KeyPair {
   pub?: string;
 }
 
+export interface ExtendedProvider extends ethers.Provider {
+  send: (method: string, params: Array<any>) => Promise<any>;
+}
+
 export interface ExtendedSigner extends ethers.Signer {
   address: string;
   privateKey: string;
-  provider: ethers.Provider;
+  provider: ExtendedProvider;
 }
 
 export interface GunExtended extends Gun {

@@ -141,6 +141,7 @@ async function convertToEthAddress(gunPrivateKey) {
 /**
  * Converte un account Gun in un account Ethereum
  * @param {Object} gunKeyPair - Coppia di chiavi Gun
+ * @param {string} password - Password per la crittografia delle chiavi
  * @returns {Promise<Object>} Account convertito
  */
 export async function gunToEthAccount(gunKeyPair, password) {
@@ -268,7 +269,7 @@ export async function ethToGunAccount(isSecondary = false) {
  * Estende Gun con i metodi stealth
  * @param {import("gun").IGun} Gun
  */
-function extendGunWithStealth(Gun) {
+export function extendGunWithStealth(Gun) {
   const stealthMethods = {
     async generateStealthAddress(receiverViewingKey, receiverSpendingKey) {
       const stealth = new StealthChain();

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>💎 Ethereum to 🔫 Gun Key Pair Demo</title>
@@ -13,78 +14,84 @@
     <script src="../dist/gun-eth.bundle.js"></script>
     <style>
         body {
-          font-family: Arial, sans-serif;
-          margin: 0;
-          padding: 20px;
-          background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
         }
+
         .container {
-          max-width: 400px;
-          background-color: white;
-          border: 1px solid #000;
-          padding: 10px;
+            max-width: 400px;
+            background-color: white;
+            border: 1px solid #000;
+            padding: 10px;
         }
+
         h1,
         h2 {
-          margin: 0 0 10px 0;
-          font-size: 16px;
+            margin: 0 0 10px 0;
+            font-size: 16px;
         }
-        form, div {
-          margin-bottom: 15px;
+
+        form,
+        div {
+            margin-bottom: 15px;
         }
+
         input,
         button {
-          display: inline-block;
-          margin: 2px 0;
-          padding: 2px;
-          font-size: 12px;
+            display: inline-block;
+            margin: 2px 0;
+            padding: 2px;
+            font-size: 12px;
         }
+
         input {
-          width: 150px;
+            width: 150px;
         }
+
         button {
-          width: 100px;
+            width: 100px;
         }
+
         label {
-          display: inline-block;
-          width: 70px;
-          font-size: 12px;
+            display: inline-block;
+            width: 70px;
+            font-size: 12px;
         }
+
         #configStatus,
         .result {
-          font-weight: bold;
-          margin-bottom: 10px;
+            font-weight: bold;
+            margin-bottom: 10px;
         }
+
         .result {
-          color: blue;
+            color: blue;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>💎 Ethereum to 🔫 Gun Key Pair Demo</h1>
-        
+
         <form id="configForm">
             <h2>🔧 Configuration</h2>
             <label for="rpcUrl">🌐 RPC URL:</label>
-            <br>
-            <input type="text" id="rpcUrl" name="rpcUrl" required>
-            <br>
+            <input type="text" id="rpcUrl" value="https://polygon-mumbai.infura.io/v3/YOUR-PROJECT-ID"
+                placeholder="es: https://polygon-mumbai.g.alchemy.com/v2/YOUR-API-KEY" required>
             <label for="privateKey">🔑 Private Key:</label>
-            <br>
-            <input type="password" id="privateKey" name="privateKey" required>
-            <br>
+            <input type="password" id="privateKey"
+                value="0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+                placeholder="es: 0x0123...cdef" required>
             <button type="submit">⚙️ Configure</button>
+            <small>⚠️ Usa solo chiavi private di test! Non usare mai chiavi reali in esempi.</small>
         </form>
 
         <div id="createPairSection">
-            <h2>🔒 Create and Store Encrypted Pair</h2>
-            <button id="createPairBtn">🔐 Create Pair</button>
-        </div>
-
-        <div id="retrievePairSection">
-            <h2>🔓 Retrieve and Decrypt Pair</h2>
-            <button id="retrievePairBtn">🔎 Retrieve Pair</button>
+            <h2>🔒 Create Ethereum Account</h2>
+            <button id="createPairBtn">🔐 Create Account</button>
         </div>
 
         <div id="resultSection">
@@ -94,65 +101,27 @@
     </div>
 
     <script>
-        let gun;
-        const MESSAGE_TO_SIGN = "GunDB access with Ethereum";
-
-        document.getElementById('configForm').addEventListener('submit', function(event) {
+        document.getElementById('configForm').addEventListener('submit', async function (event) {
             event.preventDefault();
             const rpcUrl = document.getElementById('rpcUrl').value;
             const privateKey = document.getElementById('privateKey').value;
 
-            gun = Gun();
-            gun.setStandaloneConfig(rpcUrl, privateKey);
-
-            console.log('Standalone configuration set');
-            document.getElementById('resultText').innerText = '✅ Configuration set successfully';
-        });
-
-        document.getElementById('createPairBtn').addEventListener('click', async function() {
-            if (!gun) {
-                alert('⚠️ Please configure Gun first');
-                return;
-            }
-
             try {
-                const signature = await gun.createSignature(MESSAGE_TO_SIGN);
-                if (!signature) {
-                    throw new Error('Failed to create signature');
-                }
-
-                const signer = new ethers.Wallet(document.getElementById('privateKey').value);
-                const address = await signer.getAddress();
-
-                await gun.createAndStoreEncryptedPair(address, signature);
-                
-                document.getElementById('resultText').innerText = '✅ Encrypted pair created and stored successfully';
+                await GunEth.GunEth.setSigner(rpcUrl, privateKey);
+                document.getElementById('resultText').innerText = '✅ Signer configured successfully';
             } catch (error) {
                 document.getElementById('resultText').innerText = '❌ Error: ' + error.message;
             }
         });
 
-        document.getElementById('retrievePairBtn').addEventListener('click', async function() {
-            if (!gun) {
-                alert('⚠️ Please configure Gun first');
-                return;
-            }
-
+        document.getElementById('createPairBtn').addEventListener('click', async function () {
             try {
-                const signature = await gun.createSignature(MESSAGE_TO_SIGN);
-                if (!signature) {
-                    throw new Error('Failed to create signature');
-                }
-
-                const signer = new ethers.Wallet(document.getElementById('privateKey').value);
-                const address = await signer.getAddress();
-
-                const pair = await gun.getAndDecryptPair(address, signature);
-                
+                const account = await GunEth.GunEth.ethToGunAccount();
                 document.getElementById('resultText').innerHTML = `
-                    <strong>🔑 Retrieved pair:</strong> 
-                    <br>
-                    ${JSON.stringify(pair, null, 2)}
+                    <strong>🔑 Created Account:</strong><br>
+                    Internal Wallet: ${account.internalWalletAddress}<br>
+                    Viewing Key: ${account.viewingPublicKey}<br>
+                    Spending Key: ${account.spendingPublicKey}
                 `;
             } catch (error) {
                 document.getElementById('resultText').innerText = '❌ Error: ' + error.message;
@@ -160,4 +129,5 @@
         });
     </script>
 </body>
+
 </html>

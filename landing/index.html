@@ -1,1107 +1,1129 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gun-ETH - Advanced Blockchain Storage System</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css" />
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        // Handle all tab groups in the page
-        document.querySelectorAll('.code-tabs').forEach(tabGroup => {
-          const tabs = tabGroup.querySelectorAll('button');
-          const contents = tabGroup.closest('.code-demo, .code-window').querySelectorAll('.tab-content');
 
-          // Show first tab content and activate first tab
-          if (contents.length > 0 && tabs.length > 0) {
-            contents[0].style.display = 'block';
-            tabs[0].classList.add('active');
-          }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gun-ETH - Sistema Avanzato di Storage Blockchain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Handle all tab groups in the page
+      document.querySelectorAll('.code-tabs').forEach(tabGroup => {
+        const tabs = tabGroup.querySelectorAll('button');
+        const contents = tabGroup.closest('.code-demo, .code-window').querySelectorAll('.tab-content');
 
-          // Add click handlers to all tabs
-          tabs.forEach((tab, index) => {
-            tab.addEventListener('click', () => {
-              // Deactivate all tabs and contents in current group
-              tabs.forEach(t => t.classList.remove('active'));
-              contents.forEach(c => c.style.display = 'none');
+        // Show first tab content and activate first tab
+        if (contents.length > 0 && tabs.length > 0) {
+          contents[0].style.display = 'block';
+          tabs[0].classList.add('active');
+        }
 
-              // Activate clicked tab and its content
-              tab.classList.add('active');
-              if (contents[index]) {
-                contents[index].style.display = 'block';
-              }
-            });
+        // Add click handlers to all tabs
+        tabs.forEach((tab, index) => {
+          tab.addEventListener('click', () => {
+            // Deactivate all tabs and contents in current group
+            tabs.forEach(t => t.classList.remove('active'));
+            contents.forEach(c => c.style.display = 'none');
+
+            // Activate clicked tab and its content
+            tab.classList.add('active');
+            if (contents[index]) {
+              contents[index].style.display = 'block';
+            }
           });
         });
       });
-    </script>
-    <style>
-      /* Code Demo Tabs */
+    });
+  </script>
+  <style>
+    /* Code Demo Tabs */
+    .code-tabs {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.5rem;
+    }
+
+    .code-tabs button {
+      background: none;
+      border: 1px solid rgba(0, 194, 255, 0.1);
+      color: var(--text);
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .code-tabs button:hover {
+      border-color: var(--primary);
+      background: rgba(0, 194, 255, 0.1);
+      opacity: 1;
+    }
+
+    .code-tabs button.active {
+      background: var(--primary);
+      color: var(--background);
+      border-color: var(--primary);
+      opacity: 1;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Code Window */
+    .code-window {
+      background: rgba(10, 25, 47, 0.7);
+      border: 1px solid rgba(0, 194, 255, 0.1);
+      border-radius: 0 0 0.5rem 0.5rem;
+      overflow: hidden;
+    }
+
+    .code-window pre {
+      margin: 0;
+      padding: 1.5rem;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(0, 194, 255, 0.1);
+    }
+
+    .code-header h4 {
+      margin: 0;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0a1118 0%, #0d1117 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .hero-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3rem;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .hero-logo {
+      width: 400px;
+      height: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .logo-image {
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 0 20px rgba(0, 255, 240, 0.2));
+    }
+
+    .hero-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .hero-title {
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #fff;
+      margin: 0;
+    }
+
+    .hero-subtitle {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.6;
+      margin: 0;
+      max-width: 600px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .btn {
+      padding: 0.8rem 1.5rem;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: #00fff0;
+      color: #0d1117;
+    }
+
+    .btn-primary:hover {
+      background: #00ffb3;
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .btn-outline:hover {
+      border-color: #00fff0;
+      color: #00fff0;
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.5rem;
+      }
+
+      .hero-subtitle {
+        font-size: 1rem;
+      }
+
+      .hero-logo {
+        width: 200px;
+        height: 200px;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+      }
+
+      .btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .code-demo {
+        margin: 1rem -1rem;
+      }
+
       .code-tabs {
-        display: flex;
-        gap: 0.5rem;
+        overflow-x: auto;
         padding: 0.5rem;
       }
 
       .code-tabs button {
-        background: none;
-        border: 1px solid rgba(0, 194, 255, 0.1);
-        color: var(--text);
-        padding: 0.5rem 1rem;
-        border-radius: 0.25rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 0.9rem;
-        opacity: 0.7;
+        white-space: nowrap;
       }
 
-      .code-tabs button:hover {
-        border-color: var(--primary);
-        background: rgba(0, 194, 255, 0.1);
-        opacity: 1;
-      }
-
-      .code-tabs button.active {
-        background: var(--primary);
-        color: var(--background);
-        border-color: var(--primary);
-        opacity: 1;
-      }
-
-      .tab-content {
-        display: none;
-      }
-
-      .tab-content.active {
-        display: block;
-      }
-
-      /* Code Window */
-      .code-window {
-        background: rgba(10, 25, 47, 0.7);
-        border: 1px solid rgba(0, 194, 255, 0.1);
-        border-radius: 0 0 0.5rem 0.5rem;
-        overflow: hidden;
-      }
-
-      .code-window pre {
-        margin: 0;
-        padding: 1.5rem;
-      }
-
-      .code-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+      .integration-overview {
         padding: 1rem;
-        background: rgba(255, 255, 255, 0.05);
-        border-bottom: 1px solid rgba(0, 194, 255, 0.1);
       }
 
-      .code-header h4 {
-        margin: 0;
-        color: var(--text);
-        font-size: 1rem;
+      pre {
+        overflow-x: auto;
       }
 
-      .hero {
-        min-height: 100vh;
-        background: linear-gradient(180deg, #0a1118 0%, #0d1117 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-        text-align: center;
+      .container {
+        padding: 0 1rem;
       }
+    }
 
-      .hero-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 3rem;
-        max-width: 800px;
-        width: 100%;
-      }
-
-      .hero-logo {
-        width: 400px;
-        height: 400px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .logo-image {
-        width: 100%;
-        height: auto;
-        filter: drop-shadow(0 0 20px rgba(0, 255, 240, 0.2));
-      }
-
-      .hero-text {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1.5rem;
-      }
-
+    @media (max-width: 480px) {
       .hero-title {
-        font-size: 3.5rem;
-        font-weight: 700;
-        line-height: 1.2;
-        color: #fff;
-        margin: 0;
+        font-size: 2rem;
       }
 
       .hero-subtitle {
-        font-size: 1.2rem;
-        color: rgba(255, 255, 255, 0.7);
-        line-height: 1.6;
-        margin: 0;
-        max-width: 600px;
+        font-size: 0.9rem;
       }
 
-      .hero-buttons {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1rem;
+      .hero-logo {
+        width: 150px;
+        height: 150px;
       }
 
-      .btn {
-        padding: 0.8rem 1.5rem;
-        border-radius: 4px;
-        font-size: 1rem;
-        font-weight: 500;
-        text-decoration: none;
-        transition: all 0.3s ease;
+      .section-title {
+        font-size: 1.8rem;
       }
 
-      .btn-primary {
-        background: #00fff0;
-        color: #0d1117;
+      .section-subtitle {
+        font-size: 1.4rem;
       }
 
-      .btn-primary:hover {
-        background: #00ffb3;
-        transform: translateY(-2px);
-      }
-
-      .btn-outline {
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: #fff;
-      }
-
-      .btn-outline:hover {
-        border-color: #00fff0;
-        color: #00fff0;
-        transform: translateY(-2px);
-      }
-
-      @media (max-width: 768px) {
-        .hero-title {
-          font-size: 2.5rem;
-        }
-
-        .hero-subtitle {
-          font-size: 1rem;
-        }
-
-        .hero-logo {
-          width: 200px;
-          height: 200px;
-        }
-
-        .hero-buttons {
-          flex-direction: column;
-          gap: 1rem;
-          width: 100%;
-        }
-
-        .btn {
-          width: 100%;
-          text-align: center;
-        }
-
-        .feature-grid {
-          grid-template-columns: 1fr;
-        }
-
-        .code-demo {
-          margin: 1rem -1rem;
-        }
-
-        .code-tabs {
-          overflow-x: auto;
-          padding: 0.5rem;
-        }
-
-        .code-tabs button {
-          white-space: nowrap;
-        }
-
-        .integration-overview {
-          padding: 1rem;
-        }
-
-        pre {
-          overflow-x: auto;
-        }
-
-        .container {
-          padding: 0 1rem;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .hero-title {
-          font-size: 2rem;
-        }
-
-        .hero-subtitle {
-          font-size: 0.9rem;
-        }
-
-        .hero-logo {
-          width: 150px;
-          height: 150px;
-        }
-
-        .section-title {
-          font-size: 1.8rem;
-        }
-
-        .section-subtitle {
-          font-size: 1.4rem;
-        }
-
-        .code-header h4 {
-          font-size: 0.9rem;
-        }
-
-        .overview-section h5 {
-          font-size: 1rem;
-        }
-      }
-
-      /* Aggiungo stili per la navigazione mobile */
-      .mobile-menu-toggle {
-        display: none;
-        background: none;
-        border: none;
-        color: #fff;
-        font-size: 1.5rem;
-        cursor: pointer;
-        padding: 0.5rem;
-      }
-
-      @media (max-width: 768px) {
-        .mobile-menu-toggle {
-          display: block;
-        }
-
-        .nav-content {
-          justify-content: space-between;
-          padding: 1rem;
-        }
-
-        .nav-links {
-          display: none;
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          background: rgba(13, 17, 23, 0.95);
-          padding: 1rem;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .nav-links.active {
-          display: flex;
-        }
-
-        .nav-link {
-          width: 100%;
-          text-align: center;
-          padding: 0.5rem;
-        }
-      }
-
-      /* Miglioro la leggibilità su dispositivi mobili */
-      @media (max-width: 768px) {
-        body {
-          font-size: 16px;
-          line-height: 1.6;
-        }
-
-        .overview-section ul,
-        .overview-section ol {
-          padding-left: 1.2rem;
-        }
-
-        .comparison-table {
-          display: block;
-          overflow-x: auto;
-        }
-
-        .steps-container {
-          flex-direction: column;
-          gap: 1.5rem;
-        }
-
-        .step {
-          width: 100%;
-        }
-      }
-
-      .feature-image:hover {
-        transform: scale(1.02);
-      }
-
-      /* Integration Overview Styles */
-      .integration-overview {
-        background: rgba(10, 25, 47, 0.5);
-        border: 1px solid rgba(0, 194, 255, 0.1);
-        border-radius: 0.5rem;
-        padding: 2rem;
-        margin-bottom: 2rem;
-      }
-
-      .integration-overview h4 {
-        color: var(--primary);
-        font-size: 1.5rem;
-        margin-bottom: 1.5rem;
-        text-align: center;
-      }
-
-      .overview-section {
-        margin-bottom: 1.5rem;
-      }
-
-      .overview-section:last-child {
-        margin-bottom: 0;
+      .code-header h4 {
+        font-size: 0.9rem;
       }
 
       .overview-section h5 {
-        color: #fff;
-        font-size: 1.1rem;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid rgba(0, 194, 255, 0.1);
-        padding-bottom: 0.5rem;
+        font-size: 1rem;
       }
+    }
 
-      .overview-section p {
-        color: rgba(255, 255, 255, 0.8);
-        line-height: 1.6;
-        margin-bottom: 1rem;
-      }
+    /* Aggiungo stili per la navigazione mobile */
+    .mobile-menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
 
-      .overview-section ul,
-      .overview-section ol {
-        color: rgba(255, 255, 255, 0.8);
-        padding-left: 1.5rem;
-        margin-bottom: 1rem;
-      }
-
-      .overview-section li {
-        margin-bottom: 0.5rem;
-        line-height: 1.6;
-      }
-
-      .overview-section strong {
-        color: var(--primary);
-      }
-
-      /* Source Link Styles */
-      .source-link {
-        display: inline-flex;
-        align-items: center;
-        margin-left: 0.5rem;
-        padding: 0.2rem 0.5rem;
-        background: rgba(0, 194, 255, 0.1);
-        border: 1px solid rgba(0, 194, 255, 0.2);
-        border-radius: 4px;
-        color: var(--primary);
-        text-decoration: none;
-        font-size: 0.8rem;
-        transition: all 0.3s ease;
-      }
-
-      .source-link:hover {
-        background: rgba(0, 194, 255, 0.2);
-        border-color: var(--primary);
-        transform: translateY(-1px);
-      }
-
-      .source-link i {
-        margin-right: 0.3rem;
-      }
-
-      /* Customize Prism theme to match our dark theme */
-      pre[class*="language-"] {
-        background: rgba(10, 25, 47, 0.7);
-        margin: 0;
-        border-radius: 0;
-      }
-
-      code[class*="language-"] {
-        text-shadow: none;
-        font-family: "Fira Code", monospace;
-        font-size: 0.9rem;
-      }
-
-      .token.comment,
-      .token.prolog,
-      .token.doctype,
-      .token.cdata {
-        color: #6c7a89;
-      }
-
-      .token.function {
-        color: #61dafb;
-      }
-
-      .token.keyword {
-        color: #c678dd;
-      }
-
-      .token.string {
-        color: #98c379;
-      }
-
-      .token.number {
-        color: #d19a66;
-      }
-
-      .token.boolean {
-        color: #56b6c2;
-      }
-
-      .token.operator {
-        color: #56b6c2;
-      }
-
-      .token.property {
-        color: #e06c75;
-      }
-
-      /* Navigation Menu Styles */
-      .nav-menu {
-        position: fixed;
-        top: 80px;
-        left: 20px;
-        width: 250px;
-        background: rgba(13, 17, 23, 0.95);
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 194, 255, 0.1);
-        border: 1px solid rgba(0, 194, 255, 0.1);
-        z-index: 1000;
-      }
-
-      .nav-menu ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-
-      .nav-menu li {
-        margin: 8px 0;
-      }
-
-      .nav-menu a {
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
+    @media (max-width: 768px) {
+      .mobile-menu-toggle {
         display: block;
-        padding: 8px 12px;
-        border-radius: 4px;
-        transition: all 0.3s ease;
-        font-size: 0.9rem;
-      }
-
-      .nav-menu a:hover {
-        background: rgba(0, 194, 255, 0.1);
-        color: #00fff0;
-      }
-
-      .nav-menu .submenu {
-        display: none;
-        padding-left: 20px;
-        margin-top: 5px;
-      }
-
-      .nav-menu .menu-item.active > .submenu {
-        display: block;
-      }
-
-      .nav-menu .menu-item > a {
-        position: relative;
-        padding-right: 25px;
-      }
-
-      .nav-menu .menu-item > a::after {
-        content: "▼";
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 10px;
-        transition: transform 0.3s;
-      }
-
-      .nav-menu .menu-item.active > a::after {
-        transform: translateY(-50%) rotate(180deg);
-      }
-
-      .nav-menu .menu-item.active > a {
-        color: #00fff0;
-        background: rgba(0, 194, 255, 0.1);
-      }
-
-      @media (max-width: 768px) {
-        .nav-menu {
-          display: none;
-        }
-      }
-
-      /* Adjust main content to accommodate fixed nav */
-      .main-content {
-        margin-left: 280px;
-      }
-
-      @media (max-width: 768px) {
-        .nav-menu {
-          display: none;
-        }
-        .main-content {
-          margin-left: 0;
-        }
-      }
-
-      /* Stili per il nuovo menu nell'header */
-      .nav {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: rgba(13, 17, 23, 0.95);
-        z-index: 1000;
-        border-bottom: 1px solid rgba(0, 194, 255, 0.1);
       }
 
       .nav-content {
-        display: flex;
         justify-content: space-between;
-        align-items: center;
-        padding: 1rem 2rem;
+        padding: 1rem;
       }
 
-      .nav-menu-container {
-        position: relative;
-      }
-
-      .menu-toggle {
-        background: none;
-        border: none;
-        color: #fff;
-        font-size: 1.5rem;
-        cursor: pointer;
-        padding: 0.5rem;
-        display: none;
-      }
-
-      .header-nav-menu {
-        position: relative;
-      }
-
-      .header-nav-menu ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        gap: 2rem;
-      }
-
-      .header-nav-menu .menu-item {
-        position: relative;
-      }
-
-      .header-nav-menu .menu-item > a {
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-        display: block;
-        transition: all 0.3s ease;
-      }
-
-      .header-nav-menu .menu-item > a:hover {
-        color: #00fff0;
-      }
-
-      .header-nav-menu .submenu {
+      .nav-links {
         display: none;
         position: absolute;
         top: 100%;
         left: 0;
+        right: 0;
+        background: rgba(13, 17, 23, 0.95);
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .nav-links.active {
+        display: flex;
+      }
+
+      .nav-link {
+        width: 100%;
+        text-align: center;
+        padding: 0.5rem;
+      }
+    }
+
+    /* Miglioro la leggibilità su dispositivi mobili */
+    @media (max-width: 768px) {
+      body {
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      .overview-section ul,
+      .overview-section ol {
+        padding-left: 1.2rem;
+      }
+
+      .comparison-table {
+        display: block;
+        overflow-x: auto;
+      }
+
+      .steps-container {
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .step {
+        width: 100%;
+      }
+    }
+
+    .feature-image:hover {
+      transform: scale(1.02);
+    }
+
+    /* Integration Overview Styles */
+    .integration-overview {
+      background: rgba(10, 25, 47, 0.5);
+      border: 1px solid rgba(0, 194, 255, 0.1);
+      border-radius: 0.5rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .integration-overview h4 {
+      color: var(--primary);
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .overview-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .overview-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .overview-section h5 {
+      color: #fff;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid rgba(0, 194, 255, 0.1);
+      padding-bottom: 0.5rem;
+    }
+
+    .overview-section p {
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .overview-section ul,
+    .overview-section ol {
+      color: rgba(255, 255, 255, 0.8);
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .overview-section li {
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+
+    .overview-section strong {
+      color: var(--primary);
+    }
+
+    /* Source Link Styles */
+    .source-link {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 0.5rem;
+      padding: 0.2rem 0.5rem;
+      background: rgba(0, 194, 255, 0.1);
+      border: 1px solid rgba(0, 194, 255, 0.2);
+      border-radius: 4px;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.8rem;
+      transition: all 0.3s ease;
+    }
+
+    .source-link:hover {
+      background: rgba(0, 194, 255, 0.2);
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    .source-link i {
+      margin-right: 0.3rem;
+    }
+
+    /* Customize Prism theme to match our dark theme */
+    pre[class*="language-"] {
+      background: rgba(10, 25, 47, 0.7);
+      margin: 0;
+      border-radius: 0;
+    }
+
+    code[class*="language-"] {
+      text-shadow: none;
+      font-family: "Fira Code", monospace;
+      font-size: 0.9rem;
+    }
+
+    .token.comment,
+    .token.prolog,
+    .token.doctype,
+    .token.cdata {
+      color: #6c7a89;
+    }
+
+    .token.function {
+      color: #61dafb;
+    }
+
+    .token.keyword {
+      color: #c678dd;
+    }
+
+    .token.string {
+      color: #98c379;
+    }
+
+    .token.number {
+      color: #d19a66;
+    }
+
+    .token.boolean {
+      color: #56b6c2;
+    }
+
+    .token.operator {
+      color: #56b6c2;
+    }
+
+    .token.property {
+      color: #e06c75;
+    }
+
+    /* Navigation Menu Styles */
+    .nav-menu {
+      position: fixed;
+      top: 80px;
+      left: 20px;
+      width: 250px;
+      background: rgba(13, 17, 23, 0.95);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 194, 255, 0.1);
+      border: 1px solid rgba(0, 194, 255, 0.1);
+      z-index: 1000;
+    }
+
+    .nav-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-menu li {
+      margin: 8px 0;
+    }
+
+    .nav-menu a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      display: block;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .nav-menu a:hover {
+      background: rgba(0, 194, 255, 0.1);
+      color: #00fff0;
+    }
+
+    .nav-menu .submenu {
+      display: none;
+      padding-left: 20px;
+      margin-top: 5px;
+    }
+
+    .nav-menu .menu-item.active>.submenu {
+      display: block;
+    }
+
+    .nav-menu .menu-item>a {
+      position: relative;
+      padding-right: 25px;
+    }
+
+    .nav-menu .menu-item>a::after {
+      content: "▼";
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      transition: transform 0.3s;
+    }
+
+    .nav-menu .menu-item.active>a::after {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    .nav-menu .menu-item.active>a {
+      color: #00fff0;
+      background: rgba(0, 194, 255, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      .nav-menu {
+        display: none;
+      }
+    }
+
+    /* Adjust main content to accommodate fixed nav */
+    .main-content {
+      margin-left: 280px;
+    }
+
+    @media (max-width: 768px) {
+      .nav-menu {
+        display: none;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+    }
+
+    /* Stili per il nuovo menu nell'header */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(13, 17, 23, 0.95);
+      z-index: 1000;
+      border-bottom: 1px solid rgba(0, 194, 255, 0.1);
+    }
+
+    .nav-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+    }
+
+    .nav-menu-container {
+      position: relative;
+    }
+
+    .menu-toggle {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      display: none;
+    }
+
+    .header-nav-menu {
+      position: relative;
+    }
+
+    .header-nav-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      gap: 2rem;
+    }
+
+    .header-nav-menu .menu-item {
+      position: relative;
+    }
+
+    .header-nav-menu .menu-item>a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      display: block;
+      transition: all 0.3s ease;
+    }
+
+    .header-nav-menu .menu-item>a:hover {
+      color: #00fff0;
+    }
+
+    .header-nav-menu .submenu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: rgba(13, 17, 23, 0.95);
+      border: 1px solid rgba(0, 194, 255, 0.1);
+      border-radius: 4px;
+      min-width: 200px;
+      padding: 0.5rem 0;
+      z-index: 1000;
+    }
+
+    .header-nav-menu .menu-item:hover>.submenu {
+      display: block;
+    }
+
+    .header-nav-menu .submenu a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      display: block;
+      transition: all 0.3s ease;
+    }
+
+    .header-nav-menu .submenu a:hover {
+      background: rgba(0, 194, 255, 0.1);
+      color: #00fff0;
+    }
+
+    @media (max-width: 1024px) {
+      .menu-toggle {
+        display: block;
+      }
+
+      .header-nav-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
         background: rgba(13, 17, 23, 0.95);
         border: 1px solid rgba(0, 194, 255, 0.1);
         border-radius: 4px;
-        min-width: 200px;
-        padding: 0.5rem 0;
-        z-index: 1000;
+        padding: 1rem;
+        min-width: 250px;
       }
 
-      .header-nav-menu .menu-item:hover > .submenu {
+      .header-nav-menu.active {
         display: block;
       }
 
-      .header-nav-menu .submenu a {
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-        display: block;
-        transition: all 0.3s ease;
+      .header-nav-menu ul {
+        flex-direction: column;
+        gap: 0.5rem;
       }
 
-      .header-nav-menu .submenu a:hover {
-        background: rgba(0, 194, 255, 0.1);
-        color: #00fff0;
+      .header-nav-menu .submenu {
+        position: static;
+        border: none;
+        background: transparent;
+        padding-left: 1rem;
+        min-width: auto;
       }
 
-      @media (max-width: 1024px) {
-        .menu-toggle {
-          display: block;
-        }
-
-        .header-nav-menu {
-          display: none;
-          position: absolute;
-          top: 100%;
-          right: 0;
-          background: rgba(13, 17, 23, 0.95);
-          border: 1px solid rgba(0, 194, 255, 0.1);
-          border-radius: 4px;
-          padding: 1rem;
-          min-width: 250px;
-        }
-
-        .header-nav-menu.active {
-          display: block;
-        }
-
-        .header-nav-menu ul {
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-
-        .header-nav-menu .submenu {
-          position: static;
-          border: none;
-          background: transparent;
-          padding-left: 1rem;
-          min-width: auto;
-        }
-
-        .header-nav-menu .menu-item > a {
-          padding: 0.5rem;
-        }
+      .header-nav-menu .menu-item>a {
+        padding: 0.5rem;
       }
-    </style>
+    }
+  </style>
 
-    <!-- Add Font Awesome for icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-    />
+  <!-- Add Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
-    <!-- Add Prism CSS -->
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/line-numbers/prism-line-numbers.min.css"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <!-- Top Navigation Bar -->
-    <nav class="nav">
-      <div class="container nav-content">
-        <a href="#" class="nav-logo">Gun-ETH</a>
-        <div class="nav-menu-container">
-          <button class="menu-toggle" aria-label="Toggle menu">
-            <i class="fas fa-bars"></i>
-          </button>
-          <div class="header-nav-menu">
+  <!-- Add Prism CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/line-numbers/prism-line-numbers.min.css"
+    rel="stylesheet" />
+</head>
+
+<body>
+  <!-- Top Navigation Bar -->
+  <nav class="nav">
+    <div class="container nav-content">
+      <a href="#" class="nav-logo">Gun-ETH</a>
+      <div class="nav-menu-container">
+        <button class="menu-toggle" aria-label="Toggle menu">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="header-nav-menu">
+          <ul>
+            <li class="menu-item">
+              <a href="#getting-started">Getting Started</a>
+            </li>
+            <li class="menu-item">
+              <a href="#features">Features</a>
+              <ul class="submenu">
+                <li><a href="#gun-ethereum-integration">Gun-Ethereum Integration</a></li>
+                <li><a href="#stealth-chain">StealthChain</a></li>
+                <li><a href="#encrypted-bubbles">Encrypted Bubbles</a></li>
+              </ul>
+            </li>
+            <li class="menu-item">
+              <a href="#support">Support</a>
+            </li>
+            <li class="menu-item">
+              <a href="https://github.com/plancia/gun-eth" target="_blank">Github</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">Gun.js Blockchain Extension</h1>
+        <p class="hero-subtitle">
+          A powerful Gun.js plugin that extends its capabilities by adding advanced blockchain and cryptographic
+          features to create more secure and private decentralized applications
+        </p>
+        <div class="hero-buttons">
+          <a href="#quick-start" class="btn btn-primary">Get Started</a>
+          <a href="https://github.com/plancia/gun-eth" target="_blank" class="btn btn-outline">View on GitHub</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="dark-section">
+    <div class="container">
+      <h2 class="section-title glow-text">Features</h2>
+
+      <!-- Gun.js Extensions Section -->
+      <div id="gun-extensions" class="doc-section">
+        <h3 class="section-subtitle">🔧 Gun.js Extensions</h3>
+        <div class="integration-overview">
+          <h5>Base Methods</h5>
+          <ul>
+            <li><code>GunEth.verifySignature(address, signature, message)</code> - Verify an Ethereum signature</li>
+            <li><code>GunEth.createSignature(GunEth.MESSAGE_TO_SIGN)</code> - Create a signature using connected
+              wallet</li>
+            <li><code>GunEth.ethToGunAccount()</code> - Convert Ethereum account to Gun</li>
+            <li><code>GunEth.gunToEthAccount(gunPrivateKey)</code> - Convert Gun account to Ethereum</li>
+          </ul>
+        </div>
+
+        <div class="integration-overview">
+          <h5>Key Management</h5>
+          <ul>
+            <li><code>GunEth.createAndStoreEncryptedPair(address, signature)</code> - Create and store encrypted key
+              pairs</li>
+            <li><code>GunEth.getAndDecryptPair(address, signature)</code> - Retrieve and decrypt key pairs</li>
+          </ul>
+        </div>
+
+        <div class="integration-overview">
+          <h5>Stealth Chain</h5>
+          <ul>
+            <li><code>GunEth.StealthChain</code> - Class for managing stealth transactions</li>
+            <li>
+              <code>GunEth.createStealthTransaction(provider, chainId, receiverViewingKey, receiverSpendingKey)</code>
+              - Create a complete stealth transaction
+            </li>
+            <li>
+              <code>GunEth.recoverStealthFunds(provider, chainId, stealthAddress, senderPublicKey, signature, spendingPublicKey)</code>
+              - Recover funds from a stealth address
+            </li>
+            <li><code>GunEth.getStealthPayments(provider, chainId, viewingKey, options)</code> - Retrieve stealth
+              payments</li>
+            <li>
+              <code>GunEth.announcePaymentOnChain(provider, chainId, stealthAddress, senderEphemeralKey, receiverViewingKey, receiverSpendingKey)</code>
+              - Announce a stealth transaction directly on the blockchain
+            </li>
+          </ul>
+        </div>
+
+        <!-- Code Examples -->
+        <div class="code-demo">
+          <div class="code-header">
+            <h4>Stealth Transaction Example</h4>
+          </div>
+          <div class="code-tabs">
+            <button class="tab-button">Basic</button>
+            <button class="tab-button">Advanced</button>
+          </div>
+          <div class="code-window">
+            <!-- Basic Example -->
+            <div class="tab-content">
+              <pre><code class="language-javascript">
+// Esempio base di transazione stealth
+const provider = new ethers.JsonRpcProvider("RPC_URL");
+const chainId = "polygon"; // o altra chain supportata
+
+// Crea una transazione stealth
+const result = await GunEth.createStealthTransaction(
+  provider,
+  chainId,
+  receiverViewingKey,
+  receiverSpendingKey
+);
+
+console.log("Stealth Address:", result.stealthInfo.stealthAddress);
+console.log("Transaction Hash:", result.transaction.hash);
+
+// Recupera i pagamenti
+const payments = await GunEth.getStealthPayments(
+  provider,
+  chainId,
+  viewingKey
+);
+
+// Recupera i fondi
+const recoveryTx = await GunEth.recoverStealthFunds(
+  provider,
+  chainId,
+  stealthAddress,
+  senderPublicKey,
+  signature,
+  spendingPublicKey
+);</code></pre>
+            </div>
+
+            <!-- Advanced Example -->
+            <div class="tab-content">
+              <pre><code class="language-javascript">
+// Esempio avanzato con StealthChain
+const stealthChain = new GunEth.StealthChain(provider, chainId);
+
+// Verify chain support
+const isSupported = await stealthChain.isOnSupportedChain();
+if (!isSupported) {
+  await stealthChain.requestChainSwitch();
+}
+
+// Generate stealth address
+const stealthInfo = await stealthChain.generateStealthAddress(
+  receiverViewingKey,
+  receiverSpendingKey
+);
+
+// Annuncia il pagamento sulla blockchain
+await stealthChain.announcePaymentOnChain(
+  provider,
+  chainId,
+  stealthInfo.stealthAddress,
+  stealthInfo.senderEphemeralKey,
+  receiverViewingKey,
+  receiverSpendingKey
+);
+
+// Monitora nuovi annunci
+stealthChain.listenToNewAnnouncements((announcement) => {
+  console.log("Nuovo annuncio:", announcement);
+});</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Smart Contracts Section -->
+      <div id="smart-contracts" class="doc-section">
+        <h3 class="section-subtitle">⛓️ Smart Contracts</h3>
+        <div class="integration-overview">
+          <h5>StealthChain Contract</h5>
+          <p>Contract for managing stealth transactions on the blockchain.</p>
+          <div style="margin-bottom: 10px">
+            <a href="https://github.com/plancia/gun-eth/blob/main/src/contracts/stealthChain/StealthAnnouncer.sol"
+              target="_blank" class="source-link">
+              <i class="fas fa-code"></i> View Contract
+            </a>
+          </div>
+          <ul>
+            <li><strong>Main Functions:</strong>
+              <ul>
+                <li><code>announcePayment(bytes senderPublicKey, bytes spendingPublicKey, address stealthAddress)</code>
+                  - Announce a new stealth payment</li>
+                <li><code>getAnnouncementsInRange(uint256 fromIndex, uint256 toIndex)</code> - Retrieve announcements in
+                  a range</li>
+                <li><code>getAnnouncementsCount()</code> - Get total number of announcements</li>
+                <li><code>devFee()</code> - Get current fee for announcements</li>
+              </ul>
+            </li>
+            <li><strong>Events:</strong>
+              <ul>
+                <li>
+                  <code>StealthPaymentAnnounced(bytes senderPublicKey, bytes spendingPublicKey, address stealthAddress, uint256 timestamp)</code>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="integration-overview">
+          <h5>BubbleRegistry Contract</h5>
+          <p>Contract for managing Bubbles on the blockchain.</p>
+          <div style="margin-bottom: 10px">
+            <a href="https://github.com/plancia/gun-eth/blob/main/src/contracts/bubbleChain/BubbleRegistry.sol"
+              target="_blank" class="source-link">
+              <i class="fas fa-code"></i> View Contract
+            </a>
+          </div>
+          <ul>
+            <li><strong>Main Functions:</strong>
+              <ul>
+                <li><code>createBubble(string name, bool isPrivate)</code> - Create a new bubble</li>
+                <li><code>getBubble(uint256 bubbleId)</code> - Get bubble details</li>
+                <li><code>getUserBubbles(address user)</code> - Get all user's bubbles</li>
+                <li><code>updateBubblePrivacy(uint256 bubbleId, bool isPrivate)</code> - Update bubble privacy</li>
+              </ul>
+            </li>
+            <li><strong>Events:</strong>
+              <ul>
+                <li><code>BubbleCreated(uint256 bubbleId, address owner, string name, bool isPrivate)</code></li>
+                <li><code>BubblePrivacyUpdated(uint256 bubbleId, bool isPrivate)</code></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="integration-overview">
+          <h5>Contract Addresses</h5>
+          <p>The contracts are currently deployed on Polygon Mainnet:</p>
+          <div style="margin-bottom: 10px">
+            <a href="https://github.com/plancia/gun-eth/blob/main/src/contracts/addresses.js" target="_blank"
+              class="source-link">
+              <i class="fas fa-code"></i> View Addresses
+            </a>
+          </div>
+          <pre><code class="language-javascript">
+// Polygon Mainnet
+{
+  StealthAnnouncer: "0xD0CDbD17E4f2DDCE27B51721095048302768434f",
+  BubbleRegistry: "0xc70DC231B9690D9dA988f6D4E518356eE9e45cd9"
+}</code></pre>
+          <p>To interact with the contracts:</p>
+          <ol>
+            <li><strong>StealthAnnouncer:</strong>
+              <ul>
+                <li>Fee: Requires a small fee in MATIC for each announcement</li>
+                <li>Gas: Operations require gas on Polygon network</li>
+                <li>Verification: Announcements are verifiable on-chain</li>
+              </ul>
+            </li>
+            <li><strong>BubbleRegistry:</strong>
+              <ul>
+                <li>Ownership: Bubbles are associated with creator's address</li>
+                <li>Privacy: Supports public and private bubbles</li>
+                <li>Permissions: Only owner can modify settings</li>
+              </ul>
+            </li>
+          </ol>
+        </div>
+
+        <div class="overview-section">
+          <h5>Contract Interaction</h5>
+          <pre><code class="language-javascript">
+// Import addresses and ABIs
+import addresses from "./contracts/addresses.js";
+import stealthAnnouncer_abi from "./contracts/stealthChain/stealthAnnouncer_abi.json";
+import bubbleRegistry_abi from "./contracts/bubbleChain/bubbleRegistry_abi.json";
+
+// Initialize contracts
+const stealthAnnouncer = new ethers.Contract(
+  addresses.polygon.StealthAnnouncer,
+  stealthAnnouncer_abi,
+  provider
+);
+
+const bubbleRegistry = new ethers.Contract(
+  addresses.polygon.BubbleRegistry,
+  bubbleRegistry_abi,
+  provider
+);
+
+// StealthAnnouncer Example
+const fee = await stealthAnnouncer.devFee();
+const tx = await stealthAnnouncer.announcePayment(
+  senderPublicKey,
+  spendingPublicKey,
+  stealthAddress,
+  { value: fee }
+);
+
+// BubbleRegistry Example
+const bubble = await bubbleRegistry.createBubble(
+  "My Bubble",
+  true,  // private
+  { gasLimit: 500000 }  // recommended gas limit
+);
+
+// Verify bubble properties
+const owner = await bubbleRegistry.ownerOf(bubbleId);
+const isPrivate = await bubbleRegistry.isPrivate(bubbleId);</code></pre>
+        </div>
+      </div>
+
+      <!-- Gun-Ethereum Integration Section -->
+      <div id="gun-ethereum-integration" class="doc-section">
+        <h3 class="section-subtitle">🔐 Gun-Ethereum Integration</h3>
+        <div class="integration-overview">
+          <h4>Understanding Gun-Ethereum Integration</h4>
+
+          <div class="overview-section">
+            <h5>What is Gun-Ethereum Integration?</h5>
+            <p>
+              Gun-Ethereum integration enables seamless interaction between
+              Gun's decentralized database and Ethereum's blockchain. This
+              integration allows you to use Ethereum wallets for
+              authentication while leveraging Gun's real-time capabilities.
+            </p>
+          </div>
+
+          <div class="overview-section">
+            <h5>Key Components</h5>
             <ul>
-              <li class="menu-item">
-                <a href="#getting-started">Getting Started</a>
+              <li>
+                <strong>Ethereum Wallet:</strong> Used for authentication and
+                signing messages
               </li>
-              <li class="menu-item">
-                <a href="#features">Features</a>
-                <ul class="submenu">
-                  <li><a href="#gun-ethereum-integration">Gun-Ethereum Integration</a></li>
-                  <li><a href="#stealth-chain">StealthChain</a></li>
-                  <li><a href="#proof-chain">ProofChain</a></li>
-                  <li><a href="#encrypted-bubbles">Encrypted Bubbles</a></li>
-                </ul>
+              <li>
+                <strong>Gun SEA:</strong> Gun's Security, Encryption, and
+                Authorization system
               </li>
-              <li class="menu-item">
-                <a href="#advanced-usage">Advanced Usage</a>
-                <ul class="submenu">
-                  <li><a href="#contract-deployment">Contract Deployment</a></li>
-                  <li><a href="#testing">Testing</a></li>
-                </ul>
-              </li>
-              <li class="menu-item">
-                <a href="#support">Support</a>
-              </li>
-              <li class="menu-item">
-                <a href="https://github.com/plancia/gun-eth" target="_blank">Github</a>
+              <li>
+                <strong>Conversion Layer:</strong> Translates between Ethereum
+                and Gun authentication systems
               </li>
             </ul>
           </div>
-        </div>
-       
-      </div>
-    </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="hero-content">
-        <div class="hero-logo">
-          <img
-            src="./assets/hero-image.webp"
-            alt="Gun-ETH Logo"
-            class="logo-image"
-          />
-        </div>
-        <div class="hero-text">
-          <h1 class="hero-title">Gun.js Blockchain Extension</h1>
-          <p class="hero-subtitle">
-            A powerful Gun.js plugin that extends its capabilities by adding advanced blockchain and cryptographic features to create more secure and private decentralized applications
-          </p>
-          <div class="hero-buttons">
-            <a href="#quick-start" class="btn btn-primary">Get Started</a>
-            <a
-              href="https://github.com/plancia/gun-eth"
-              target="_blank"
-              class="btn btn-outline"
-              >View on GitHub</a
-            >
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Why Gun-ETH Section -->
-    <section class="why-section">
-      <div class="container">
-        <h2 class="section-title glow-text">✨ Why Gun-ETH?</h2>
-
-        <div class="feature-grid">
-          <div class="feature-card">
-            <div class="card-icon">🎯</div>
-            <h3 class="feature-title">Powerful Extension</h3>
-            <p>Adds advanced blockchain and cryptographic features to Gun.js</p>
+          <div class="overview-section">
+            <h5>How it Works</h5>
+            <ol>
+              <li>
+                User connects their Ethereum wallet (MetaMask or custom
+                configuration)
+              </li>
+              <li>Wallet signs a specific message to prove ownership</li>
+              <li>
+                Signature is used to generate Gun SEA compatible keypairs
+              </li>
+              <li>Generated keypairs enable encrypted data storage in Gun</li>
+              <li>
+                Data can be accessed using either Ethereum or Gun credentials
+              </li>
+            </ol>
           </div>
 
-          <div class="feature-card">
-            <div class="card-icon">🌐</div>
-            <h3 class="feature-title">Seamless Integration</h3>
-            <p>Perfectly integrates with Gun.js while maintaining simplicity</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="card-icon">🔒</div>
-            <h3 class="feature-title">Advanced Privacy</h3>
-            <p>Implements stealth transactions, proof chain, and encrypted data</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="card-icon">🚀</div>
-            <h3 class="feature-title">Modern Architecture</h3>
-            <p>Intuitive APIs for easy Web3 functionality implementation</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Features Overview -->
-    <section class="feature-section">
-      <div class="container">
-        <h2 class="section-title glow-text">Core Features</h2>
-        <div class="feature-grid">
-          <!-- Stealth Feature -->
-          <div class="feature-card">
-            <div class="card-icon">🔒</div>
-            <h3 class="feature-title">Stealth Chain</h3>
-            <p>Private transactions with stealth addresses</p>
-          </div>
-
-          <!-- Proof Chain Feature -->
-          <div class="feature-card">
-            <div class="card-icon">⛓️</div>
-            <h3 class="feature-title">Proof Chain</h3>
-            <p>Cryptographic data verification on blockchain</p>
-          </div>
-
-          <!-- Bubble Feature -->
-          <div class="feature-card">
-            <div class="card-icon">🫧</div>
-            <h3 class="feature-title">Encrypted Bubbles</h3>
-            <p>Data containers with end-to-end encryption</p>
-          </div>
-
-          <!-- Gun-Eth Integration -->
-          <div class="feature-card">
-            <div class="card-icon">🔐</div>
-            <h3 class="feature-title">Gun.js Extensions</h3>
-            <p>New methods added directly to Gun (e.g. gun.verifySignature, gun.createSignature)</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Documentation Sections -->
-    <section id="getting-started" class="dark-section">
-      <div class="container">
-        <h2 class="section-title glow-text">Getting Started</h2>
-
-        <!-- Prerequisites Section -->
-        <div id="prerequisites" class="doc-section">
-          <h3 class="section-subtitle">🚀 Prerequisites</h3>
-          <div class="integration-overview">
-            <div class="overview-section">
-              <h5>Gun.js Extensions</h5>
-              <p>Gun-ETH extends Gun.js with new methods:</p>
-              <ul>
-                <li><code>gun.verifySignature(address, signature, message)</code> - Verify Ethereum signatures</li>
-                <li><code>gun.createSignature(message)</code> - Create signatures with connected wallet</li>
-                <li><code>gun.ethToGunAccount()</code> - Convert Ethereum account to Gun</li>
-                <li><code>gun.gunToEthAccount(gunPrivateKey)</code> - Convert Gun account to Ethereum</li>
-                <li><code>gun.createAndStoreEncryptedPair(address, signature)</code> - Manage encrypted key pairs</li>
-              </ul>
-            </div>
+          <div class="overview-section">
+            <h5>Security Features</h5>
+            <ul>
+              <li>End-to-end encryption of stored data</li>
+              <li>Cryptographic proof of ownership</li>
+              <li>No private key exposure</li>
+              <li>Secure key derivation process</li>
+            </ul>
           </div>
         </div>
 
-        <!-- Installation Section -->
-        <div id="installation" class="doc-section">
-          <h3 class="section-subtitle">📦 Installation</h3>
-          <div class="integration-overview">
-            <div class="overview-section">
-              <h5>NPM Installation</h5>
-              <pre><code class="language-bash">npm install gun-eth</code></pre>
-            </div>
-            <div class="overview-section">
-              <h5>Dependencies</h5>
-              <ul>
-                <li><strong>gun:</strong> ^0.2020.1235</li>
-                <li><strong>ethers:</strong> ^5.7.0</li>
-                <li><strong>web3:</strong> ^1.8.0</li>
-              </ul>
+        <div class="code-demo">
+          <div class="code-header">
+            <h4>Authentication Example</h4>
+            <div class="code-tabs">
+              <button>Setup</button>
+              <button>ETH to GUN</button>
+              <button>GUN to ETH</button>
+              <button>Usage</button>
+              <a href="https://github.com/plancia/gun-eth/tree/main/src/core/gun-eth.js" target="_blank"
+                class="source-link">
+                <i class="fas fa-code"></i> Example
+              </a>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="dark-section">
-      <div class="container">
-        <h2 class="section-title glow-text">Features</h2>
-
-        <!-- Gun.js Extensions Section -->
-        <div id="gun-extensions" class="doc-section">
-          <h3 class="section-subtitle">🔧 Gun.js Extensions</h3>
-          <div class="integration-overview">
-            <div class="overview-section">
-              <h5>Base Methods</h5>
-              <ul>
-                <li><code>GunEth.verifySignature(address, signature, message)</code> - Verify an Ethereum signature</li>
-                <li><code>GunEth.createSignature(GunEth.MESSAGE_TO_SIGN)</code> - Create a signature using connected wallet</li>
-                <li><code>GunEth.ethToGunAccount()</code> - Convert Ethereum account to Gun</li>
-                <li><code>GunEth.gunToEthAccount(gunPrivateKey)</code> - Convert Gun account to Ethereum</li>
-              </ul>
-            </div>
-
-            <div class="overview-section">
-              <h5>Key Management</h5>
-              <ul>
-                <li><code>GunEth.createAndStoreEncryptedPair(address, signature)</code> - Create and store encrypted key pairs</li>
-                <li><code>GunEth.getAndDecryptPair(address, signature)</code> - Retrieve and decrypt key pairs</li>
-              </ul>
-            </div>
-
-            <div class="overview-section">
-              <h5>Stealth Chain</h5>
-              <ul>
-                <li><code>gun.generateStealthAddress(recipientAddress, signature, options)</code> - Generate a stealth address</li>
-                <li><code>gun.announceStealthPayment(stealthAddress, senderPublicKey, spendingPublicKey, signature, options)</code> - Announce a stealth payment</li>
-                <li><code>gun.getStealthPayments(signature, options)</code> - Retrieve stealth payments</li>
-                <li><code>gun.recoverStealthFunds(stealthAddress, senderPublicKey, signature, spendingPublicKey)</code> - Recover stealth funds</li>
-                <li><code>gun.publishStealthKeys(signature)</code> - Publish stealth keys</li>
-                <li><code>gun.monitorStealthEvents(callback)</code> - Monitor stealth events</li>
-              </ul>
-            </div>
-
-            <!-- Code Examples -->
-            <div class="code-demo">
-              <div class="code-header">
-                <h4>Basic Usage Examples</h4>
-              </div>
-              <div class="tab-group">
-                <div class="code-tabs">
-                  <button class="tab-button active" data-tab="init">Initialization</button>
-                  <button class="tab-button" data-tab="basic">Basic Example</button>
-                  <button class="tab-button" data-tab="keys">Key Management</button>
-                </div>
-                <div class="code-window">
-                  <!-- Initialization Tab -->
-                  <div class="tab-content active" data-tab="init">
-                    <pre><code class="language-javascript">
-import Gun from 'gun';
-import { GunEth } from 'gun-eth';
-
-// Extend Gun with Gun-ETH features
-GunEth.extendGun(Gun);
-
-// Initialize Gun with new features
-const gun = Gun();</code></pre>
-                  </div>
-
-                  <!-- Basic Example Tab -->
-                  <div class="tab-content" data-tab="basic">
-                    <pre><code class="language-javascript">
-import { GunEth } from 'gun-eth';
-
-// Create signature
-const signature = await GunEth.createSignature(GunEth.MESSAGE_TO_SIGN);
-
-// Convert Ethereum account to Gun
-const gunAccount = await GunEth.ethToGunAccount();
-
-// Save encrypted data
-await gun.get('users')
-  .get(address)
-  .get('data')
-  .put({
-    message: "Data encrypted with Gun keys"
-  });</code></pre>
-                  </div>
-
-                  <!-- Key Management Tab -->
-                  <div class="tab-content" data-tab="keys">
-                    <pre><code class="language-javascript">
-import { GunEth } from 'gun-eth';
-
-// Create and store encrypted keypair
-const signature = await GunEth.createSignature(GunEth.MESSAGE_TO_SIGN);
-const pairs = await GunEth.ethToGunAccount();
-
-// Store encrypted keypair
-await GunEth.createAndStoreEncryptedPair(address, signature);
-
-// Retrieve and decrypt keypair
-const decryptedPair = await GunEth.getAndDecryptPair(address, signature);</code></pre>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Gun-Ethereum Integration Section -->
-        <div id="gun-ethereum-integration" class="doc-section">
-          <h3 class="section-subtitle">🔐 Gun-Ethereum Integration</h3>
-          <div class="integration-overview">
-            <h4>Understanding Gun-Ethereum Integration</h4>
-
-            <div class="overview-section">
-              <h5>What is Gun-Ethereum Integration?</h5>
-              <p>
-                Gun-Ethereum integration enables seamless interaction between
-                Gun's decentralized database and Ethereum's blockchain. This
-                integration allows you to use Ethereum wallets for
-                authentication while leveraging Gun's real-time capabilities.
-              </p>
-            </div>
-
-            <div class="overview-section">
-              <h5>Key Components</h5>
-              <ul>
-                <li>
-                  <strong>Ethereum Wallet:</strong> Used for authentication and
-                  signing messages
-                </li>
-                <li>
-                  <strong>Gun SEA:</strong> Gun's Security, Encryption, and
-                  Authorization system
-                </li>
-                <li>
-                  <strong>Conversion Layer:</strong> Translates between Ethereum
-                  and Gun authentication systems
-                </li>
-              </ul>
-            </div>
-
-            <div class="overview-section">
-              <h5>How it Works</h5>
-              <ol>
-                <li>
-                  User connects their Ethereum wallet (MetaMask or custom
-                  configuration)
-                </li>
-                <li>Wallet signs a specific message to prove ownership</li>
-                <li>
-                  Signature is used to generate Gun SEA compatible keypairs
-                </li>
-                <li>Generated keypairs enable encrypted data storage in Gun</li>
-                <li>
-                  Data can be accessed using either Ethereum or Gun credentials
-                </li>
-              </ol>
-            </div>
-
-            <div class="overview-section">
-              <h5>Security Features</h5>
-              <ul>
-                <li>End-to-end encryption of stored data</li>
-                <li>Cryptographic proof of ownership</li>
-                <li>No private key exposure</li>
-                <li>Secure key derivation process</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="code-demo">
-            <div class="code-header">
-              <h4>Authentication Example</h4>
-              <div class="code-tabs">
-                <button>Setup</button>
-                <button>ETH to GUN</button>
-                <button>GUN to ETH</button>
-                <button>Usage</button>
-                <a
-                  href="https://github.com/plancia/gun-eth/tree/main/src/core/gun-eth.js"
-                  target="_blank"
-                  class="source-link"
-                >
-                  <i class="fas fa-code"></i> Example
-                </a>
-              </div>
-            </div>
-            <div class="code-window">
-              <!-- Setup Tab -->
-              <div class="tab-content active" data-tab="setup">
-                <pre><code class="language-javascript">
+          <div class="code-window">
+            <!-- Setup Tab -->
+            <div class="tab-content active" data-tab="setup">
+              <pre><code class="language-javascript">
 // Initialize Gun-ETH
 import { GunEth } from 'gun-eth';
 import Gun from 'gun';
@@ -1135,11 +1157,11 @@ else {
 else {
     throw new Error("No valid Ethereum provider found");
 }</code></pre>
-              </div>
+            </div>
 
-              <!-- ETH to GUN Tab -->
-              <div class="tab-content" data-tab="eth2gun">
-                <pre><code class="language-javascript">
+            <!-- ETH to GUN Tab -->
+            <div class="tab-content" data-tab="eth2gun">
+              <pre><code class="language-javascript">
 // Convert an Ethereum account to a Gun account
 import { GunEth } from 'gun-eth';
 
@@ -1151,40 +1173,47 @@ const gunAccount = await GunEth.ethToGunAccount(signature);
 
 // The account contains:
 console.log({
-    pub: gunAccount.pub,      // Gun public key
-    priv: gunAccount.priv,    // Gun private key
-    epub: gunAccount.epub,    // Encryption public key
-    epriv: gunAccount.epriv   // Encryption private key
+  pub: gunAccount.pub,    // Gun public key
+  priv: gunAccount.priv,  // Gun private key
+  epub: gunAccount.epub,  // Encryption public key
+  epriv: gunAccount.epriv // Encryption private key
 });</code></pre>
-              </div>
+            </div>
 
-              <!-- GUN to ETH Tab -->
-              <div class="tab-content" data-tab="gun2eth">
-                <pre><code class="language-javascript">
-// Convert a Gun account to an Ethereum account
-import { GunEth } from 'gun-eth';
+            <!-- GUN to ETH Tab -->
+            <div class="tab-content" data-tab="gun2eth">
+              <pre><code class="language-javascript">
+// Option 1: Using existing Gun credentials
+const gunUser = gun.user();
+if (gunUser.is) {
+  // Use existing Gun credentials
+  const account = await gunToEthAccount(gunUser._.sea);
+}
 
-// Use an existing Gun account
-const gunAccount = {
-    pub: "gun-public-key",
-    priv: "gun-private-key",
-    epub: "encryption-public-key",
-    epriv: "encryption-private-key"
-};
+// Option 2: Using Ethereum signature
+const gunKeyPair = await SEA.pair();
+const signature = await createSignature(MESSAGE_TO_SIGN);
+const account = await gunToEthAccount(gunKeyPair, signature);
 
-// Convert to Ethereum account
-const ethAccount = await GunEth.gunToEthAccount(gunAccount);
+// Returns
+{
+  pub: gunKeyPair.pub,                // Gun public key
+  internalWalletAddress: string,      // Internal wallet address
+  internalWalletPk: string,          // Internal wallet private key
+  pair: gunKeyPair,                  // Original Gun keypair
+  v_pair: SEA.pair(),                // Viewing keypair
+  s_pair: SEA.pair(),                // Spending keypair
+  viewingPublicKey: string,          // Viewing public key (v_pair.epub)
+  spendingPublicKey: string,         // Spending public key (s_pair.epub)
+  env_pair: string,                  // Encrypted original pair
+  env_v_pair: string,                // Encrypted viewing pair
+  env_s_pair: string                 // Encrypted spending pair
+}</code></pre>
+            </div>
 
-// The account contains:
-console.log({
-    address: ethAccount.address,       // Ethereum address
-    privateKey: ethAccount.privateKey  // Ethereum private key
-});</code></pre>
-              </div>
-
-              <!-- Usage Tab -->
-              <div class="tab-content">
-                <pre><code class="language-javascript">
+            <!-- Usage Tab -->
+            <div class="tab-content">
+              <pre><code class="language-javascript">
 // Complete usage example
 const signature = await createSignature(MESSAGE_TO_SIGN);
 const gunAccount = await ethToGunAccount(signature);
@@ -1199,78 +1228,79 @@ const data = await gun.user(gunAccount.pub).get('myData').then();
 
 // Convert back to Ethereum if needed
 const ethAccount = await gunToEthAccount(gunAccount);</code></pre>
-              </div>
-            </div>
-          </div>
-
-          <div class="steps-container">
-            <div class="step">
-              <div class="step-number">1</div>
-              <div class="step-content">
-                <h4>Connect Wallet</h4>
-                <p>
-                  Connect your Ethereum wallet and sign the authentication
-                  message
-                </p>
-              </div>
-            </div>
-            <div class="step">
-              <div class="step-number">2</div>
-              <div class="step-content">
-                <h4>Convert Account</h4>
-                <p>
-                  Convert your Ethereum account to a Gun account using
-                  ethToGunAccount
-                </p>
-              </div>
-            </div>
-            <div class="step">
-              <div class="step-number">3</div>
-              <div class="step-content">
-                <h4>Use Gun Features</h4>
-                <p>Use all Gun features with your converted account</p>
-              </div>
-            </div>
-            <div class="step">
-              <div class="step-number">4</div>
-              <div class="step-content">
-                <h4>Convert Back</h4>
-                <p>
-                  If needed, convert back to Ethereum account using
-                  gunToEthAccount
-                </p>
-              </div>
             </div>
           </div>
         </div>
 
-        <!-- Key Management Section -->
-        <div id="key-management" class="doc-section">
-          <h2>Advanced Key Management</h2>
-          <p>
-            Gun-ETH provides a complete system for secure key management with support for multiple pairs and advanced encryption.
-          </p>
+        <div class="steps-container">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Connect Wallet</h4>
+              <p>
+                Connect your Ethereum wallet and sign the authentication
+                message
+              </p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Convert Account</h4>
+              <p>
+                Convert your Ethereum account to a Gun account using
+                ethToGunAccount
+              </p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Use Gun Features</h4>
+              <p>Use all Gun features with your converted account</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h4>Convert Back</h4>
+              <p>
+                If needed, convert back to Ethereum account using
+                gunToEthAccount
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <div class="integration-overview">
-            <div class="overview-section">
-              <h5>Key Structure</h5>
-              <ul>
-                <li><strong>Main Pair:</strong> Used for authentication and general management</li>
-                <li><strong>Viewing Pair:</strong> For read-only access to encrypted data</li>
-                <li><strong>Spending Pair:</strong> For operations requiring authorization</li>
-              </ul>
+      <!-- Key Management Section -->
+      <div id="key-management" class="doc-section">
+        <h2>Advanced Key Management</h2>
+        <p>
+          Gun-ETH provides a complete system for secure key management with support for multiple pairs and advanced
+          encryption.
+        </p>
+
+        <div class="integration-overview">
+          <div class="overview-section">
+            <h5>Key Structure</h5>
+            <ul>
+              <li><strong>Main Pair:</strong> Used for authentication and general management</li>
+              <li><strong>Viewing Pair:</strong> For read-only access to encrypted data</li>
+              <li><strong>Spending Pair:</strong> For operations requiring authorization</li>
+            </ul>
+          </div>
+
+          <div class="code-demo">
+            <div class="code-tabs">
+              <button class="tab-button">Password</button>
+              <button class="tab-button">Data Structure</button>
+              <button class="tab-button">Encryption</button>
             </div>
 
-            <div class="code-demo">
-              <div class="code-tabs">
-                <button class="tab-button">Password</button>
-                <button class="tab-button">Data Structure</button>
-                <button class="tab-button">Encryption</button>
-              </div>
-
-              <!-- Password Generation Tab -->
-              <div class="tab-content">
-                <pre><code class="language-javascript">
+            <!-- Password Generation Tab -->
+            <div class="tab-content">
+              <pre><code class="language-javascript">
 // Generate password from Ethereum signature
 const signature = await wallet.signMessage(MESSAGE_TO_SIGN);
 const password = generatePassword(signature);
@@ -1284,39 +1314,45 @@ const isValid = await verifySignature(
   signature,  // Signature to verify
   MESSAGE_TO_SIGN  // Original message
 );</code></pre>
-              </div>
+            </div>
 
-              <!-- Data Structure Tab -->
-              <div class="tab-content">
-                <pre><code class="language-javascript">
+            <!-- Data Structure Tab -->
+            <div class="tab-content">
+              <pre><code class="language-javascript">
 // Complete structure returned by gunToEthAccount
 {
-  account: wallet,              // Ethereum wallet instance
-  publicKey: "0x...",          // Ethereum public key
-  privateKey: "0x...",         // Ethereum private key
-  pair: {                      // Main Gun pair
-    pub: "...",               // Public key
-    priv: "...",              // Private key
-    epub: "...",              // Encryption public key
-    epriv: "..."              // Encryption private key
+  "pub": "gun-public-key",
+  "internalWalletAddress": "0x...",
+  "internalWalletPk": "0x...",
+  "pair": {
+    "pub": "...",
+    "priv": "...",
+    "epub": "...",
+    "epriv": "..."
   },
-  v_pair: { ... },            // Viewing Gun pair
-  s_pair: { ... },            // Spending Gun pair
-  ethAddress: "0x...",        // Ethereum address
-  env_pair: { ... },          // Encrypted main pair
-  env_v_pair: { ... },        // Encrypted viewing pair
-  env_s_pair: { ... },        // Encrypted spending pair
-  publicKeys: {
-    viewingPublicKey: "...",  // Viewing public key
-    spendingPublicKey: "0x...", // Spending public key
-    ethViewingAddress: "0x..."  // Ethereum viewing address
-  }
+  "v_pair": {
+    "pub": "...",
+    "priv": "...",
+    "epub": "...",
+    "epriv": "..."
+  },
+  "s_pair": {
+    "pub": "...",
+    "priv": "...",
+    "epub": "...",
+    "epriv": "..."
+  },
+  "viewingPublicKey": "...",
+  "spendingPublicKey": "...",
+  "env_pair": "encrypted-data",
+  "env_v_pair": "encrypted-data",
+  "env_s_pair": "encrypted-data"
 }</code></pre>
-              </div>
+            </div>
 
-              <!-- Encryption Tab -->
-              <div class="tab-content">
-                <pre><code class="language-javascript">
+            <!-- Encryption Tab -->
+            <div class="tab-content">
+              <pre><code class="language-javascript">
 // Encrypt a key pair
 const password = generatePassword(signature);
 const encryptedPair = await encrypt(pair, password);
@@ -1338,33 +1374,33 @@ await gun.get("gun-eth")
     s_pair: pairs.env_s_pair,  // Encrypted spending pair
     publicKeys: pairs.publicKeys
   });</code></pre>
-              </div>
-            </div>
-
-            <div class="overview-section">
-              <h5>Security Features</h5>
-              <ul>
-                <li><strong>Password Generation:</strong> Secure derivation from Ethereum signature</li>
-                <li><strong>Signature Verification:</strong> Cryptographic identity validation</li>
-                <li><strong>Multiple Encryption:</strong> Separate protection for each key pair</li>
-                <li><strong>Viewing/Spending Management:</strong> Access privilege separation</li>
-              </ul>
             </div>
           </div>
+
+          <div class="overview-section">
+            <h5>Security Features</h5>
+            <ul>
+              <li><strong>Password Generation:</strong> Secure derivation from Ethereum signature</li>
+              <li><strong>Signature Verification:</strong> Cryptographic identity validation</li>
+              <li><strong>Multiple Encryption:</strong> Separate protection for each key pair</li>
+              <li><strong>Viewing/Spending Management:</strong> Access privilege separation</li>
+            </ul>
+          </div>
         </div>
+      </div>
 
-        <!-- Gun-Ethereum Conversion -->
-        <div id="gun-eth-conversion" class="section">
-          <h2>Gun-Ethereum Account Conversion</h2>
-          <p>
-            Gun-ETH provides robust methods for converting between Gun and
-            Ethereum accounts with enhanced security features.
-          </p>
+      <!-- Gun-Ethereum Conversion -->
+      <div id="gun-eth-conversion" class="section">
+        <h2>Gun-Ethereum Account Conversion</h2>
+        <p>
+          Gun-ETH provides robust methods for converting between Gun and
+          Ethereum accounts with enhanced security features.
+        </p>
 
-          <div class="integration-overview">
-            <div class="overview-section">
-              <h5>1. Ethereum to Gun (ethToGunAccount)</h5>
-              <pre><code class="language-javascript">
+        <div class="integration-overview">
+          <div class="overview-section">
+            <h5>1. Ethereum to Gun (ethToGunAccount)</h5>
+            <pre><code class="language-javascript">
 const account = await ethToGunAccount();
 
 // Returns
@@ -1376,66 +1412,44 @@ const account = await ethToGunAccount();
     ethPrivateKey: string,     // Ethereum private key
     env_pair: string,          // Encrypted main pair
     env_v_pair: string,        // Encrypted viewing pair
-    env_s_pair: string,        // Encrypted spending pair
-    publicKeys: {
-        viewingPublicKey: string,
-        spendingPublicKey: string,
-        ethViewingAddress: string
-    }
+    env_s_pair: string         // Encrypted spending pair
 }</code></pre>
-            </div>
+          </div>
 
-            <div class="overview-section">
-              <h5>2. Gun to Ethereum (gunToEthAccount)</h5>
-              <pre><code class="language-javascript">
-const account = await gunToEthAccount(gunPrivateKey);
+          <div class="overview-section">
+            <h5>2. Gun to Ethereum (gunToEthAccount)</h5>
+            <pre><code class="language-javascript">
+// Option 1: Using existing Gun credentials
+const gunUser = gun.user();
+if (gunUser.is) {
+  // Use existing Gun credentials
+  const account = await gunToEthAccount(gunUser._.sea);
+}
+
+// Option 2: Using Ethereum signature
+const gunKeyPair = await SEA.pair();
+const signature = await createSignature(MESSAGE_TO_SIGN);
+const account = await gunToEthAccount(gunKeyPair, signature);
 
 // Returns
 {
-    // Ethereum Wallet
-    account: ethers.Wallet,      // Complete Ethereum wallet instance
-    publicKey: string,           // Wallet public address
-    privateKey: string,          // Wallet private key (hexadecimal)
-    ethAddress: string,          // Same as publicKey
-    ethPrivateKey: string,       // Same as privateKey
-
-    // Gun Keypairs
-    pair: {                      // Main Gun keypair
-        pub: string,             // Public key
-        priv: string,            // Private key
-        epub: string,            // Encryption public key
-        epriv: string           // Encryption private key
-    },
-    v_pair: {                    // Viewing keypair
-        pub: string,
-        priv: string,
-        epub: string,
-        epriv: string
-    },
-    s_pair: {                    // Spending keypair
-        pub: string,
-        priv: string,
-        epub: string,
-        epriv: string
-    },
-
-    // Encrypted versions of keypairs
-    env_pair: string,            // Encrypted main keypair
-    env_v_pair: string,          // Encrypted viewing keypair
-    env_s_pair: string,          // Encrypted spending keypair
-
-    // Public keys for stealth transactions
-    publicKeys: {
-        viewingPublicKey: string,    // v_pair.epub
-        spendingPublicKey: string,   // Generated from s_pair
-        ethViewingAddress: string    // Generated from v_pair
-    }
+  pub: gunKeyPair.pub,                // Gun public key
+  internalWalletAddress: string,      // Internal wallet address
+  internalWalletPk: string,          // Internal wallet private key
+  pair: gunKeyPair,                  // Original Gun keypair
+  v_pair: SEA.pair(),                // Viewing keypair
+  s_pair: SEA.pair(),                // Spending keypair
+  viewingPublicKey: string,          // Viewing public key (v_pair.epub)
+  spendingPublicKey: string,         // Spending public key (s_pair.epub)
+  env_pair: string,                  // Encrypted original pair
+  env_v_pair: string,                // Encrypted viewing pair
+  env_s_pair: string                 // Encrypted spending pair
 }</code></pre>
-            </div>
+          </div>
 
-            <div class="overview-section">
-              <h5>3. Key Management</h5>
-              <pre><code class="language-javascript">
+          <div class="overview-section">
+            <h5>3. Key Management</h5>
+            <pre><code class="language-javascript">
 // Store encrypted keypair
 await gun.createAndStoreEncryptedPair(address);
 
@@ -1448,262 +1462,172 @@ const decryptedPair = await decryptPair(encryptedPair, password);
 
 // Create signature
 const signature = await createSignature(MESSAGE_TO_SIGN);</code></pre>
-            </div>
+          </div>
 
-            <div class="overview-section">
-              <h5>Security Features</h5>
-              <ul>
-                <li>
-                  <strong>Multiple Keypairs:</strong> Separate pairs for main,
-                  viewing, and spending operations
-                </li>
-                <li>
-                  <strong>Encrypted Storage:</strong> All sensitive data is
-                  encrypted before storage
-                </li>
-                <li>
-                  <strong>Message Signing:</strong> Uses Ethereum signatures for
-                  authentication
-                </li>
-                <li>
-                  <strong>Automatic Retry:</strong> Built-in retry mechanism for
-                  failed operations
-                </li>
-                <li>
-                  <strong>Password Generation:</strong> Secure password
-                  generation from signatures
-                </li>
-              </ul>
-            </div>
+          <div class="overview-section">
+            <h5>Security Features</h5>
+            <ul>
+              <li>
+                <strong>Multiple Keypairs:</strong> Separate pairs for main,
+                viewing, and spending operations
+              </li>
+              <li>
+                <strong>Encrypted Storage:</strong> All sensitive data is
+                encrypted before storage
+              </li>
+              <li>
+                <strong>Message Signing:</strong> Uses Ethereum signatures for
+                authentication
+              </li>
+              <li>
+                <strong>Automatic Retry:</strong> Built-in retry mechanism for
+                failed operations
+              </li>
+              <li>
+                <strong>Password Generation:</strong> Secure password
+                generation from signatures
+              </li>
+            </ul>
           </div>
         </div>
+      </div>
 
-        <!-- StealthChain Documentation -->
-        <div id="stealth-chain" class="section">
-          <h2>StealthChain</h2>
-          <p>
-            Stealth Transactions enable private and secure transactions on the blockchain.
-          </p>
-          <div style="margin-bottom: 10px">
-            <a
-              href="https://github.com/plancia/gun-eth/tree/main/src/features/stealth/StealthChain.js"
-              target="_blank"
-              class="source-link"
-            >
-              <i class="fas fa-code"></i> Code
-            </a>
-          </div>
+      <!-- StealthChain Documentation -->
+      <div id="stealth-chain" class="section">
+        <h2>🔒 StealthChain</h2>
+        <div class="content">
+          <p>StealthChain può essere utilizzato in due modalità:</p>
+
           <div class="code-demo">
             <div class="code-header">
-              <h4>Stealth Transaction Example</h4>
-            </div>
-            <div class="code-tabs">
-              <button class="tab-button">Basic</button>
-              <button class="tab-button">Advanced</button>
+              <h4>1. Modalità Off-chain</h4>
             </div>
             <div class="code-window">
-              <!-- Basic Tab -->
-              <div class="tab-content">
-                <pre><code class="language-javascript">
-// Initialize StealthChain
-const stealthChain = new StealthChain(gun);
-
-// Publish stealth keys
-const keys = await stealthChain.publishStealthKeys(userSignature);
-
-// Generate stealth address for recipient
-const stealthInfo = await stealthChain.generateStealthAddress(
-  recipientAddress,
-  senderSignature
-);</code></pre>
-              </div>
-
-              <!-- Advanced Tab -->
-              <div class="tab-content" data-tab="stealth">
-                <pre><code class="language-javascript">
-import { GunEth } from 'gun-eth';
-import { StealthChain } from 'gun-eth';
-
-// Initialize Gun and StealthChain
-const gun = Gun();
-GunEth.extendGun(Gun);
-const stealthChain = new StealthChain(gun);
-
-// Create signature and publish stealth keys
-const signature = await GunEth.createSignature(GunEth.MESSAGE_TO_SIGN);
-await stealthChain.publishStealthKeys(signature);
-
-// Generate stealth address for recipient
-const stealthInfo = await stealthChain.generateStealthAddress(
-  recipientAddress,
-  signature
-);
-
-// Announce payment
-await stealthChain.announceStealthPayment(
-  stealthInfo.stealthAddress,
-  stealthInfo.senderPublicKey,
-  stealthInfo.spendingPublicKey,
-  signature,
-  { 
-    onChain: true,
-    source: 'both'
-  }
-);
-
-// Get payments
-const payments = await stealthChain.getStealthPayments(
-  signature,
-  { source: 'both' }
-);
-
-// Recover funds from payment
-if (payments.length > 0) {
-  const payment = payments[0];
-  const recovered = await stealthChain.recoverStealthFunds(
-    payment.stealthAddress,
-    payment.senderPublicKey,
-    signature,
-    payment.spendingPublicKey
-  );
-}</code></pre>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Proof Chain Documentation -->
-        <div id="proof-chain" class="section">
-          <h2>ProofChain</h2>
-          <p>
-            The Proof of Integrity system ensures data integrity through blockchain.
-          </p>
-          <div style="margin-bottom: 10px">
-            <a
-              href="https://github.com/plancia/gun-eth/tree/main/src/features/proof/ProofChain.js"
-              target="_blank"
-              class="source-link"
-            >
-              <i class="fas fa-code"></i> Code
-            </a>
-          </div>
-          <div class="code-demo">
-            <div class="code-header">
-              <h4>Proof of Integrity Example</h4>
-            </div>
-            <div class="code-tabs">
-              <button class="tab-button">Write</button>
-              <button class="tab-button">Verify</button>
-            </div>
-            <div class="code-window">
-              <!-- Write Tab -->
-              <div class="tab-content">
-                <pre><code class="language-javascript">
-// Initialize ProofChain
-const proofChain = new ProofChain(gun);
-
-// Data to protect
-const data = {
-  message: "Important data",
-  timestamp: Date.now()
-};
-
-// Write data with proof
-proofChain.proof(
-  'localhost',    // chain
-  null,           // nodeId (new node)
-  data,           // data to protect
-  (ack) => {
-    if (ack.ok) {
-      console.log("✅ Data written successfully");
-      console.log("Node ID:", ack.nodeId);
-      console.log("Transaction Hash:", ack.txHash);
-    }
-  }
-);</code></pre>
-              </div>
-
-              <!-- Verify Tab -->
-              <div class="tab-content">
-                <pre><code class="language-javascript">
-// Verify integrity
-gun.proof(
-  'localhost',
-  nodeId,
-  null,
-  (ack) => {
-    if (ack.ok) {
-      console.log("✅ Verification passed");
-      console.log("Timestamp:", new Date(Number(ack.timestamp) * 1000));
-      console.log("Updater:", ack.updater);
-    } else {
-      console.log("❌ Verification failed - possible tampering");
-    }
-  }
-);</code></pre>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Encrypted Bubbles Documentation -->
-        <div id="encrypted-bubbles" class="section">
-          <h2>Encrypted Bubbles</h2>
-          <p>
-            Encrypted Bubbles provide secure and decentralized storage with
-            end-to-end encryption. Two provider implementations are available:
-          </p>
-
-          <div class="integration-overview">
-            <div class="overview-section">
-              <h5>Provider Types</h5>
-
-              <h6>1. GUN Provider</h6>
-              <ul>
-                <li>
-                  <strong>Storage:</strong> Stores both data and metadata in
-                  GUN's decentralized database
-                </li>
-                <li>
-                  <strong>Best for:</strong> Fully decentralized applications
-                  where all data needs to be replicated across peers
-                </li>
-                <li>
-                  <strong>Features:</strong>
-                  <ul>
-                    <li>Complete P2P replication</li>
-                    <li>Real-time synchronization</li>
-                    <li>No filesystem dependencies</li>
-                  </ul>
-                </li>
-              </ul>
-
-              <h6>2. Hybrid Provider</h6>
-              <ul>
-                <li>
-                  <strong>Storage:</strong> Stores files in local filesystem,
-                  metadata in GUN
-                </li>
-                <li>
-                  <strong>Best for:</strong> Applications that need to handle
-                  large files or require filesystem access
-                </li>
-                <li>
-                  <strong>Features:</strong>
-                  <ul>
-                    <li>Better performance with large files</li>
-                    <li>Direct filesystem access</li>
-                    <li>
-                      Hybrid storage model (files local, metadata distributed)
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </div>
-
-            <div class="overview-section">
-              <h5>Example: GUN Provider</h5>
               <pre><code class="language-javascript">
+// Inizializzazione senza provider
+const stealthChain = new StealthChain();
+
+// Operazioni base disponibili
+const stealthInfo = await stealthChain.generateStealthAddress(
+  receiverViewingKey,
+  receiverSpendingKey
+);
+
+const announcement = stealthChain.createStealthAnnouncement(
+  stealthInfo.stealthAddress,
+  stealthInfo.senderEphemeralPublicKey,
+  receiverViewingKey,
+  receiverSpendingKey
+);</code></pre>
+            </div>
+          </div>
+
+          <div class="code-demo">
+            <div class="code-header">
+              <h4>2. Modalità On-chain</h4>
+            </div>
+            <div class="code-window">
+              <pre><code class="language-javascript">
+// Inizializzazione con provider
+const provider = new ethers.JsonRpcProvider("RPC_URL");
+const stealthChain = new StealthChain(provider, "polygon");
+
+// Verifica modalità
+if (stealthChain.isOnChainEnabled()) {
+  // Annuncia pagamento on-chain
+  await stealthChain.announcePaymentOnChain(
+    stealthInfo.stealthAddress,
+    stealthInfo.senderEphemeralKey,
+    receiverViewingKey,
+    receiverSpendingKey
+  );
+
+  // Ottieni fee corrente
+  const fee = await stealthChain.getCurrentFee();
+
+  // Monitora nuovi annunci
+  stealthChain.listenToNewAnnouncements((announcement) => {
+    console.log("Nuovo annuncio:", announcement);
+  });
+}</code></pre>
+            </div>
+          </div>
+
+          <h3>Funzionalità Disponibili</h3>
+          <ul class="feature-list">
+            <li><code>generateStealthAddress</code>: Genera un nuovo indirizzo stealth</li>
+            <li><code>deriveStealthAddress</code>: Deriva un indirizzo stealth dai parametri</li>
+            <li><code>createStealthAnnouncement</code>: Crea un annuncio di pagamento</li>
+            <li><code>createRecoveryData</code>: Prepara i dati per il recupero fondi</li>
+            <li><code>announcePaymentOnChain</code>: Annuncia pagamento sulla blockchain</li>
+            <li><code>getAnnouncementsInRange</code>: Recupera annunci in un range</li>
+            <li><code>getTotalAnnouncements</code>: Ottiene numero totale annunci</li>
+            <li><code>getCurrentFee</code>: Recupera fee corrente</li>
+            <li><code>listenToNewAnnouncements</code>: Ascolta nuovi annunci</li>
+            <li><code>isStealthAddressAnnounced</code>: Verifica se indirizzo è stato annunciato</li>
+            <li><code>getExplorerUrl</code>: Ottiene URL explorer per transazione</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Encrypted Bubbles Documentation -->
+      <div id="encrypted-bubbles" class="section">
+        <h2>Encrypted Bubbles</h2>
+        <p>
+          Encrypted Bubbles provide secure and decentralized storage with
+          end-to-end encryption. Two provider implementations are available:
+        </p>
+
+        <div class="integration-overview">
+          <div class="overview-section">
+            <h5>Provider Types</h5>
+
+            <h6>1. GUN Provider</h6>
+            <ul>
+              <li>
+                <strong>Storage:</strong> Stores both data and metadata in
+                GUN's decentralized database
+              </li>
+              <li>
+                <strong>Best for:</strong> Fully decentralized applications
+                where all data needs to be replicated across peers
+              </li>
+              <li>
+                <strong>Features:</strong>
+                <ul>
+                  <li>Complete P2P replication</li>
+                  <li>Real-time synchronization</li>
+                  <li>No filesystem dependencies</li>
+                </ul>
+              </li>
+            </ul>
+
+            <h6>2. Hybrid Provider</h6>
+            <ul>
+              <li>
+                <strong>Storage:</strong> Stores files in local filesystem,
+                metadata in GUN
+              </li>
+              <li>
+                <strong>Best for:</strong> Applications that need to handle
+                large files or require filesystem access
+              </li>
+              <li>
+                <strong>Features:</strong>
+                <ul>
+                  <li>Better performance with large files</li>
+                  <li>Direct filesystem access</li>
+                  <li>
+                    Hybrid storage model (files local, metadata distributed)
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+
+          <div class="overview-section">
+            <h5>Example: GUN Provider</h5>
+            <pre><code class="language-javascript">
 // Initialize GUN provider
 const gunProvider = new GUNBubbleProvider({
   rpcUrl: "http://localhost:8545",
@@ -1726,11 +1650,11 @@ await gunProvider.handleFileUpload(
   "Secret content",
   userAddress
 );</code></pre>
-            </div>
+          </div>
 
-            <div class="overview-section">
-              <h5>Example: Hybrid Provider</h5>
-              <pre><code class="language-javascript">
+          <div class="overview-section">
+            <h5>Example: Hybrid Provider</h5>
+            <pre><code class="language-javascript">
 // Initialize Hybrid provider
 const hybridProvider = new HybridBubbleProvider({
   rpcUrl: "http://localhost:8545",
@@ -1753,147 +1677,137 @@ await hybridProvider.handleFileUpload(
   "Large content",
   userAddress
 );</code></pre>
-            </div>
+          </div>
 
-            <div class="overview-section">
-              <h5>When to Use Each Provider</h5>
-              <table class="comparison-table">
-                <tr>
-                  <th>Use GUN Provider when:</th>
-                  <th>Use Hybrid Provider when:</th>
-                </tr>
-                <tr>
-                  <td>
-                    <ul>
-                      <li>You need full P2P replication</li>
-                      <li>Working with small files</li>
-                      <li>Building fully decentralized apps</li>
-                      <li>Real-time sync is priority</li>
-                    </ul>
-                  </td>
-                  <td>
-                    <ul>
-                      <li>Handling large files</li>
-                      <li>Need filesystem access</li>
-                      <li>Performance is critical</li>
-                      <li>Running on server/node environment</li>
-                    </ul>
-                  </td>
-                </tr>
-              </table>
-            </div>
+          <div class="overview-section">
+            <h5>When to Use Each Provider</h5>
+            <table class="comparison-table">
+              <tr>
+                <th>Use GUN Provider when:</th>
+                <th>Use Hybrid Provider when:</th>
+              </tr>
+              <tr>
+                <td>
+                  <ul>
+                    <li>You need full P2P replication</li>
+                    <li>Working with small files</li>
+                    <li>Building fully decentralized apps</li>
+                    <li>Real-time sync is priority</li>
+                  </ul>
+                </td>
+                <td>
+                  <ul>
+                    <li>Handling large files</li>
+                    <li>Need filesystem access</li>
+                    <li>Performance is critical</li>
+                    <li>Running on server/node environment</li>
+                  </ul>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Templates Documentation -->
+      <div id="templates" class="doc-section">
+        <h3 class="section-subtitle">
+          📋 Bubble Templates
+          <a href="https://github.com/plancia/gun-eth/tree/main/src/templates" target="_blank" class="source-link">
+            <i class="fas fa-code"></i> Source
+          </a>
+        </h3>
+
+        <div class="integration-overview">
+          <h4>Ready-to-Use Templates</h4>
+
+          <div class="overview-section">
+            <h5>What are Gun-ETH Templates?</h5>
+            <p>
+              Gun-ETH templates provide production-ready implementations for
+              both client and provider setups. These templates include best
+              practices, proper error handling, and common configurations to
+              help you get started quickly with secure and scalable
+              implementations.
+            </p>
+          </div>
+
+          <div class="overview-section">
+            <h5>Available Templates</h5>
+            <ul>
+              <li>
+                <strong>Client Template:</strong>
+                <a href="https://github.com/plancia/gun-eth/blob/main/src/templates/bubble-client.js" target="_blank"
+                  class="source-link">
+                  <i class="fas fa-code"></i> Source
+                </a>
+                <ul>
+                  <li>Complete configuration management</li>
+                  <li>File handling (text, JSON, binary)</li>
+                  <li>Comprehensive error handling</li>
+                  <li>Secure file storage patterns</li>
+                </ul>
+              </li>
+              <li>
+                <strong>Provider Template:</strong>
+                <a href="https://github.com/plancia/gun-eth/blob/main/src/templates/bubble-provider.js" target="_blank"
+                  class="source-link">
+                  <i class="fas fa-code"></i> Source
+                </a>
+                <ul>
+                  <li>Express server setup</li>
+                  <li>Gun node configuration</li>
+                  <li>Storage directory management</li>
+                  <li>API endpoint implementation</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+
+          <div class="overview-section">
+            <h5>Template Features</h5>
+            <ul>
+              <li>
+                <strong>Environment Configuration:</strong> Environment
+                variable support
+              </li>
+              <li>
+                <strong>Security Best Practices:</strong> Built-in security
+                measures
+              </li>
+              <li>
+                <strong>Scalability Patterns:</strong> Ready for production
+                loads
+              </li>
+              <li>
+                <strong>Documentation:</strong> Inline comments and examples
+              </li>
+            </ul>
+          </div>
+
+          <div class="overview-section">
+            <h5>Getting Started</h5>
+            <ol>
+              <li>Clone the template repository</li>
+              <li>Configure environment variables</li>
+              <li>Customize implementation as needed</li>
+              <li>Deploy your application</li>
+            </ol>
           </div>
         </div>
 
-        <!-- Templates Documentation -->
-        <div id="templates" class="doc-section">
-          <h3 class="section-subtitle">
-            📋 Bubble Templates
-            <a
-              href="https://github.com/plancia/gun-eth/tree/main/templates"
-              target="_blank"
-              class="source-link"
-            >
-              <i class="fas fa-code"></i> Source
-            </a>
-          </h3>
-
-          <div class="integration-overview">
+        <div class="code-demo">
+          <div class="code-header">
             <h4>Ready-to-Use Templates</h4>
-
-            <div class="overview-section">
-              <h5>What are Gun-ETH Templates?</h5>
-              <p>
-                Gun-ETH templates provide production-ready implementations for
-                both client and provider setups. These templates include best
-                practices, proper error handling, and common configurations to
-                help you get started quickly with secure and scalable
-                implementations.
-              </p>
-            </div>
-
-            <div class="overview-section">
-              <h5>Available Templates</h5>
-              <ul>
-                <li>
-                  <strong>Client Template:</strong>
-                  <a
-                    href="https://github.com/plancia/gun-eth/blob/main/templates/template-bubble-client.js"
-                    target="_blank"
-                    class="source-link"
-                  >
-                    <i class="fas fa-code"></i> Source
-                  </a>
-                  <ul>
-                    <li>Complete configuration management</li>
-                    <li>File handling (text, JSON, binary)</li>
-                    <li>Comprehensive error handling</li>
-                    <li>Secure file storage patterns</li>
-                  </ul>
-                </li>
-                <li>
-                  <strong>Provider Template:</strong>
-                  <a
-                    href="https://github.com/plancia/gun-eth/blob/main/templates/template-bubble-provider.js"
-                    target="_blank"
-                    class="source-link"
-                  >
-                    <i class="fas fa-code"></i> Source
-                  </a>
-                  <ul>
-                    <li>Express server setup</li>
-                    <li>Gun node configuration</li>
-                    <li>Storage directory management</li>
-                    <li>API endpoint implementation</li>
-                  </ul>
-                </li>
-              </ul>
-            </div>
-
-            <div class="overview-section">
-              <h5>Template Features</h5>
-              <ul>
-                <li>
-                  <strong>Environment Configuration:</strong> Environment
-                  variable support
-                </li>
-                <li>
-                  <strong>Security Best Practices:</strong> Built-in security
-                  measures
-                </li>
-                <li>
-                  <strong>Scalability Patterns:</strong> Ready for production
-                  loads
-                </li>
-                <li>
-                  <strong>Documentation:</strong> Inline comments and examples
-                </li>
-              </ul>
-            </div>
-
-            <div class="overview-section">
-              <h5>Getting Started</h5>
-              <ol>
-                <li>Clone the template repository</li>
-                <li>Configure environment variables</li>
-                <li>Customize implementation as needed</li>
-                <li>Deploy your application</li>
-              </ol>
+            <div class="code-tabs">
+              <button>Client Template</button>
+              <button>Provider Template</button>
             </div>
           </div>
-
-          <div class="code-demo">
-            <div class="code-header">
-              <h4>Ready-to-Use Templates</h4>
-              <div class="code-tabs">
-                <button>Client Template</button>
-                <button>Provider Template</button>
-              </div>
-            </div>
-            <div class="code-window">
-              <!-- Client Template Tab -->
-              <div class="tab-content">
-                <pre><code class="language-javascript">
+          <div class="code-window">
+            <!-- Client Template Tab -->
+            <div class="tab-content">
+              <pre><code class="language-javascript">
 // template-bubble-client.js
 // Complete client implementation with:
 // - Configuration management
@@ -1916,11 +1830,11 @@ const client = await initializeClient();
 const bubble = await client.createBubble("Test Bubble");
 await client.writeBubble(bubble.id, "test.txt", "content");
 const result = await client.readBubble(bubble.id, "test.txt");</code></pre>
-              </div>
+            </div>
 
-              <!-- Provider Template Tab -->
-              <div class="tab-content">
-                <pre><code class="language-javascript">
+            <!-- Provider Template Tab -->
+            <div class="tab-content">
+              <pre><code class="language-javascript">
 // template-bubble-provider.js
 // Complete provider implementation with:
 // - Express server setup
@@ -1946,445 +1860,279 @@ const provider = new HybridBubbleProvider(CONFIG);
 app.post('/bubble', handleCreateBubble);
 app.post('/bubble/:id/write', handleWriteBubble);
 app.get('/bubble/:id', handleReadBubble);</code></pre>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Advanced Usage Section -->
-        <div id="advanced" class="doc-section">
-          <div class="container">
-            <h2 class="section-title glow-text">Advanced Usage</h2>
-
-            <!-- Contract Deployment -->
-            <div id="contract-deployment" class="doc-section">
-              <h3 class="section-subtitle">
-                Contract Deployment
-                <a
-                  href="https://github.com/plancia/gun-eth/tree/main/contracts"
-                  target="_blank"
-                  class="source-link"
-                >
-                  <i class="fas fa-code"></i> Source
-                </a>
-              </h3>
-
-              <div class="integration-overview">
-                <h4>Hardhat Deployment Guide</h4>
-
-                <div class="overview-section">
-                  <h5>1. Environment Setup</h5>
-                  <pre><code class="language-bash">
-# Installa Hardhat
-npm install --save-dev hardhat
-
-# Inizializza progetto Hardhat
-npx hardhat init
-
-# Installa dipendenze
-npm install --save-dev @nomiclabs/hardhat-ethers ethers</code></pre>
-                </div>
-
-                <div class="overview-section">
-                  <h5>2. Configurazione Ambiente</h5>
-                  <pre><code class="language-javascript">
-// .env
-PRIVATE_KEY=your_private_key
-ALCHEMY_API_KEY=your_alchemy_api_key
-ETHERSCAN_API_KEY=your_etherscan_api_key
-POLYGONSCAN_API_KEY=your_polygonscan_api_key
-OPTIMISM_API_KEY=your_optimism_api_key
-ARBITRUM_API_KEY=your_arbitrum_api_key
-BASESCAN_API_KEY=your_basescan_api_key
-
-// hardhat.config.js
-require("@nomicfoundation/hardhat-toolbox");
-require("@nomicfoundation/hardhat-ethers");
-require("@nomicfoundation/hardhat-verify");
-require('dotenv').config();
-
-module.exports = {
-  solidity: {
-    version: "0.8.19",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
-      }
-    }
-  },
-  networks: {
-    polygon: {
-      url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [process.env.PRIVATE_KEY],
-      chainId: 137
-    },
-    optimism: {
-      url: `https://opt-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [process.env.PRIVATE_KEY],
-      chainId: 10
-    },
-    arbitrum: {
-      url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [process.env.PRIVATE_KEY],
-      chainId: 42161
-    },
-    base: {
-      url: "https://mainnet.base.org",
-      accounts: [process.env.PRIVATE_KEY]
-    }
-  },
-  etherscan: {
-    apiKey: {
-      polygon: process.env.POLYGONSCAN_API_KEY,
-      optimisticEthereum: process.env.OPTIMISM_API_KEY,
-      arbitrumOne: process.env.ARBITRUM_API_KEY,
-      base: process.env.BASESCAN_API_KEY
-    }
-  }
-};</code></pre>
-                </div>
-
-                <div class="overview-section">
-                  <h5>Reti Supportate</h5>
-                  <ul>
-                    <li>
-                      <strong>Layer 1:</strong> Ethereum (Mainnet, Sepolia)
-                    </li>
-                    <li>
-                      <strong>Layer 2:</strong>
-                      <ul>
-                        <li>Polygon (Mainnet, Mumbai, zkEVM)</li>
-                        <li>Optimism (Mainnet, Sepolia)</li>
-                        <li>Arbitrum (Mainnet, Sepolia)</li>
-                        <li>Base (Mainnet, Sepolia)</li>
-                      </ul>
-                    </li>
-                    <li>
-                      <strong>Altre Reti:</strong>
-                      <ul>
-                        <li>Gnosis Chain (Mainnet, Chiado)</li>
-                        <li>Scroll (Mainnet, Sepolia)</li>
-                        <li>PGN - Public Goods Network (Mainnet, Testnet)</li>
-                        <li>Celo (Mainnet, Alfajores)</li>
-                      </ul>
-                    </li>
-                  </ul>
-                </div>
-
-                <div class="overview-section">
-                  <h5>3. Deploy dei Contratti</h5>
-                  <pre><code class="language-javascript">
-// scripts/deploy.js
-async function main() {
-  // Deploy ProofOfIntegrity
-  const ProofOfIntegrity = await ethers.getContractFactory("ProofOfIntegrity");
-  const proofOfIntegrity = await ProofOfIntegrity.deploy();
-  await proofOfIntegrity.deployed();
-  console.log("ProofOfIntegrity deployed to:", proofOfIntegrity.address);
-
-  // Deploy StealthAnnouncer
-  const StealthAnnouncer = await ethers.getContractFactory("StealthAnnouncer");
-  const stealthAnnouncer = await StealthAnnouncer.deploy();
-  await stealthAnnouncer.deployed();
-  console.log("StealthAnnouncer deployed to:", stealthAnnouncer.address);
-
-  // Deploy BubbleRegistry
-  const BubbleRegistry = await ethers.getContractFactory("BubbleRegistry");
-  const bubbleRegistry = await BubbleRegistry.deploy();
-  await bubbleRegistry.deployed();
-  console.log("BubbleRegistry deployed to:", bubbleRegistry.address);
-}
-
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });</code></pre>
-                </div>
-
-                <div class="overview-section">
-                  <h5>4. Esecuzione Deploy</h5>
-                  <pre><code class="language-bash">
-# Deploy on localhost
-npx hardhat node
-npx hardhat run scripts/deploy.js --network localhost
-
-# Deploy on mainnet
-npx hardhat run scripts/deploy.js --network mainnet
-
-# Other networks (polygon, optimism, etc)
-npx hardhat run scripts/deploy.js --network [network-name]</code></pre>
-                </div>
-
-                <div class="overview-section">
-                  <h5>5. Verifica e Test</h5>
-                  <pre><code class="language-javascript">
-// test/test.js
-describe("Gun-ETH Contracts", function() {
-  it("Should deploy and initialize correctly", async function() {
-    // Test code here
-  });
-});</code></pre>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- Contract Addresses Section -->
-    <section class="dark-section">
-      <div class="container">
-        <h2 class="section-title glow-text">
-          Contract Addresses on Polygon Mainnet
-        </h2>
-        <div class="integration-overview">
-          <div class="overview-section">
-            <h5>Deployed Contracts</h5>
-            <ul>
-              <li>
-                <strong>StealthAnnouncer:</strong>
-                0xD0CDbD17E4f2DDCE27B51721095048302768434f
-              </li>
-              <li>
-                <strong>ProofOfIntegrity:</strong>
-                0x8515fa00a00A5483a3485526c7aD1f44E2779321
-              </li>
-              <li>
-                <strong>BubbleRegistry:</strong>
-                0xc70DC231B9690D9dA988f6D4E518356eE9e45cd9
-              </li>
-            </ul>
+      <!-- Support Section -->
+      <div id="support" class="dark-section">
+        <div class="container">
+          <h2 class="section-title glow-text">Support the Project</h2>
+
+          <div class="integration-overview">
+            <div class="overview-section">
+              <h5>Author</h5>
+              <p>
+                Created by <a href="https://github.com/scobru" target="_blank">scobru</a>
+              </p>
+              <p>
+                Released by <strong>Plancia Foundation</strong>
+              </p>
+            </div>
+
+            <div class="overview-section">
+              <h5>Donations</h5>
+              <p>
+                If you find this project useful, consider supporting its
+                development:
+              </p>
+              <pre><code class="language-text">ETH: 0xb542E27732a390f509fD1FF6844a8386fe320f7f</code></pre>
+            </div>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- Testing Section -->
-    <section id="testing" class="dark-section">
-      <div class="container">
-        <h2 class="section-title glow-text">Testing & Local Development</h2>
-
-        <div class="integration-overview">
-          <div class="overview-section">
-            <h5>1. Local Development Setup</h5>
-            <pre><code class="language-bash">
-# Start local Hardhat node
-yarn start-node
-# or npm run start-node
-
-# Deploy contracts locally
-yarn deploy-local      # Uses scripts/start-local-node.cjs
-# or npm run deploy-local
-
-# Deploy to other networks
-yarn deploy-contracts  # Uses scripts/deploy-contracts.cjs
-# or npm run deploy-contracts</code></pre>
-          </div>
-
-          <div class="overview-section">
-            <h5>2. Testing</h5>
-            <pre><code class="language-bash">
-# Test individual features
-yarn test-stealth     # Test Stealth Chain
-yarn test-proof      # Test Proof of Integrity
-yarn test-bubble     # Test Encrypted Bubbles
-
-# Test smart contracts
-yarn test-contracts  # Runs test/index.test.cjs
-
-# Run all tests
-yarn test-all       # Runs all feature and contract tests</code></pre>
-          </div>
-
-          <div class="overview-section">
-            <h5>3. Build and Clean</h5>
-            <pre><code class="language-bash">
-# Compile contracts
-yarn compile
-# or npm run compile
-
-# Build the project
-yarn build          # Uses Rollup
-# or npm run build
-
-# Clean dist directory
-yarn clean         # Removes dist folder
-# or npm run clean</code></pre>
-          </div>
-
-          <div class="overview-section">
-            <h5>4. Available Scripts</h5>
-            <p>
-              These scripts can be run with either <code>yarn</code> or
-              <code>npm run</code>
-            </p>
-            <pre><code class="language-javascript">
-// Available scripts
-{
-    "start-node": "hardhat node",
-    "compile": "hardhat compile",
-    "deploy-local": "hardhat run scripts/start-local-node.cjs --network localhost",
-    "deploy-contracts": "hardhat run scripts/deploy-contracts.cjs",
-    
-    // Tests
-    "test": "hardhat test",
-    "test-stealth": "cross-env NODE_ENV=development node --experimental-json-modules test/stealth-example.js",
-    "test-proof": "cross-env NODE_ENV=development node --experimental-json-modules test/proof-example.js",
-    "test-bubble": "cross-env NODE_ENV=development node --experimental-json-modules test/bubble-test.js",
-    "test-contracts": "npx hardhat test ./test/index.test.cjs --config hardhat.config.cjs",
-    "test-all": "npm run test-stealth && npm run test-proof && npm run test-bubble && npm run test-contracts",
-    
-    // Build
-    "build": "rollup -c",
-    "clean": "rimraf dist",
-    "prepare": "npm run build"
-}</code></pre>
-          </div>
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="container">
+          <p class="footer-text">© 2024 Plancia. MIT License.</p>
         </div>
-      </div>
-    </section>
+      </footer>
 
-    <!-- Support Section -->
-    <section id="support" class="dark-section">
-      <div class="container">
-        <h2 class="section-title glow-text">Support the Project</h2>
+      <!-- Add Prism JS at the end of body -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-typescript.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-json.min.js"></script>
+      <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/line-numbers/prism-line-numbers.min.js"></script>
 
-        <div class="integration-overview">
-          <div class="overview-section">
-            <h5>Donations</h5>
-            <p>
-              If you find this project useful, consider supporting its
-              development:
-            </p>
-            <pre><code class="language-text">ETH: 0xb542E27732a390f509fD1FF6844a8386fe320f7f</code></pre>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <div class="container">
-        <p class="footer-text">© 2024 Plancia. MIT License.</p>
-      </div>
-    </footer>
-
-    <!-- Add Prism JS at the end of body -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-typescript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-json.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/line-numbers/prism-line-numbers.min.js"></script>
-
-    <script>
-      // Automatically apply syntax highlighting to all code blocks
-      document.addEventListener("DOMContentLoaded", (event) => {
-        document.querySelectorAll("pre code").forEach((block) => {
-          // Add appropriate class for JavaScript syntax highlighting
-          if (!block.classList.contains("language-javascript")) {
-            block.classList.add("language-javascript");
-          }
-          // Trigger Prism to highlight the code
-          Prism.highlightElement(block);
+      <script>
+        // Automatically apply syntax highlighting to all code blocks
+        document.addEventListener("DOMContentLoaded", (event) => {
+          document.querySelectorAll("pre code").forEach((block) => {
+            // Add appropriate class for JavaScript syntax highlighting
+            if (!block.classList.contains("language-javascript")) {
+              block.classList.add("language-javascript");
+            }
+            // Trigger Prism to highlight the code
+            Prism.highlightElement(block);
+          });
         });
-      });
-    </script>
+      </script>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        // Funzione per lo scroll
-        function scrollToElement(elementId) {
-          const element = document.getElementById(elementId);
-          if (element) {
-            const offset = 100;
-            const bodyRect = document.body.getBoundingClientRect().top;
-            const elementRect = element.getBoundingClientRect().top;
-            const elementPosition = elementRect - bodyRect;
-            const offsetPosition = elementPosition - offset;
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          // Funzione per lo scroll
+          function scrollToElement(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+              const offset = 100;
+              const bodyRect = document.body.getBoundingClientRect().top;
+              const elementRect = element.getBoundingClientRect().top;
+              const elementPosition = elementRect - bodyRect;
+              const offsetPosition = elementPosition - offset;
 
-            window.scrollTo({
-              top: offsetPosition,
-              behavior: "smooth",
-            });
+              window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth",
+              });
+            }
           }
-        }
 
-        // Gestione menu principale
-        document
-          .querySelectorAll(".nav-menu .menu-item > a")
-          .forEach((link) => {
+          // Gestione menu principale
+          document
+            .querySelectorAll(".nav-menu .menu-item > a")
+            .forEach((link) => {
+              link.addEventListener("click", function (e) {
+                e.preventDefault();
+                const menuItem = this.parentElement;
+
+                // Toggle del menu corrente
+                menuItem.classList.toggle("active");
+
+                // Se ha un href, scorri alla sezione
+                const href = this.getAttribute("href");
+                if (href && href !== "#") {
+                  scrollToElement(href.substring(1));
+                }
+              });
+            });
+
+          // Gestione submenu
+          document.querySelectorAll(".nav-menu .submenu a").forEach((link) => {
             link.addEventListener("click", function (e) {
               e.preventDefault();
-              const menuItem = this.parentElement;
+              e.stopPropagation();
 
-              // Toggle del menu corrente
-              menuItem.classList.toggle("active");
-
-              // Se ha un href, scorri alla sezione
               const href = this.getAttribute("href");
               if (href && href !== "#") {
                 scrollToElement(href.substring(1));
               }
             });
           });
+      </script>
 
-        // Gestione submenu
-        document.querySelectorAll(".nav-menu .submenu a").forEach((link) => {
-          link.addEventListener("click", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
+      <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const headerNavMenu = document.querySelector('.header-nav-menu');
 
-            const href = this.getAttribute("href");
-            if (href && href !== "#") {
-              scrollToElement(href.substring(1));
-            }
+            menuToggle.addEventListener('click', function () {
+              headerNavMenu.classList.toggle('active');
+            });
+
+            // Chiudi il menu quando si clicca fuori
+            document.addEventListener('click', function (event) {
+              if (!event.target.closest('.nav-menu-container')) {
+                headerNavMenu.classList.remove('active');
+              }
+            });
+
+            // Gestione click sui link del menu
+            document.querySelectorAll('.header-nav-menu a').forEach(link => {
+              link.addEventListener('click', function () {
+                headerNavMenu.classList.remove('active');
+
+                // Scroll alla sezione corrispondente
+                const href = this.getAttribute('href');
+                if (href.startsWith('#')) {
+                  event.preventDefault();
+                  const targetElement = document.querySelector(href);
+                  if (targetElement) {
+                    const headerHeight = document.querySelector('.nav').offsetHeight;
+                    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                    window.scrollTo({
+                      top: targetPosition,
+                      behavior: 'smooth'
+                    });
+                  }
+                }
+              });
+            });
           });
-        });
-      });
-    </script>
+      </script>
+    </div>
+  </section>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const menuToggle = document.querySelector('.menu-toggle');
-        const headerNavMenu = document.querySelector('.header-nav-menu');
 
-        menuToggle.addEventListener('click', function() {
-          headerNavMenu.classList.toggle('active');
-        });
 
-        // Chiudi il menu quando si clicca fuori
-        document.addEventListener('click', function(event) {
-          if (!event.target.closest('.nav-menu-container')) {
-            headerNavMenu.classList.remove('active');
-          }
-        });
 
-        // Gestione click sui link del menu
-        document.querySelectorAll('.header-nav-menu a').forEach(link => {
-          link.addEventListener('click', function() {
-            headerNavMenu.classList.remove('active');
-            
-            // Scroll alla sezione corrispondente
-            const href = this.getAttribute('href');
-            if (href.startsWith('#')) {
-              event.preventDefault();
-              const targetElement = document.querySelector(href);
-              if (targetElement) {
-                const headerHeight = document.querySelector('.nav').offsetHeight;
-                const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+
+  <!-- Add Prism JS at the end of body -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-json.min.js"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/line-numbers/prism-line-numbers.min.js"></script>
+
+  <script>
+          // Automatically apply syntax highlighting to all code blocks
+          document.addEventListener("DOMContentLoaded", (event) => {
+            document.querySelectorAll("pre code").forEach((block) => {
+              // Add appropriate class for JavaScript syntax highlighting
+              if (!block.classList.contains("language-javascript")) {
+                block.classList.add("language-javascript");
+              }
+              // Trigger Prism to highlight the code
+              Prism.highlightElement(block);
+            });
+          });
+  </script>
+
+  <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            // Funzione per lo scroll
+            function scrollToElement(elementId) {
+              const element = document.getElementById(elementId);
+              if (element) {
+                const offset = 100;
+                const bodyRect = document.body.getBoundingClientRect().top;
+                const elementRect = element.getBoundingClientRect().top;
+                const elementPosition = elementRect - bodyRect;
+                const offsetPosition = elementPosition - offset;
+
                 window.scrollTo({
-                  top: targetPosition,
-                  behavior: 'smooth'
+                  top: offsetPosition,
+                  behavior: "smooth",
                 });
               }
             }
-          });
-        });
-      });
-    </script>
-  </body>
+
+            // Gestione menu principale
+            document
+              .querySelectorAll(".nav-menu .menu-item > a")
+              .forEach((link) => {
+                link.addEventListener("click", function (e) {
+                  e.preventDefault();
+                  const menuItem = this.parentElement;
+
+                  // Toggle del menu corrente
+                  menuItem.classList.toggle("active");
+
+                  // Se ha un href, scorri alla sezione
+                  const href = this.getAttribute("href");
+                  if (href && href !== "#") {
+                    scrollToElement(href.substring(1));
+                  }
+                });
+              });
+
+            // Gestione submenu
+            document.querySelectorAll(".nav-menu .submenu a").forEach((link) => {
+              link.addEventListener("click", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const href = this.getAttribute("href");
+                if (href && href !== "#") {
+                  scrollToElement(href.substring(1));
+                }
+              });
+            });
+  </script>
+
+  <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              const menuToggle = document.querySelector('.menu-toggle');
+              const headerNavMenu = document.querySelector('.header-nav-menu');
+
+              menuToggle.addEventListener('click', function () {
+                headerNavMenu.classList.toggle('active');
+              });
+
+              // Chiudi il menu quando si clicca fuori
+              document.addEventListener('click', function (event) {
+                if (!event.target.closest('.nav-menu-container')) {
+                  headerNavMenu.classList.remove('active');
+                }
+              });
+
+              // Gestione click sui link del menu
+              document.querySelectorAll('.header-nav-menu a').forEach(link => {
+                link.addEventListener('click', function () {
+                  headerNavMenu.classList.remove('active');
+
+                  // Scroll alla sezione corrispondente
+                  const href = this.getAttribute('href');
+                  if (href.startsWith('#')) {
+                    event.preventDefault();
+                    const targetElement = document.querySelector(href);
+                    if (targetElement) {
+                      const headerHeight = document.querySelector('.nav').offsetHeight;
+                      const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - headerHeight;
+                      window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                      });
+                    }
+                  }
+                });
+              });
+            });
+  </script>
+</body>
+
 </html>
